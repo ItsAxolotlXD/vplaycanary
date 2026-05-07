@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "sonhuyc2kl@gmail.com" ||
+        request.auth.token.email == "vplaybeta@gmail.com" ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    // USER COLLECTION
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      
+      function isValidUser(data) {
+        return data.keys().hasAll(['uid', 'email', 'role', 'createdAt']) &&
+               data.keys().size() >= 4 &&
+               data.uid == request.auth.uid &&
+               data.email is string &&
+               data.role in ['user', 'admin'] &&
+               data.createdAt == request.time;
+      }
+
+      allow create: if isSignedIn() && isValidUser(incoming()) && (incoming().role == 'user' || isAdmin());
+      allow update: if isSignedIn() && userId == request.auth.uid && (
+        // Only allow updating specific fields
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'watchedChannels']) &&
+        incoming().uid == existing().uid &&
+        incoming().role == existing().role
+      ) || isAdmin();
+    }
+
+    // VIDEOS COLLECTION
+    match /videos/{videoId} {
+      allow read: if true;
+      function isValidVideo(data) {
+        return data.keys().hasAll(['id', 'title', 'url', 'userId', 'createdAt']) &&
+               data.id == videoId &&
+               data.userId == request.auth.uid &&
+               data.createdAt == request.time;
+      }
+      allow create: if isEmailVerified() && isValidVideo(incoming());
+      allow update: if isEmailVerified() && existing().userId == request.auth.uid &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'thumbnail']) &&
+                    isValidVideo(incoming());
+      allow delete: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+    }
+
+    // POSTS COLLECTION
+    match /posts/{postId} {
+      allow read: if true;
+      function isValidPost(data) {
+        return data.keys().hasAll(['id', 'content', 'userId', 'createdAt']) &&
+               data.userId == request.auth.uid &&
+               data.createdAt == request.time;
+      }
+      allow create: if isEmailVerified() && isValidPost(incoming());
+      allow update: if isEmailVerified() && (
+        (existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['content', 'mediaUrl', 'poll'])) ||
+        (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['poll']))
+      );
+      allow delete: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+    }
+  }
+}

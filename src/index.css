@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-minecraft: "Silkscreen", "Press Start 2P", cursive;
+  --color-primary: var(--primary-color, #9333ea);
+}
+
+@layer base {
+  .minecraft-mode {
+    font-family: var(--font-minecraft);
+    image-rendering: pixelated;
+  }
+
+  .minecraft-mode button,
+  .minecraft-mode .minecraft-btn {
+    image-rendering: pixelated;
+    border: 2px solid #000;
+    box-shadow: inset -2px -2px #555, inset 2px 2px #fff;
+    background: #c6c6c6;
+    color: #404040;
+    text-shadow: 1px 1px #eee;
+    border-radius: 0 !important;
+    padding: 4px 12px;
+    font-family: var(--font-minecraft);
+    text-transform: none;
+    transition: none;
+  }
+
+  .minecraft-mode button:hover,
+  .minecraft-mode .minecraft-btn:hover {
+    background: #55ff55;
+    color: #000;
+    box-shadow: inset -2px -2px #003e00, inset 2px 2px #fff;
+    outline: 2px solid #fff;
+    outline-offset: -4px;
+    transform: none !important;
+  }
+
+  .minecraft-mode button:active,
+  .minecraft-mode .minecraft-btn:active {
+    background: #3eb03e;
+    box-shadow: inset 2px 2px #003e00, inset -2px -2px #fff;
+    outline: none;
+  }
+
+  /* Minecraft Toggle */
+  .minecraft-mode .minecraft-toggle {
+    width: 48px;
+    height: 24px;
+    background: #333;
+    border: 2px solid #000;
+    position: relative;
+    border-radius: 0 !important;
+  }
+
+  .minecraft-mode .minecraft-toggle-thumb {
+    width: 20px;
+    height: 20px;
+    background: #c6c6c6;
+    border: 2px solid #000;
+    box-shadow: inset -1px -1px #555, inset 1px 1px #fff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: transform 0.1s steps(2);
+  }
+
+  .minecraft-mode .minecraft-toggle.active {
+    background: #55ff55;
+  }
+
+  .minecraft-mode .minecraft-toggle.active .minecraft-toggle-thumb {
+    transform: translateX(24px);
+  }
+
+  /* Metro Mode */
+  .metro-mode * {
+    border-radius: 0 !important;
+    font-weight: 300 !important; /* Semi Light */
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .metro-mode .metro-tile {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 3rem !important;
+    transition: transform 0.1s;
+    background-color: #0078d4;
+    border: none !important;
+  }
+
+  .metro-mode .metro-tile:hover {
+    outline: 5px solid rgba(255, 255, 255, 0.4);
+    outline-offset: -5px;
+    transform: scale(0.96);
+  }
+
+  .metro-mode .metro-btn {
+    border: 4px solid white !important;
+    background: transparent !important;
+    padding: 1.5rem 4rem !important;
+    font-weight: 300 !important;
+    color: white !important;
+    text-transform: none !important;
+    font-size: 2.5rem !important;
+  }
+
+  .metro-mode .metro-btn:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .metro-mode h1, .metro-mode h2, .metro-mode h3 {
+    font-size: 5rem !important;
+    line-height: 1.1 !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .metro-mode p, .metro-mode span, .metro-mode button:not(.metro-btn) {
+    font-size: 1.8rem !important;
+  }
+
+  .metro-mode svg {
+    width: 6rem !important;
+    height: 6rem !important;
+    stroke-width: 3px !important;
+  }
+
+  .metro-mode .minecraft-toggle, .metro-mode [class*="w-12 h-6"] {
+    width: 6rem !important;
+    height: 3rem !important;
+    background-color: #333 !important;
+    border: 2px solid white !important;
+  }
+
+  .metro-mode .minecraft-toggle-thumb, .metro-mode [class*="w-4 h-4"], .metro-mode [class*="w-5 h-5"] {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    background-color: white !important;
+    top: 0.15rem !important;
+  }
+
+  .metro-mode [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    background-color: rgba(0, 0, 0, 0.95) !important;
+  }
+
+  .metro-mode .custom-scrollbar::-webkit-scrollbar {
+    width: 25px;
+  }
+
+  .metro-mode .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@layer base {
+  button, 
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    cursor: pointer;
+  }
+}
+
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

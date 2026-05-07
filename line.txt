@@ -1,0 +1,1 @@
+              <p className="text-3xl md:text-4xl font-light tracking-tight text-white/60 animate-pulse">Getting your experience ready...</p>
