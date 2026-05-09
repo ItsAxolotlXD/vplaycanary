@@ -326,15 +326,18 @@ const baseTabs = [
 
 // Channel type is imported from channels.ts
 
-function LiquidModal({ isOpen, onClose, children, isDark, title, description, liquidGlass }: { 
+function LiquidModal({ isOpen, onClose, children, isDark, title, description, liquidGlass, featureFlags }: { 
   isOpen: boolean, 
   onClose: () => void, 
   children?: ReactNode, 
   isDark: boolean,
   title?: string,
   description?: string,
-  liquidGlass: "glassy" | "tinted"
+  liquidGlass: "glassy" | "tinted",
+  featureFlags?: any
 }) {
+  const isRedesign = featureFlags?.dialog_redesign_v2;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -344,26 +347,58 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className={`absolute inset-0 bg-black/40 ${liquidGlass ? "backdrop-blur-sm" : ""}`}
+            className="absolute inset-0 bg-transparent"
           />
           <motion.div
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.8, opacity: 0, y: 20 }}
+            initial={isRedesign ? { opacity: 0, scale: 0.85 } : { scale: 0.8, opacity: 0, y: 20 }}
+            animate={isRedesign ? { opacity: 1, scale: 1 } : { scale: 1, opacity: 1, y: 0 }}
+            exit={isRedesign ? { opacity: 0, scale: 0.85 } : { scale: 0.8, opacity: 0, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={`relative w-full max-w-sm overflow-hidden border shadow-2xl ${
-              isDark 
-                ? "bg-slate-900/90 border-white/10 text-white" 
-                : "bg-white/90 border-white/60 text-slate-900"
-            } ${
-              liquidGlass ? "rounded-[40px] backdrop-blur-3xl" : "rounded-2xl backdrop-blur-none"
-            }`}
+            className={isRedesign 
+              ? "relative w-full max-w-[640px] bg-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl flex flex-col"
+              : `relative w-full max-w-sm overflow-hidden border shadow-2xl ${
+                  isDark 
+                    ? "bg-slate-900/90 border-white/10 text-white" 
+                    : "bg-white/90 border-white/60 text-slate-900"
+                } ${
+                  liquidGlass ? "rounded-[40px] backdrop-blur-3xl" : "rounded-2xl backdrop-blur-none"
+                }`
+            }
           >
-            <div className="p-8 text-center">
-              {title && <h3 className={`text-2xl font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>{title}</h3>}
-              {description && <p className={`${isDark ? "text-white/60" : "text-black/60"} text-sm leading-relaxed mb-6 font-medium`}>{description}</p>}
-              {children}
-            </div>
+            {isRedesign ? (
+              <>
+                {/* Header Section */}
+                <div className="p-8 pb-4">
+                  {title && <h2 className="text-white text-2xl font-bold mb-2">{title}</h2>}
+                  {description && (
+                    <p className="text-slate-300 text-lg">
+                      {description}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Content Section */}
+                <div className="p-8 pt-0 flex-1">
+                  {children}
+                </div>
+
+                {/* Footer Section */}
+                <div className="bg-[#1a1a1a] p-4 flex justify-end gap-4">
+                   <button 
+                    onClick={onClose}
+                    className="px-10 py-2.5 bg-[#333] hover:bg-[#444] text-white rounded-lg font-bold text-sm transition-all active:scale-95"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                {title && <h3 className={`text-2xl font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>{title}</h3>}
+                {description && <p className={`${isDark ? "text-white/60" : "text-black/60"} text-sm leading-relaxed mb-6 font-medium`}>{description}</p>}
+                {children}
+              </div>
+            )}
           </motion.div>
         </div>
       )}
@@ -2987,6 +3022,7 @@ function TVContent({
         title="Chọn kênh Multiview"
         description="Tìm kiếm và chọn kênh truyền hình bạn muốn thêm vào lưới Multiview"
         liquidGlass={liquidGlass}
+        featureFlags={featureFlags}
       >
         <div className="space-y-6">
           <div className={`relative group flex items-center gap-3 px-4 py-4 rounded-full overflow-hidden transition-all ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
@@ -3940,7 +3976,7 @@ function VidsContent({ isDark, user, liquidGlass, onLogin, featureFlags }: { isD
       </div>
 
       {/* Video Modal */}
-      <LiquidModal isOpen={showUpload} onClose={() => setShowUpload(false)} isDark={isDark} liquidGlass={liquidGlass} title="Upload Video">
+      <LiquidModal isOpen={showUpload} onClose={() => setShowUpload(false)} isDark={isDark} liquidGlass={liquidGlass} title="Upload Video" featureFlags={featureFlags}>
         <form onSubmit={handleUploadVideo} className="space-y-4 text-left p-2">
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">Tiêu đề</label>
@@ -3970,7 +4006,7 @@ function VidsContent({ isDark, user, liquidGlass, onLogin, featureFlags }: { isD
       </LiquidModal>
 
       {/* Post Modal */}
-      <LiquidModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} isDark={isDark} liquidGlass={liquidGlass} title="Create Post">
+      <LiquidModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} isDark={isDark} liquidGlass={liquidGlass} title="Create Post" featureFlags={featureFlags}>
         <form onSubmit={handleCreatePost} className="space-y-4 text-left p-2">
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">Nội dung</label>
@@ -4300,6 +4336,7 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: { featur
 
   const experiments = [
     { id: 'xaml_experience', name: 'Switch to the new UI', desc: 'Use the brand-new rebuilt Vplay app based on XAML system' },
+    { id: 'dialog_redesign_v2', name: 'Redesign Pop-ups', desc: 'Try the new updated interface of popup dialogs' },
     { id: 'xaml_home', name: 'XAML Home Page', desc: 'Giao diện Home mới mượt mà hơn.' },
     { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
     { id: 'settings_vertical', name: 'Vertical Settings', desc: 'Bố cục cài đặt danh sách đứng.' },
@@ -6099,7 +6136,7 @@ function SettingsContent({
 }
 
 
-function AuthModal({ isOpen, onClose, isDark, liquidGlass, setIsDev, setUserData }: { isOpen: boolean, onClose: () => void, isDark: boolean, liquidGlass: "glassy" | "tinted", setIsDev: (v: boolean) => void, setUserData: (d: any) => void }) {
+function AuthModal({ isOpen, onClose, isDark, liquidGlass, setIsDev, setUserData, featureFlags }: { isOpen: boolean, onClose: () => void, isDark: boolean, liquidGlass: "glassy" | "tinted", setIsDev: (v: boolean) => void, setUserData: (d: any) => void, featureFlags?: any }) {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [username, setUsername] = useState("");
@@ -6237,6 +6274,7 @@ function AuthModal({ isOpen, onClose, isDark, liquidGlass, setIsDev, setUserData
       title={getTitle()}
       description={getDescription()}
       liquidGlass={liquidGlass}
+      featureFlags={featureFlags}
     >
       { (
         <div className="space-y-4">
@@ -8141,6 +8179,7 @@ export default function App() {
         sidebar_resizable: false, 
         windows_mode: false,
         xaml_view_test: true,
+        dialog_redesign_v2: false,
         settings_vertical: true,
         music_background: true,
         minecraft_mode: false,
@@ -9253,34 +9292,92 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <LiquidModal 
-          isOpen={showDevConfirm} 
-          onClose={() => setShowDevConfirm(false)} 
-          isDark={isDark}
-          title="Switch to Vplay Dev"
-          description="Bạn sẽ được chuyển đến một phiên bản Vplay được hoàn thiện và tối ưu hoá hơn - Vplay Dev. Bạn có muốn chuyển đổi phiên bản ngay không?"
-          liquidGlass={liquidGlass}
-        >
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={() => {
-                setShowDevConfirm(false);
-                window.open("https://vplay-beta-fa8k.vercel.app", "_blank");
-              }}
-              className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-[32px] font-bold transition-all shadow-lg shadow-purple-600/20 active:scale-95"
-            >
-              Chuyển đổi ngay
-            </button>
-            <button 
-              onClick={() => setShowDevConfirm(false)}
-              className={`w-full py-3 rounded-3xl font-bold transition-all ${
-                isDark ? "bg-white/5 text-slate-400 hover:text-white" : "bg-black/5 text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              Hủy
-            </button>
-          </div>
-        </LiquidModal>
+        <AnimatePresence>
+          {showDevConfirm && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowDevConfirm(false)}
+                className="absolute inset-0 bg-transparent"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-[640px] bg-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl flex flex-col"
+              >
+                {/* Header Section */}
+                <div className="p-8 pb-4">
+                  <h2 className="text-white text-2xl font-bold mb-2">Switch to Dev?</h2>
+                  <p className="text-slate-300 text-lg">
+                    Do you want to switch to a much more stable version of <span className="underline decoration-red-500 decoration-wavy underline-offset-4">Vplay</span>?
+                  </p>
+                </div>
+
+                {/* Content - Logo Area */}
+                <div className="py-12 flex items-center justify-center">
+                  <div className="flex items-center gap-0">
+                    <div className="relative w-32 h-32 transform -rotate-12 translate-y-2">
+                       <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl">
+                          <defs>
+                            <linearGradient id="logo-v-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#818cf8" />
+                              <stop offset="50%" stopColor="#6366f1" />
+                              <stop offset="100%" stopColor="#4f46e5" />
+                            </linearGradient>
+                            <linearGradient id="logo-v-accent" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="rgba(255,255,255,0.2)" />
+                              <stop offset="100%" stopColor="transparent" />
+                            </linearGradient>
+                          </defs>
+                          {/* Ribbon style V */}
+                          <path 
+                            d="M20,10 L50,80 L80,10 L65,10 L50,50 L35,10 Z" 
+                            fill="url(#logo-v-grad)" 
+                          />
+                          <path 
+                            d="M20,10 L35,10 L50,45 L40,45 Z" 
+                            fill="rgba(0,0,0,0.1)" 
+                          />
+                           <path 
+                            d="M80,10 L65,10 L50,45 L60,45 Z" 
+                            fill="rgba(0,0,0,0.1)" 
+                          />
+                       </svg>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-8xl font-bold text-white tracking-tighter ml-[-8px] drop-shadow-lg flex items-center">
+                        <span className="bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">play</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Section */}
+                <div className="bg-[#1a1a1a] p-4 flex justify-end gap-4">
+                  <button 
+                    onClick={() => {
+                      setShowDevConfirm(false);
+                      window.open("https://vplay-beta-fa8k.vercel.app", "_blank");
+                    }}
+                    className="px-10 py-2.5 bg-[#4facfe] hover:bg-[#00f2fe] text-slate-900 rounded-lg font-bold text-sm transition-all active:scale-95 shadow-[0_0_15px_rgba(79,172,254,0.3)]"
+                  >
+                    Switch
+                  </button>
+                  <button 
+                    onClick={() => setShowDevConfirm(false)}
+                    className="px-10 py-2.5 bg-[#333] hover:bg-[#444] text-white rounded-lg font-bold text-sm transition-all active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         <LiquidModal 
           isOpen={!!customAlert} 
@@ -9289,6 +9386,7 @@ export default function App() {
           title={customAlert?.title}
           description={customAlert?.message}
           liquidGlass={liquidGlass}
+          featureFlags={featureFlags}
         >
           <button 
             onClick={() => setCustomAlert(null)}
@@ -10970,6 +11068,7 @@ export default function App() {
         liquidGlass={liquidGlass} 
         setIsDev={setIsDev} 
         setUserData={setUserData} 
+        featureFlags={featureFlags}
       />
       
       <LiquidModal
@@ -10979,6 +11078,7 @@ export default function App() {
         title="Cài đặt nhà phát triển"
         description={isDev ? "Bạn đang ở chế độ nhà phát triển. Bạn có muốn tắt nó không?" : "Bạn muốn kích hoạt chế độ nhà phát triển?"}
         liquidGlass={liquidGlass}
+        featureFlags={featureFlags}
       >
         <div className="flex flex-col gap-3">
           {!isDev ? (
@@ -11014,6 +11114,7 @@ export default function App() {
         title="Chế độ nhà phát triển"
         description="Kích hoạt tính năng nhà phát triển để truy cập vào các quyền đặc biệt. Bạn cần phải có mật khẩu dành cho nhà phát triển được chia sẻ bởi Chủ Thớt để kích hoạt"
         liquidGlass={liquidGlass}
+        featureFlags={featureFlags}
       >
         <form onSubmit={verifyDev} className="space-y-4 text-left">
           <div className="space-y-1">
