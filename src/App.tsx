@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, ChangeEvent, FormEvent, MouseEvent, ReactNode, Fragment, Dispatch, SetStateAction } from "react";
-import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload } from "lucide-react";
+import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
@@ -315,7 +315,8 @@ const backgroundTracks = [
 
 const baseTabs = [
   { name: "Home", icon: Home, id: "Trang chủ" },
-  { name: "Khám phá", icon: Search, id: "Khám phá" },
+  { name: "Khám phá", icon: Compass, id: "Khám phá" },
+  { name: "Gallery", icon: ImageIcon, id: "Gallery", className: "rounded-lg bg-blue-500/10 p-1" },
   { name: "Search or use commands", icon: Search, id: "Search", tooltip: "Search for channels or use console commands" },
   { name: "Phát sóng", icon: Tv, id: "Phát sóng" },
   { name: "V-pilot", icon: Sparkles, id: "V-pilot" },
@@ -647,6 +648,282 @@ function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass }: { isD
           <ArrowRight size={16} className="translate-x-0 group-hover:translate-x-1 transition-transform" />
         </motion.button>
       </motion.div>
+    </div>
+  );
+}
+
+function GalleryContent({ isDark, liquidGlass, featureFlags, onAction }: { isDark: boolean, liquidGlass: "glassy" | "tinted", featureFlags?: any, onAction: (a: string) => void }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewType, setViewType] = useState<"grid" | "list">("grid");
+  const [selectedItem, setSelectedItem] = useState<{ type: 'icon' | 'logo', name: string, url?: string, icon?: any } | null>(null);
+  const [downloadOptions, setDownloadOptions] = useState({ resolution: "1024", color: "original" });
+
+  const galleryIcons = [
+    { name: "Search", icon: Search }, { name: "User", icon: User }, { name: "Copy", icon: Copy }, 
+    { name: "Tv", icon: Tv }, { name: "Calendar", icon: Calendar }, { name: "Home", icon: Home }, 
+    { name: "Play", icon: Play }, { name: "Pause", icon: Pause }, { name: "Radio", icon: Radio }, 
+    { name: "Info", icon: Info }, { name: "Sun", icon: Sun }, { name: "Moon", icon: Moon }, 
+    { name: "Settings", icon: Settings }, { name: "CheckCircle2", icon: CheckCircle2 }, 
+    { name: "Check", icon: Check }, { name: "Shield", icon: Shield }, { name: "Heart", icon: Heart }, 
+    { name: "X", icon: X }, { name: "Lock", icon: Lock }, { name: "Terminal", icon: Terminal }, 
+    { name: "Zap", icon: Zap }, { name: "Clock", icon: Clock }, { name: "Compass", icon: Compass }, 
+    { name: "ImageIcon", icon: ImageIcon }, { name: "Sparkles", icon: Sparkles }, 
+    { name: "ShieldCheck", icon: ShieldCheck }, { name: "LayoutGrid", icon: LayoutGrid }, 
+    { name: "LayoutDashboard", icon: LayoutDashboard }, { name: "Download", icon: Download }, 
+    { name: "Pizza", icon: Pizza }, { name: "Gavel", icon: Gavel }, { name: "Upload", icon: Upload }
+  ];
+
+  const filteredIcons = galleryIcons.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredChannels = channels.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const handleDownload = async () => {
+    if (!selectedItem) return;
+    
+    // In a real app, we'd use a canvas to apply color filters and resize
+    // For this simulation, we'll just log the parameters and "trigger" a download
+    const { name, url, type } = selectedItem;
+    console.log(`Downloading ${name} at ${downloadOptions.resolution}px in ${downloadOptions.color} mode`);
+    
+    if (type === 'logo' && url) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${name}_${downloadOptions.resolution}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      } catch (e) {
+        window.open(url, '_blank');
+      }
+    } else {
+      alert(`Download started: ${name} (${downloadOptions.resolution}px, ${downloadOptions.color})`);
+    }
+    setSelectedItem(null);
+  };
+
+  return (
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${featureFlags?.xaml_experience ? "bg-transparent" : (isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900")}`}>
+      {/* Windows 11 Style Toolbar */}
+      <div className={`px-6 py-3 border-b flex flex-wrap items-center justify-between gap-4 ${isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-black/5"}`}>
+        <div className="flex items-center gap-2">
+           <button 
+             onClick={() => onAction("play_for_me")}
+             className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"} flex items-center gap-2 text-xs font-semibold px-3`}
+           >
+             <Play size={16} className="text-blue-500" />
+             Open in Play For Me
+           </button>
+           <div className={`w-px h-6 mx-1 ${isDark ? "bg-white/10" : "bg-black/10"}`} />
+           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`} title="Copy"><Copy size={16} /></button>
+           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`} title="Share"><Share2 size={16} /></button>
+           <div className={`w-px h-6 mx-1 ${isDark ? "bg-white/10" : "bg-black/10"}`} />
+           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"} flex items-center gap-2 text-xs font-semibold px-3`}>
+             <List size={16} />
+             Sort
+           </button>
+           <button 
+             onClick={() => setViewType(viewType === "grid" ? "list" : "grid")}
+             className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"} flex items-center gap-2 text-xs font-semibold px-3`}
+           >
+             {viewType === "grid" ? <LayoutGrid size={16} /> : <List size={16} />}
+             View
+           </button>
+           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
+             <MoreHorizontal size={16} />
+           </button>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className={`relative flex items-center px-4 py-2 rounded-xl border transition-all ${isDark ? "bg-white/5 border-white/10 focus-within:bg-white/10" : "bg-black/5 border-black/10 focus-within:bg-white focus-within:shadow-xl"}`}>
+            <Search size={14} className="opacity-40 mr-2" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search assets..."
+              className="bg-transparent border-none outline-none text-xs w-48 font-medium"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <div className="max-w-7xl mx-auto space-y-12">
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-2 mb-8">
+             <Home size={14} className="opacity-40" />
+             <ChevronRight size={14} className="opacity-40" />
+             <span className="text-sm font-semibold opacity-40">Home</span>
+             <ChevronRight size={14} className="opacity-40" />
+             <span className="text-sm font-bold">Gallery</span>
+          </div>
+
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">Iconography</h2>
+                <p className={`text-xs opacity-40 font-semibold tracking-wide`}>{filteredIcons.length} icons</p>
+              </div>
+            </div>
+            <div className={`grid ${viewType === "grid" ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6" : "grid-cols-1"} gap-4`}>
+                <AnimatePresence mode="popLayout">
+                  {filteredIcons.map((icon, idx) => (
+                    <motion.div
+                      layout
+                      key={`icon-${icon.name}`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ delay: idx * 0.01 }}
+                      className={`group relative aspect-square rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition-all ${isDark ? "bg-white/[0.03] hover:bg-white/[0.08]" : "bg-white shadow-sm hover:shadow-xl hover:-translate-y-1"}`}
+                    >
+                      <icon.icon size={48} className={isDark ? "text-white/60 group-hover:text-white" : "text-slate-400 group-hover:text-blue-600"} strokeWidth={1.5} />
+                      <span className="text-[10px] font-semibold opacity-30 text-center truncate w-full">{icon.name}</span>
+                      
+                      <button 
+                        onClick={() => setSelectedItem({ type: 'icon', name: icon.name, icon: icon.icon })}
+                        className="absolute inset-0 flex items-center justify-center bg-blue-600 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                         <Download size={28} />
+                      </button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+            </div>
+          </section>
+
+          <section>
+             <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight">Broadcast Logos</h3>
+                <p className={`text-xs opacity-40 font-semibold tracking-wide`}>{filteredChannels.length} channel logos</p>
+              </div>
+            </div>
+            <div className={`grid ${viewType === "grid" ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"} gap-6`}>
+              <AnimatePresence mode="popLayout">
+                {filteredChannels.map((channel, idx) => (
+                  <motion.div
+                    layout
+                    key={`channel-${channel.name}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ delay: idx * 0.02 }}
+                    className={`group relative overflow-hidden rounded-2xl transition-all ${isDark ? "bg-white/[0.03] hover:bg-white/[0.08]" : "bg-white shadow-sm hover:shadow-xl hover:-translate-y-1"}`}
+                  >
+                    <div className="p-10 flex items-center justify-center relative z-10 h-48">
+                      <img 
+                        src={channel.logo} 
+                        alt={channel.name} 
+                        className="max-w-full max-h-full object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <div className={`p-4 border-t ${isDark ? "border-white/5 bg-white/[0.02]" : "border-black/5 bg-slate-50"} text-center`}>
+                      <span className="text-[11px] font-semibold tracking-wide">{channel.name}</span>
+                    </div>
+
+                    <button 
+                      onClick={() => setSelectedItem({ type: 'logo', name: channel.name, url: channel.logo })}
+                      className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-20 space-y-3"
+                    >
+                       <Download size={36} />
+                       <span className="text-[11px] font-bold tracking-wider">Download Asset</span>
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Download Options Modal */}
+      <AnimatePresence>
+        {selectedItem && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedItem(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-xl" 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className={`relative w-full max-w-md rounded-3xl p-8 shadow-2xl overflow-hidden ${isDark ? "bg-[#1a1a1a] border border-white/10" : "bg-white border border-black/5"}`}
+            >
+               <div className="flex items-center justify-between mb-8">
+                 <div className="flex items-center gap-3">
+                   <div className="p-3 bg-blue-600/10 rounded-2xl">
+                     <Download size={20} className="text-blue-500" />
+                   </div>
+                   <h3 className="font-bold text-lg">Download Settings</h3>
+                 </div>
+                 <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-black/5 rounded-full"><X size={20} /></button>
+               </div>
+
+               <div className="space-y-6">
+                 <div>
+                   <p className="text-sm font-semibold mb-3 opacity-60">Resolution</p>
+                   <div className="grid grid-cols-3 gap-2">
+                     {["512", "1024", "2048"].map(res => (
+                       <button 
+                         key={res}
+                         onClick={() => setDownloadOptions(prev => ({ ...prev, resolution: res }))}
+                         className={`py-2 rounded-xl text-xs font-bold transition-all ${downloadOptions.resolution === res ? "bg-blue-600 text-white" : (isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200")}`}
+                       >
+                         {res}px
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+
+                 {selectedItem.type === 'icon' && (
+                   <div>
+                     <p className="text-sm font-semibold mb-3 opacity-60">Color Mode</p>
+                     <div className="grid grid-cols-2 gap-2">
+                       {["original", "monochrome"].map(mode => (
+                         <button 
+                           key={mode}
+                           onClick={() => setDownloadOptions(prev => ({ ...prev, color: mode }))}
+                           className={`py-2 rounded-xl text-xs font-bold transition-all ${downloadOptions.color === mode ? "bg-blue-600 text-white" : (isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200")}`}
+                         >
+                           {mode === "original" ? "Default" : "Black & White"}
+                         </button>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+
+                 <div className={`p-6 rounded-2xl border ${isDark ? "bg-white/[0.02] border-white/5" : "bg-slate-50 border-black/5"} flex flex-col items-center justify-center gap-4`}>
+                    <div className={`p-4 rounded-2xl ${isDark ? "bg-white/5" : "bg-white shadow-sm"}`}>
+                       {selectedItem.type === 'icon' ? (
+                         <selectedItem.icon size={48} className={downloadOptions.color === "monochrome" ? "text-black" : "text-blue-500"} />
+                       ) : (
+                         <img src={selectedItem.url} alt="" className="w-24 h-24 object-contain" />
+                       )}
+                    </div>
+                    <p className="text-[10px] font-bold opacity-40">{selectedItem.name}</p>
+                 </div>
+
+                 <button 
+                   onClick={handleDownload}
+                   className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+                 >
+                   Confirm & Download
+                 </button>
+               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -9760,6 +10037,11 @@ export default function App() {
               {(displayTab === "Khám phá") && (
                 <div className={`rounded-[32px] overflow-hidden ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
                   <ExploreContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} setGlobalSearch={setSearchQuery} />
+                </div>
+              )}
+              {displayTab === "Gallery" && (
+                <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <GalleryContent isDark={isDark} liquidGlass={liquidGlass} featureFlags={featureFlags} onAction={onAIToolsAction} />
                 </div>
               )}
               {displayTab === "Pizza" && (
