@@ -320,13 +320,13 @@ const baseTabs = [
   { name: "Phát sóng", icon: Tv, id: "Phát sóng" },
   { name: "V-pilot", icon: Sparkles, id: "V-pilot" },
   { name: "Quản trị", icon: Shield, id: "Quản trị" },
-  { name: "Thử nghiệm", icon: Pizza, id: "Thử nghiệm", className: "-scale-x-100" },
+  { name: "Pizza", icon: Pizza, id: "Pizza", className: "-scale-x-100", tooltip: "Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary" },
   { name: "Cài đặt", icon: Settings, id: "Cài đặt" },
 ];
 
 // Channel type is imported from channels.ts
 
-function LiquidModal({ isOpen, onClose, children, isDark, title, description, liquidGlass, featureFlags }: { 
+function LiquidModal({ isOpen, onClose, children, isDark, title, description, liquidGlass, featureFlags, footer }: { 
   isOpen: boolean, 
   onClose: () => void, 
   children?: ReactNode, 
@@ -334,14 +334,24 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
   title?: string,
   description?: string,
   liquidGlass: "glassy" | "tinted",
-  featureFlags?: any
+  featureFlags?: any,
+  footer?: ReactNode
 }) {
   const isRedesign = featureFlags?.dialog_redesign_v2;
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true);
+      const timer = setTimeout(() => setIsLoading(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 text-left">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -355,7 +365,7 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
             exit={isRedesign ? { opacity: 0, scale: 0.85 } : { scale: 0.8, opacity: 0, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className={isRedesign 
-              ? "relative w-full max-w-[640px] bg-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl flex flex-col"
+              ? "relative w-full max-w-[calc(100%-32px)] md:max-w-[420px] bg-[#1c1c1e] rounded-[24px] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] flex flex-col mx-4 border border-white/10"
               : `relative w-full max-w-sm overflow-hidden border shadow-2xl ${
                   isDark 
                     ? "bg-slate-900/90 border-white/10 text-white" 
@@ -365,31 +375,41 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
                 }`
             }
           >
-            {isRedesign ? (
+            {isLoading ? (
+              <div className="h-[250px] flex items-center justify-center">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
+                />
+              </div>
+            ) : isRedesign ? (
               <>
                 {/* Header Section */}
                 <div className="p-8 pb-4">
                   {title && <h2 className="text-white text-2xl font-bold mb-2">{title}</h2>}
                   {description && (
-                    <p className="text-slate-300 text-lg">
+                    <p className="text-slate-300 text-sm leading-relaxed">
                       {description}
                     </p>
                   )}
                 </div>
                 
                 {/* Content Section */}
-                <div className="p-8 pt-0 flex-1">
+                <div className="px-8 pb-8 flex-1">
                   {children}
                 </div>
 
                 {/* Footer Section */}
                 <div className="bg-[#1a1a1a] p-4 flex justify-end gap-4">
-                   <button 
-                    onClick={onClose}
-                    className="px-10 py-2.5 bg-[#333] hover:bg-[#444] text-white rounded-lg font-bold text-sm transition-all active:scale-95"
-                  >
-                    Close
-                  </button>
+                   {footer ? footer : (
+                     <button 
+                      onClick={onClose}
+                      className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all active:scale-95 w-full md:w-auto"
+                    >
+                      Ok
+                    </button>
+                   )}
                 </div>
               </>
             ) : (
@@ -397,6 +417,14 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
                 {title && <h3 className={`text-2xl font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>{title}</h3>}
                 {description && <p className={`${isDark ? "text-white/60" : "text-black/60"} text-sm leading-relaxed mb-6 font-medium`}>{description}</p>}
                 {children}
+                <button 
+                  onClick={onClose}
+                  className={`w-full py-4 rounded-full font-bold transition-all active:scale-95 ${
+                    isDark ? "bg-white text-black hover:bg-slate-100" : "bg-black text-white hover:bg-slate-800"
+                  }`}
+                >
+                  Ok
+                </button>
               </div>
             )}
           </motion.div>
@@ -4358,15 +4386,26 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: { featur
     { id: 'sort_oldest', name: 'Sorting: Oldest to newest', desc: 'Sort channels from oldest to newest added' },
   ].filter(exp => exp.name.toLowerCase().includes(flagSearch.toLowerCase()) || exp.desc.toLowerCase().includes(flagSearch.toLowerCase()));
 
+  const useXAML = featureFlags?.xaml_experience;
+
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
+    <div className={`p-8 max-w-6xl mx-auto space-y-8 rounded-[32px] ${useXAML ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+      <div className={`p-6 rounded-[32px] ${isDark ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50 border border-blue-100"} flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-700`}>
+        <div className={`p-3 rounded-2xl ${isDark ? "bg-blue-500/20" : "bg-white"}`}>
+          <Pizza className="text-blue-500" size={24} />
+        </div>
+        <p className={`text-sm font-medium ${isDark ? "text-blue-200" : "text-blue-900"}`}>
+          Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary
+        </p>
+      </div>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div className="flex items-center gap-4">
           <div className={`p-4 rounded-3xl ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
             <Pizza size={32} className="text-purple-500" />
           </div>
           <div>
-            <h2 className={`text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Thử nghiệm</h2>
+            <h2 className={`text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Pizza</h2>
             <p className={isDark ? "text-slate-400" : "text-slate-500"}>Kích hoạt các tính năng mới nhất đang được phát triển</p>
           </div>
         </div>
@@ -8179,7 +8218,7 @@ export default function App() {
         sidebar_resizable: false, 
         windows_mode: false,
         xaml_view_test: true,
-        dialog_redesign_v2: false,
+        dialog_redesign_v2: true,
         settings_vertical: true,
         music_background: true,
         minecraft_mode: false,
@@ -8474,6 +8513,7 @@ export default function App() {
   };
 
 
+  const [showVTV6Popup, setShowVTV6Popup] = useState(false);
   const [showCanaryWarning, setShowCanaryWarning] = useState(false);
   const [hasSeenCanaryWarning, setHasSeenCanaryWarning] = useState(false);
 
@@ -8806,6 +8846,10 @@ export default function App() {
       setShowAuthModal(true);
       return;
     }
+    if (ch.name === "VTV6") {
+      setShowVTV6Popup(true);
+      return;
+    }
     setActiveChannel(ch);
     setActiveTab("Phát sóng");
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -8885,6 +8929,7 @@ export default function App() {
     if (t.id === "V-pilot" && !featureFlags?.ai_tools_preview && !featureFlags?.ai_tools) return false;
     if (t.id === "Search" && featureFlags?.ai_tools) return false;
     if (t.id === "Speak for me" && !featureFlags?.speaking_feature) return false;
+    if (t.id === "Pizza" && !featureFlags?.xaml_experience) return false;
     return true;
   });
   
@@ -8992,14 +9037,28 @@ export default function App() {
             forcedInfo={forcedOOBEInfo || undefined} 
           />
         ) : showCanaryWarning ? (
-          <BroadcastExperimentalView 
-            onContinue={() => {
+          <LiquidModal
+            isOpen={showCanaryWarning}
+            onClose={() => {
               setShowCanaryWarning(false);
               setHasSeenCanaryWarning(true);
-            }} 
-            onSwitchToRelease={() => {
-              window.open("https://vplay.vn", "_blank");
             }}
+            isDark={isDark}
+            liquidGlass={liquidGlass}
+            featureFlags={featureFlags}
+            title="Vplay Canary chỉ để phục vụ thử nghiệm!"
+            description="Vplay Canary chỉ để phục vụ thử nghiệm giao diện. Để xem được các kênh truyền hình, vui lòng chuyển đổi sang các phiên bản ổn định hơn của Vplay như Dev hoặc khuyến nghị hơn là phiên bản Release chính thức."
+            footer={
+              <button 
+                onClick={() => {
+                  setShowCanaryWarning(false);
+                  setHasSeenCanaryWarning(true);
+                }}
+                className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all active:scale-95 w-full md:w-auto"
+              >
+                Tôi đã hiểu
+              </button>
+            }
           />
         ) : isUpdating ? (
           <SplashScreen 
@@ -9600,9 +9659,11 @@ export default function App() {
                 </div>
               )}
               {(displayTab === "Khám phá") && (
-                <ExploreContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} />
+                <div className={`rounded-[32px] overflow-hidden ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <ExploreContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} />
+                </div>
               )}
-              {displayTab === "Thử nghiệm" && (
+              {displayTab === "Pizza" && (
                 <ExperimentalContent 
                   isDark={isDark} 
                   featureFlags={featureFlags} 
@@ -9629,8 +9690,8 @@ export default function App() {
                 <SpeakForMeContent isDark={isDark} onBack={() => setActiveTab("Home")} />
               )}
               {displayTab === "Search" && (
-                <div className="flex-1 flex flex-col h-full overflow-hidden">
-                  <div className={`p-8 border-b ${isDark ? "bg-black border-white/5" : "bg-white border-black/5"}`}>
+                <div className={`flex-1 flex flex-col h-full overflow-hidden rounded-[32px] ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <div className={`p-8 border-b ${isDark ? (featureFlags.xaml_experience ? "bg-transparent" : "bg-black") + " border-white/5" : (featureFlags.xaml_experience ? "bg-transparent" : "bg-white") + " border-black/5"}`}>
                     <SearchBar 
                       isDark={isDark} 
                       query={searchQuery} 
@@ -9682,28 +9743,30 @@ export default function App() {
                 </div>
               )}
               {displayTab === "Phát sóng" && (
-                <TVContent 
-                  active={activeChannel} 
-                  setActive={handleChannelSelect} 
-                  isDark={isDark} 
-                  favorites={favorites} 
-                  toggleFavorite={toggleFavorite} 
-                  user={user}
-                  onLogin={handleLogin}
-                  isDev={isDev}
-                  liquidGlass={liquidGlass}
-                  sortOrder={sortOrder}
-                  setSortOrder={setSortOrder}
-                  showSplash={showSplash}
-                  featureFlags={featureFlags}
-                  searchQuery={searchQuery}
-                  activeTab={activeTab}
-                  setShowCanaryWarning={setShowCanaryWarning}
-                  activeSearchPlaceholder={activeSearchPlaceholder}
-                />
+                <div className={`rounded-[32px] overflow-hidden ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <TVContent 
+                    active={activeChannel} 
+                    setActive={handleChannelSelect} 
+                    isDark={isDark} 
+                    favorites={favorites} 
+                    toggleFavorite={toggleFavorite} 
+                    user={user}
+                    onLogin={handleLogin}
+                    isDev={isDev}
+                    liquidGlass={liquidGlass}
+                    sortOrder={sortOrder}
+                    setSortOrder={setSortOrder}
+                    showSplash={showSplash}
+                    featureFlags={featureFlags}
+                    searchQuery={searchQuery}
+                    activeTab={activeTab}
+                    setShowCanaryWarning={setShowCanaryWarning}
+                    activeSearchPlaceholder={activeSearchPlaceholder}
+                  />
+                </div>
               )}
               {displayTab === "Cài đặt" && (
-                <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 max-w-4xl mx-auto w-full">
+                <div className={`flex-1 overflow-y-auto p-4 md:p-8 space-y-8 max-w-4xl mx-auto w-full rounded-[32px] ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className={`p-4 rounded-3xl ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
@@ -9783,6 +9846,48 @@ export default function App() {
       </div>
       
       {/* Sidebar Redesign */}
+      <LiquidModal
+        isOpen={showVTV6Popup}
+        onClose={() => setShowVTV6Popup(false)}
+        isDark={isDark}
+        liquidGlass={liquidGlass}
+        featureFlags={featureFlags}
+        title="Chào mừng VTV6 sắp trở lại!"
+        description="Kênh VTV6 dự kiến trở lại vào 08/06/2026 với mục tiêu là một kênh truyền hình chuyên biệt về thể thao. Vplay cũng đã sẵn sàng lên sóng kênh, mời quý khán giả đón xem!"
+        footer={
+          <button 
+            onClick={() => setShowVTV6Popup(false)}
+            className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all active:scale-95 w-full md:w-auto"
+          >
+            Ok
+          </button>
+        }
+      />
+
+      <LiquidModal
+        isOpen={showCanaryWarning && featureFlags.dialog_redesign_v2}
+        onClose={() => {
+          setShowCanaryWarning(false);
+          setHasSeenCanaryWarning(true);
+        }}
+        isDark={isDark}
+        liquidGlass={liquidGlass}
+        featureFlags={featureFlags}
+        title="Vplay Canary chỉ để phục vụ thử nghiệm!"
+        description="Vplay Canary chỉ để phục vụ thử nghiệm giao diện. Để xem được các kênh truyền hình, vui lòng chuyển đổi sang các phiên bản ổn định hơn của Vplay như Dev hoặc khuyến nghị hơn là phiên bản Release chính thức."
+        footer={
+          <button 
+            onClick={() => {
+              setShowCanaryWarning(false);
+              setHasSeenCanaryWarning(true);
+            }}
+            className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all active:scale-95 w-full md:w-auto"
+          >
+            Tôi đã hiểu
+          </button>
+        }
+      />
+
       <AnimatePresence>
         {useSidebar && !featureFlags.copilot_action_v2 && (
           <>
@@ -9876,7 +9981,7 @@ export default function App() {
                             <span className="font-normal text-sm tracking-tight text-white/90">Vplay</span>
                             <span className="text-[10px] font-normal text-blue-500 tracking-widest uppercase">Canary</span>
                          </div>
-                         {Object.values(featureFlags).some(v => v === true) && (
+                         {featureFlags.xaml_experience && (
                            <div className="relative group/pizza ml-1">
                              <Pizza size={18} className="text-white cursor-help" />
                              <div 
@@ -9884,10 +9989,7 @@ export default function App() {
                                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
                              >
                                <div className="flex flex-col gap-2 text-left">
-                                 <div className="flex items-center gap-2">
-                                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                 </div>
-                                 <p className="leading-relaxed opacity-90">You're previewing the experimental features of Vplay Canary. To toggle and configure specific features, go to the "Experimental" tab</p>
+                                 <p className="leading-relaxed opacity-90 font-bold">You're previewing the XAML-powered version of Vplay, which provides richer ways for us to build and design the user interface. You can go back to previous legacy Vplay by going to the "Pizza" tab</p>
                                 </div>
                               </div>
                             </div>
@@ -10047,17 +10149,39 @@ export default function App() {
                           />
                         )}
                         {typeof tab.icon === "string" ? (
-                          <img 
-                            src={tab.id === "V-pilot" ? vpilotIcon : tab.icon} 
-                            alt={tab.name} 
-                            className={`h-6 w-6 flex-shrink-0 object-contain transition-all ${isActive ? "scale-110" : "group-hover:scale-110"}`} 
-                            referrerPolicy="no-referrer" 
-                          />
+                          <motion.div
+                            animate={hoveredTab === tab.name ? { rotateY: [0, 180, 360] } : { rotateY: 0 }}
+                            transition={{ duration: 1.5, repeat: hoveredTab === tab.name ? Infinity : 0, ease: "linear" }}
+                          >
+                            <img 
+                              src={tab.id === "V-pilot" ? vpilotIcon : tab.icon} 
+                              alt={tab.name} 
+                              className={`h-6 w-6 flex-shrink-0 object-contain transition-all ${isActive ? "scale-110" : "group-hover:scale-110"}`} 
+                              referrerPolicy="no-referrer" 
+                            />
+                          </motion.div>
                         ) : (
-                          <Icon size={24} className={`flex-shrink-0 transition-all ${isActive ? "text-blue-600" : "group-hover:scale-110"} ${tab.className || ""}`} />
+                          <motion.div
+                            animate={hoveredTab === tab.name ? { rotateY: [0, 180, 360] } : { rotateY: 0 }}
+                            transition={{ duration: 1.5, repeat: hoveredTab === tab.name ? Infinity : 0, ease: "linear" }}
+                          >
+                            <Icon size={24} className={`flex-shrink-0 transition-all ${isActive ? "text-blue-600" : "group-hover:scale-110"} ${tab.className || ""}`} />
+                          </motion.div>
                         )}
                         {isSidebarExpanded && (
                           <span className="font-normal text-base whitespace-nowrap">{tab.name}</span>
+                        )}
+
+                        {/* Pizza Tooltip for Sidebar */}
+                        {tab.id === "Pizza" && hoveredTab === tab.name && isSidebarExpanded && (
+                           <div 
+                              className="absolute left-full ml-4 w-64 p-4 bg-black/95 text-white text-[11px] rounded-2xl shadow-2xl border border-white/10 pointer-events-none z-[100] backdrop-blur-xl font-medium opacity-100"
+                              style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+                            >
+                              <div className="flex flex-col gap-2 text-left">
+                                <p className="leading-relaxed opacity-90">Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary</p>
+                              </div>
+                            </div>
                         )}
                       </motion.button>
                       <AnimatePresence>
@@ -10159,7 +10283,12 @@ export default function App() {
                         className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full" 
                       />
                   )}
-                  <SettingsIcon className={`w-6 h-6 ${activeTab === "Cài đặt" ? "text-blue-500" : ""}`} />
+                  <motion.div
+                    whileHover={{ rotateY: 180 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <SettingsIcon className={`w-6 h-6 ${activeTab === "Cài đặt" ? "text-blue-500" : ""}`} />
+                  </motion.div>
                   {isSidebarExpanded && <span className="font-normal text-base">Cài đặt</span>}
                 </button>
 
@@ -10169,7 +10298,12 @@ export default function App() {
                     isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:bg-slate-50"
                   } ${!isSidebarExpanded ? "justify-center" : ""}`}
                 >
-                  <ExternalLink size={24} className="hover:scale-110 transition-transform" />
+                  <motion.div
+                    whileHover={{ rotateY: 180 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <ExternalLink size={24} className="hover:scale-110 transition-transform" />
+                  </motion.div>
                   {isSidebarExpanded && <span className="font-normal text-base whitespace-nowrap">Switch to Dev</span>}
                 </button>
               </div>
@@ -10302,10 +10436,10 @@ export default function App() {
                             />
                           )}
                           <motion.div
-                            initial={{ scale: 1 }}
-                            animate={{ scale: isActive ? 1.1 : 1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className={`z-10 ${tab.name === "Trang chủ" ? "translate-y-[1.5px]" : ""}`}
+                            whileTap={{ scale: 0.8 }}
+                            animate={hoveredTab === tab.name ? { rotateY: [0, 180, 360] } : { rotateY: 0 }}
+                            transition={hoveredTab === tab.name ? { duration: 1.5, repeat: Infinity, ease: "linear" } : { duration: 0.5 }}
+                            className="z-10 relative"
                           >
                             {userAvatar ? (
                               <img 
@@ -10327,6 +10461,18 @@ export default function App() {
                               } ${liquidGlass === "tinted" && !isActive ? "text-black" : ""}`} />
                             )}
                           </motion.div>
+                          
+                          {/* Pizza Tooltip for Taskbar/Bottom Bar */}
+                          {tab.id === "Pizza" && hoveredTab === tab.name && (
+                             <div 
+                                className="absolute bottom-full mb-4 w-64 p-4 bg-black/95 text-white text-[11px] rounded-2xl shadow-2xl border border-white/10 pointer-events-none z-[100] backdrop-blur-xl font-medium"
+                                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+                              >
+                                <div className="flex flex-col gap-2 text-left">
+                                  <p className="leading-relaxed opacity-90">Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary</p>
+                                </div>
+                              </div>
+                          )}
                         </button>
                         <AnimatePresence>
                           {isAIToolsTab && showAIToolsMenu && (
@@ -10359,6 +10505,8 @@ export default function App() {
                       >
                          <motion.div
                           whileTap={{ scale: 0.9 }}
+                          whileHover={{ rotateY: 180 }}
+                          transition={{ duration: 0.5 }}
                           className="z-10"
                         >
                            <img 
@@ -10481,9 +10629,10 @@ export default function App() {
                 onClick={() => {
                   setShowAIToolsMenu(!showAIToolsMenu);
                 }}
-                className="w-16 h-16 rounded-full bg-white shadow-2xl flex items-center justify-center border border-black/5 transition-all group"
+                className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-[0_0_40px_rgba(139,92,246,0.3)] flex items-center justify-center border border-white/20 transition-all group overflow-hidden"
               >
-                <Sparkles className="w-8 h-8 text-blue-500" />
+                <div className="absolute inset-0 bg-white/10 group-hover:bg-white/20 transition-colors" />
+                <Sparkles className="w-8 h-8 text-white relative z-10" />
               </motion.button>
               <AnimatePresence>
                 {showAIToolsMenu && (
