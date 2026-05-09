@@ -321,6 +321,7 @@ const baseTabs = [
   { name: "V-pilot", icon: Sparkles, id: "V-pilot" },
   { name: "Quản trị", icon: Shield, id: "Quản trị" },
   { name: "Pizza", icon: Pizza, id: "Pizza", className: "-scale-x-100", tooltip: "Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary" },
+  { name: "VTV6 - Coming soon", icon: "https://static.wikia.nocookie.net/logos/images/2/21/VTV6_logo_%282026%29.png/revision/latest/scale-to-width-down/1000?cb=20260508074729&path-prefix=vi", id: "VTV6_Tab", tooltip: "Kênh VTV6 sắp trở lại!" },
   { name: "Cài đặt", icon: Settings, id: "Cài đặt" },
 ];
 
@@ -650,7 +651,7 @@ function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass }: { isD
   );
 }
 
-function ExploreContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags }: { isDark: boolean, onAction: (a: string) => void, onNavigate: (t: string) => void, liquidGlass: "glassy" | "tinted", featureFlags?: any }) {
+function ExploreContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags, setGlobalSearch }: { isDark: boolean, onAction: (a: string, data?: any) => void, onNavigate: (t: string) => void, liquidGlass: "glassy" | "tinted", featureFlags?: any, setGlobalSearch: (q: string) => void }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState(localStorage.getItem("explore_location") || "");
   const [tempLocation, setTempLocation] = useState("");
@@ -662,13 +663,15 @@ function ExploreContent({ isDark, onAction, onNavigate, liquidGlass, featureFlag
     { type: "clock", label: "Clock", icon: Clock },
     { type: "calendar", label: "Calendar", icon: Calendar },
     { type: "stocks", label: "Market", icon: TrendingUp },
-    { type: "news", label: "News", icon: Globe }
+    { type: "news", label: "News", icon: Globe },
+    { type: "vtv6", label: "VTV6", icon: Tv }
   ]);
   const [widgets, setWidgets] = useState<any[]>(() => {
     const saved = localStorage.getItem("explore_widgets_v2");
     return saved ? JSON.parse(saved) : [
       { id: 'w1', type: "weather", label: "Weather", size: "medium" },
-      { id: 'w2', type: "clock", label: "Clock", size: "medium" }
+      { id: 'w2', type: "clock", label: "Clock", size: "medium" },
+      { id: 'vtv6_init', type: "vtv6", label: "VTV6", size: "medium" }
     ];
   });
   const [showWidgetPicker, setShowWidgetPicker] = useState(false);
@@ -792,26 +795,49 @@ function ExploreContent({ isDark, onAction, onNavigate, liquidGlass, featureFlag
       <div className={`fixed inset-0 pointer-events-none transition-opacity duration-1000 ${(liquidGlass === "glassy" && !featureFlags?.xaml_experience) ? "opacity-100" : "opacity-0"}`} style={{ background: 'linear-gradient(135deg, #2d0b3b 0%, #1a0525 100%)', zIndex: 0 }} />
       <div className="relative z-10 w-full h-full flex flex-col">
       {/* Search Bar */}
-      <form onSubmit={handleWebSearch} className="max-w-4xl mx-auto mb-12 relative group mt-4">
-        <div className={`absolute inset-0 bg-blue-500/5 blur-3xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity`} />
-        <div className={`relative flex items-center shadow-sm rounded-[2.5rem] px-8 py-5 border transition-all ${isDark ? "bg-white/5 border-white/10" : "bg-slate-200 border-transparent focus-within:bg-white focus-within:border-blue-500 focus-within:shadow-2xl focus-within:shadow-blue-500/10"}`}>
-          <div className="flex items-center gap-3 mr-6 text-slate-400">
-            <Search size={22} />
-            <div className="h-6 w-px bg-slate-300/30" />
-            <Globe size={18} />
+      <div className="max-w-4xl mx-auto mb-12 relative group mt-4">
+        <form onSubmit={handleWebSearch}>
+          <div className={`absolute inset-0 bg-blue-500/5 blur-3xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity`} />
+          <div className={`relative flex items-center shadow-sm rounded-[2.5rem] px-8 py-5 border transition-all ${isDark ? "bg-white/5 border-white/10" : "bg-slate-200 border-transparent focus-within:bg-white focus-within:border-blue-500 focus-within:shadow-2xl focus-within:shadow-blue-500/10"}`}>
+            <div className="flex items-center gap-3 mr-6 text-slate-400">
+              <Search size={22} />
+              <div className="h-6 w-px bg-slate-300/30" />
+              <Globe size={18} />
+            </div>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Find and search the web..."
+              className={`flex-1 bg-transparent border-none outline-none text-lg font-normal ${isDark ? "text-white placeholder-white/20" : "text-slate-900 placeholder-slate-400"}`}
+            />
+            <button type="submit" className="p-2 text-blue-600 hover:scale-110 transition-transform">
+              <ArrowRight size={24} />
+            </button>
           </div>
-          <input 
-            type="text" 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Find and search the web..."
-            className={`flex-1 bg-transparent border-none outline-none text-lg font-normal ${isDark ? "text-white placeholder-white/20" : "text-slate-900 placeholder-slate-400"}`}
-          />
-          <button type="submit" className="p-2 text-blue-600 hover:scale-110 transition-transform">
-            <ArrowRight size={24} />
+        </form>
+        <div className="flex gap-4 mt-6 justify-center">
+           <button 
+            onClick={() => {
+              if (searchQuery.trim()) {
+                setGlobalSearch(searchQuery);
+                onNavigate("Search");
+              }
+            }}
+            className={`px-8 py-3 rounded-full text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 ${isDark ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 border border-slate-200 hover:shadow-xl"}`}
+          >
+            <Search size={16} />
+            Search Vplay
+          </button>
+          <button 
+            onClick={(e) => handleWebSearch(e as any)}
+            className={`px-8 py-3 rounded-full text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 ${isDark ? "bg-blue-500 text-white hover:bg-blue-400" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+          >
+            <Globe size={16} />
+            Search the web
           </button>
         </div>
-      </form>
+      </div>
 
       {/* Featured Banner */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
@@ -1037,11 +1063,42 @@ function ExploreContent({ isDark, onAction, onNavigate, liquidGlass, featureFlag
                        ].map((n, i) => (
                          <div key={i} className="space-y-1">
                            <p className="text-sm font-normal leading-tight line-clamp-2 hover:text-indigo-500 cursor-pointer">{n.title}</p>
-                           <p className="text-[9px] font-normal uppercase opacity-30">{n.time}</p>
+                           <p className="text-[10px] font-normal uppercase opacity-30">{n.time}</p>
                          </div>
                        ))}
                     </div>
                   </>
+                )}
+
+                {w.type === "vtv6" && (
+                  <div className="flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-3 bg-red-500/10 rounded-2xl">
+                        <Sparkles className="text-red-500" size={24} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-normal uppercase tracking-widest opacity-40">Coming Soon</span>
+                        <span className="text-sm font-bold text-red-500">VTV6 Thể thao</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-end">
+                       <button 
+                        onClick={() => {
+                          const vtv6 = channels.find(c => c.name === "VTV6");
+                          if (vtv6) {
+                            onAction("select_channel", vtv6);
+                            onNavigate("Phát sóng");
+                          }
+                        }}
+                        className="w-full py-3 bg-red-500 text-white rounded-2xl text-xs font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                      >
+                        Xem chi tiết
+                      </button>
+                    </div>
+                    <div className="absolute -bottom-10 -right-10 opacity-10 grayscale">
+                       <img src="https://static.wikia.nocookie.net/logos/images/2/21/VTV6_logo_%282026%29.png" alt="" className="w-40 h-40 object-contain" />
+                    </div>
+                  </div>
                 )}
               </motion.div>
             ))}
@@ -3115,6 +3172,14 @@ function TVContent({
       } ${
         liquidGlass ? "rounded-2xl" : "rounded-lg"
       } ${isDark ? "border-slate-800" : "border-slate-300"}`}>
+        <video 
+          ref={videoRef} 
+          className="w-full h-full object-contain z-10" 
+          autoPlay 
+          playsInline 
+          muted={isMuted}
+          loop={active.name === "VTV6"}
+        />
         {!user && !isDev ? (
           <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/40 p-6 text-center ${
             liquidGlass ? "backdrop-blur-xl" : "backdrop-blur-none"
@@ -7939,7 +8004,11 @@ function AIToolsMenu({ onAction, align = "bottom", featureFlags, tabs, activeTab
               <button 
                 key={tab.id || tab.name}
                 onClick={() => {
-                  setActiveTab(tab.id || tab.name);
+                  if (tab.id === "VTV6_Tab") {
+                    setShowVTV6Popup(true);
+                  } else {
+                    setActiveTab(tab.id || tab.name);
+                  }
                   setShowAIToolsMenu(false);
                   setShowAIToolsMenuSidebar(false);
                 }}
@@ -8467,7 +8536,7 @@ export default function App() {
   const [showAIToolsOOBE, setShowAIToolsOOBE] = useState(false);
   const [isNarratorActive, setIsNarratorActive] = useState(false);
 
-  const onAIToolsAction = (action: string) => {
+  const onAIToolsAction = (action: string, data?: any) => {
     if (action === "rotate_ai") {
       setIsAIToolsRotating(true);
       setTimeout(() => setIsAIToolsRotating(false), 800);
@@ -8482,6 +8551,8 @@ export default function App() {
       } else {
         setActiveTab("V-pilot");
       }
+    } else if (action === "select_channel") {
+      handleChannelSelect(data);
     } else if (action === "speak_for_me") {
       setIsSpeakForMeOpen(true);
     } else if (action === "copy_for_me") {
@@ -9060,30 +9131,58 @@ export default function App() {
               </button>
             }
           />
-        ) : isUpdating ? (
-          <SplashScreen 
-            isDark={isDark}
-            onEnter={() => {}} // Controlled by setTimeout in handleToggleOS
-            isUpdating={true}
-            featureFlags={featureFlags}
-          />
-        ) : isChangingSession ? (
-          <SplashView text="Preparing new experience..." featureFlags={featureFlags} />
-        ) : (featureFlags.windows_mode && isLocked) ? (
-          <LockScreen 
-            isDark={isDark}
-            userName={userName}
-            weatherCity={weatherCity}
-            onSignIn={() => {
-              localStorage.setItem("vplay_user_name", userName);
-              localStorage.setItem("vplay_location", weatherCity);
-              setIsLocked(false);
-            }}
-            setUserName={setUserName}
-            setWeatherCity={setWeatherCity}
-            wallpaper={currentWallpaper}
-          />
-        ) : null}
+        ) : (
+          <>
+            <LiquidModal
+              isOpen={showVTV6Popup}
+              onClose={() => setShowVTV6Popup(false)}
+              isDark={isDark}
+              liquidGlass={liquidGlass}
+              featureFlags={featureFlags}
+              title="Chào mừng VTV6 sắp trở lại!"
+              description="Kênh VTV6 dự kiến trở lại vào 08/06/2026 với mục tiêu là một kênh truyền hình chuyên biệt về thể thao. Vplay cũng đã sẵn sàng lên sóng kênh, mời quý khán giả đón xem!"
+              footer={
+                <button 
+                  onClick={() => {
+                    setShowVTV6Popup(false);
+                    const vtv6 = channels.find(c => c.name === "VTV6");
+                    if (vtv6) {
+                      handleChannelSelect(vtv6);
+                      setActiveTab("Phát sóng");
+                    }
+                  }}
+                  className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all active:scale-95 w-full md:w-auto"
+                >
+                  Ok
+                </button>
+              }
+            />
+            {isUpdating ? (
+              <SplashScreen 
+                isDark={isDark} 
+                onEnter={() => {}} // Controlled by setTimeout in handleToggleOS
+                isUpdating={true}
+                featureFlags={featureFlags}
+              />
+            ) : isChangingSession ? (
+              <SplashView text="Preparing new experience..." featureFlags={featureFlags} />
+            ) : (featureFlags.windows_mode && isLocked) ? (
+              <LockScreen 
+                isDark={isDark}
+                userName={userName}
+                weatherCity={weatherCity}
+                onSignIn={() => {
+                  localStorage.setItem("vplay_user_name", userName);
+                  localStorage.setItem("vplay_location", weatherCity);
+                  setIsLocked(false);
+                }}
+                setUserName={setUserName}
+                setWeatherCity={setWeatherCity}
+                wallpaper={currentWallpaper}
+              />
+            ) : null}
+          </>
+        )}
       </AnimatePresence>
 
       {featureFlags.windows_mode && !isChangingSession && !showSplash && !isLocked && (
@@ -9660,7 +9759,7 @@ export default function App() {
               )}
               {(displayTab === "Khám phá") && (
                 <div className={`rounded-[32px] overflow-hidden ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <ExploreContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} />
+                  <ExploreContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} setGlobalSearch={setSearchQuery} />
                 </div>
               )}
               {displayTab === "Pizza" && (
@@ -9743,10 +9842,13 @@ export default function App() {
                 </div>
               )}
               {displayTab === "Phát sóng" && (
-                <div className={`rounded-[32px] overflow-hidden ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
                   <TVContent 
                     active={activeChannel} 
-                    setActive={handleChannelSelect} 
+                    setActive={(ch) => {
+                      handleChannelSelect(ch);
+                      if (ch.name === "VTV6") setShowVTV6Popup(true);
+                    }} 
                     isDark={isDark} 
                     favorites={favorites} 
                     toggleFavorite={toggleFavorite} 
@@ -9760,7 +9862,7 @@ export default function App() {
                     featureFlags={featureFlags}
                     searchQuery={searchQuery}
                     activeTab={activeTab}
-                    setShowCanaryWarning={setShowCanaryWarning}
+                    setShowCanaryWarning={() => {}} // Unlocked
                     activeSearchPlaceholder={activeSearchPlaceholder}
                   />
                 </div>
@@ -10120,6 +10222,8 @@ export default function App() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -10 }}
+                        onMouseEnter={() => setHoveredTab(tab.name)}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() => {
                           if (isAIToolsTab) {
                             setShowAIToolsMenuSidebar(!showAIToolsMenuSidebar);
@@ -10131,6 +10235,10 @@ export default function App() {
                           }
                           if (tab.id === "V-pilot" && featureFlags.ai_sidebar) {
                             setIsAISidebarOpen(!isAISidebarOpen);
+                            return;
+                          }
+                          if (tab.id === "VTV6_Tab") {
+                            setShowVTV6Popup(true);
                             return;
                           }
                           setActiveTab(tab.id || tab.name);
@@ -10414,6 +10522,10 @@ export default function App() {
                             }
                             if (tab.id === "V-pilot" && featureFlags.ai_sidebar) {
                               setIsAISidebarOpen(!isAISidebarOpen);
+                              return;
+                            }
+                             if (tab.id === "VTV6_Tab") {
+                              setShowVTV6Popup(true);
                               return;
                             }
                             setActiveTab(tab.id || tab.name);
