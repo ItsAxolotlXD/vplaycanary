@@ -581,7 +581,7 @@ const slides = [
   }
 ];
 
-function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass }: { isDark: boolean, onSwitchToDev: () => void, featureFlags?: any, liquidGlass: "glassy" | "tinted" }) {
+function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass, channels }: { isDark: boolean, onSwitchToDev: () => void, featureFlags?: any, liquidGlass: "glassy" | "tinted", channels: Channel[] }) {
   return (
     <div className={`flex-1 flex flex-col items-center justify-center p-8 select-none relative ${featureFlags?.xaml_experience ? "bg-transparent" : (isDark ? "bg-[#0b0b0b]" : "bg-slate-50")}`}>
       <div className={`fixed inset-0 pointer-events-none transition-opacity duration-1000 ${(liquidGlass === "glassy" && !featureFlags?.xaml_experience) ? "opacity-100" : "opacity-0"}`} style={{ background: 'linear-gradient(135deg, #2d0b3b 0%, #1a0525 100%)', zIndex: 0 }} />
@@ -1094,7 +1094,7 @@ function CustomTabModal({ isOpen, onClose, onSave, isDark, initialData }: { isOp
   );
 }
 
-function GalleryContent({ isDark, onAction, featureFlags, liquidGlass }: { isDark: boolean, onAction: (a: string, data?: any) => void, featureFlags?: any, liquidGlass: "glassy" | "tinted" }) {
+function GalleryContent({ isDark, onAction, featureFlags, liquidGlass, channels }: { isDark: boolean, onAction: (a: string, data?: any) => void, featureFlags?: any, liquidGlass: "glassy" | "tinted", channels: Channel[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewType, setViewType] = useState<"grid" | "list">("grid");
   const [selectedItem, setSelectedItem] = useState<{ type: 'icon' | 'logo', name: string, url?: string, icon?: any } | null>(null);
@@ -3343,7 +3343,7 @@ function FileExplorerContent({ isDark }: { isDark: boolean }) {
 function DebugContent({ isDark, featureFlags, setFeatureFlags, setUser, setIsAdmin, setIsDev, setIsDark, setLiquidGlass, setIsSidebarRight, setUseSidebar, onAlert, isFloating, setIsFloating }: { 
   isDark: boolean, 
   featureFlags: any, 
-  setFeatureFlags: (f: any, id: string, name: string, val: boolean) => void,
+  setFeatureFlags: (f: any, id?: string, name?: string, val?: boolean) => void,
   setUser: (u: any) => void,
   setIsAdmin: (a: boolean) => void,
   setIsDev: (d: boolean) => void,
@@ -3365,6 +3365,7 @@ function DebugContent({ isDark, featureFlags, setFeatureFlags, setUser, setIsAdm
     { id: 'multiview_experimental', name: 'Multiview', desc: 'Xem nhiều kênh truyền hình cùng một lúc' },
     { id: 'disable_animation', name: 'Reduce Animation', desc: 'Giảm hiệu ứng chuyển động trên trang web. Thích hợp cho các thiết bị yếu' },
     { id: 'settings_vertical', name: 'List settings', desc: 'Chuyển layout settings về dạng danh sách thay vì dạng ô (Yêu cầu XAML View)' },
+    { id: 'scambidi_ui', name: 'Scambidi Mode', desc: 'Makes the web UI looks like some kind of ripoff horrible scambidi streaming platform' },
     { id: 'xaml_home', name: 'XAML Home Page', desc: 'Use the new XAML version of the Home page' },
     { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
     { id: 'revamp_process_animation', name: 'Revamped Process', desc: 'Use the updated version of the processing loading circle' },
@@ -3714,7 +3715,8 @@ function IndividualPlayer({ channel, isMuted, volume, isDark }: { channel: Chann
 function TVContent({ 
   active, setActive, isDark, favorites, toggleFavorite, user, onLogin, isDev, liquidGlass, 
   sortOrder, setSortOrder, showSplash, featureFlags, searchQuery, 
-  minimalMode = false, activeTab, setShowCanaryWarning, activeSearchPlaceholder = "Search Vplay"
+  minimalMode = false, activeTab, setShowCanaryWarning, activeSearchPlaceholder = "Search Vplay",
+  channels
 }: { 
   active: Channel, 
   setActive: (ch: Channel) => void, 
@@ -3733,7 +3735,8 @@ function TVContent({
   minimalMode?: boolean,
   activeTab?: string,
   setShowCanaryWarning?: (val: boolean) => void,
-  activeSearchPlaceholder?: string
+  activeSearchPlaceholder?: string,
+  channels: Channel[]
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -4726,11 +4729,12 @@ function SearchPopup({
   onLogin,
   onLogout,
   setSortOrder,
-  position = "bottom"
+  position = "bottom",
+  channels
 }: {
   isDark: boolean,
   searchQuery: string,
-  setActiveChannel: (ch: typeof channels[0]) => void,
+  setActiveChannel: (ch: Channel) => void,
   onClose: () => void,
   favorites: string[],
   liquidGlass: "glassy" | "tinted",
@@ -4740,7 +4744,8 @@ function SearchPopup({
   onLogin: () => void,
   onLogout: () => void,
   setSortOrder: (val: "az" | "za") => void,
-  position?: "top" | "bottom"
+  position?: "top" | "bottom",
+  channels: Channel[]
 }) {
   if (searchQuery.trim() === "") return null;
 
@@ -5417,6 +5422,7 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: { featur
 
   const experiments = [
     { id: 'xaml_experience', name: 'Switch to the new UI', desc: 'Use the brand-new rebuilt Vplay app based on XAML system' },
+    { id: 'scambidi_ui', name: 'Scambidi Mode', desc: 'Makes the web UI looks like some kind of ripoff horrible scambidi streaming platform' },
     { id: 'dialog_redesign_v2', name: 'Redesign Pop-ups', desc: 'Try the new updated interface of popup dialogs' },
     { id: 'xaml_home', name: 'XAML Home Page', desc: 'Giao diện Home mới mượt mà hơn.' },
     { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
@@ -6073,6 +6079,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
 
   const experiments = [
     { id: 'xaml_experience', name: 'Switch to the new UI', desc: 'Use the brand-new rebuilt Vplay app based on XAML system' },
+    { id: 'scambidi_ui', name: 'Scambidi Mode', desc: 'Makes the web UI looks like some kind of ripoff horrible scambidi streaming platform' },
     { id: 'xaml_home', name: 'XAML Home Page', desc: 'Giao diện Home mới mượt mà hơn.' },
     { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
     { id: 'settings_vertical', name: 'Vertical Settings', desc: 'Bố cục cài đặt danh sách đứng.' },
@@ -9355,6 +9362,20 @@ export default function App() {
   const clearNotifications = () => setNotifications([]);
   const markAsRead = (id: number) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
 
+  const SCAMBIDI_LOGOS: Record<string, string> = {
+    "VTV1": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREpdu2T6QK4Q4cinn3ff8l8OlkzPiGtoH2Eg&s",
+    "VTV2": "https://static.wikia.nocookie.net/logos/images/b/b2/VTV2_2008_%28H%C3%ACnh_Hi%E1%BB%87u%29.webp/revision/latest/scale-to-width-down/1000?cb=20260303025530&path-prefix=uk",
+    "VTV3": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCqvNAipH47lNaXa1mXBO-I-u9ZTPs9RfLEg&s",
+    "VTV4": "https://mytv.com.vn/truyen-hinh/378",
+    "VTV5": "https://static.wikia.nocookie.net/logos/images/5/50/VTV5_logo_10.02-09.06.2002.webp/revision/latest?cb=20260225005007&path-prefix=uk",
+    "VTV6": "https://www.facebook.com/groups/tulieutruyenthongVN/posts/2955393971273895/",
+    "VTV7": "https://static.wikia.nocookie.net/logos/images/4/43/VTV7_logo_08.01.2020.png/revision/latest?cb=20260227021513&path-prefix=uk",
+    "VTV8": "https://static.wikia.nocookie.net/logos/images/7/73/Logo_VTV8_01.02.2016.png/revision/latest?cb=20260228014157&path-prefix=uk",
+    "VTV9": "https://static.wikia.nocookie.net/logos/images/1/15/VTV9_logo_01.03.2014_v2_16-9.png/revision/latest/scale-to-width-down/1000?cb=20260301084347&path-prefix=uk",
+    "VTV10": "https://cdn-images.vtv.vn/zoom/554_346/66349b6076cb4dee98746cf1/2026/03/29/vtv10-79693868843399439986350-53806200669872135813402.jpg",
+    "Vietnam Today": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQBoproqoYuWX7aw6f9haoU7irTpPxPZjBLw&s"
+  };
+
   const [featureFlags, setFeatureFlags] = useState<{ [key: string]: any }>(() => {
     try {
       const saved = localStorage.getItem("vplay_feature_flags");
@@ -9368,6 +9389,7 @@ export default function App() {
         dialog_redesign_v2: true,
         settings_vertical: true,
         music_background: true,
+        scambidi_ui: false,
         minecraft_mode: false,
         xaml_home: false,
         xaml_search: false,
@@ -9398,6 +9420,7 @@ export default function App() {
         xaml_view_test: true,
         settings_vertical: true,
         music_background: true,
+        scambidi_ui: false,
         minecraft_mode: false,
         xaml_home: false,
         xaml_search: false,
@@ -9419,6 +9442,16 @@ export default function App() {
 
   const [randomSearchSeed] = useState(() => Math.floor(Math.random() * SEARCH_TREATMENTS.length));
   
+  const scambidifiedChannels = useMemo(() => {
+    if (!featureFlags.scambidi_ui) return channels;
+    return channels.map(ch => {
+      if (SCAMBIDI_LOGOS[ch.name]) {
+        return { ...ch, logo: SCAMBIDI_LOGOS[ch.name] };
+      }
+      return ch;
+    });
+  }, [featureFlags.scambidi_ui]);
+
   const activeSearchPlaceholder = useMemo(() => {
     if (!featureFlags?.search_placeholder_treatment) return "Search Vplay";
     const id = featureFlags.search_placeholder_treatment_id || 1;
@@ -10151,7 +10184,34 @@ export default function App() {
   };
 
   return (
-    <MotionConfig 
+    <div className={`flex flex-col h-screen overflow-hidden ${featureFlags.scambidi_ui ? "scambidi-mode" : ""}`}>
+      {featureFlags.scambidi_ui && (
+        <style>{`
+          .scambidi-mode {
+            font-family: "Comic Sans MS", cursive !important;
+          }
+          .scambidi-mode * {
+            border-radius: 0 !important;
+          }
+          .scambidi-mode img[alt="VTV2"] {
+            transform: scaleX(1.5) !important;
+            object-fit: fill !important;
+          }
+          .scambidi-mode img[alt="VTV6"] {
+            transform: scaleX(0.5) !important;
+            object-fit: fill !important;
+          }
+          .scambidi-mode .vplay-sidebar {
+            background: silver !important;
+            border-right: 4px outset #eee !important;
+          }
+          .scambidi-mode .vplay-navbar {
+            background: navy !important;
+            color: white !important;
+          }
+        `}</style>
+      )}
+      <MotionConfig 
       transition={featureFlags?.disable_animation ? { duration: 0 } : undefined}
       reducedMotion={featureFlags?.disable_animation ? "always" : "user"}
     >
@@ -10307,7 +10367,7 @@ export default function App() {
           } : {}}
         >
           <WindowsDesktop 
-            channels={channels} 
+            channels={scambidifiedChannels} 
             onOpenApp={openWindow} 
             isDark={isDark}
             setIsDark={setIsDark}
@@ -10328,30 +10388,30 @@ export default function App() {
             taskbarAlign={taskbarAlign}
             setTaskbarAlign={setTaskbarAlign}
             onExitSession={() => handleToggleOS(false)}
-              systemVolume={systemVolume}
-              setSystemVolume={setSystemVolume}
-              musicProgress={musicProgress}
-              setMusicProgress={setMusicProgress}
-              weatherCity={weatherCity}
-              userName={userName}
-              onLock={() => setIsLocked(true)}
-              searchBoxPosition={searchBoxPosition}
-              activeSearchPlaceholder={activeSearchPlaceholder}
-            />
-            <AnimatePresence>
-              {windows.filter(w => !w.isMinimized).map(win => (
-                <AppWindowContainer
-                  key={win.id}
-                  win={win}
-                  isActive={activeWindowId === win.id}
-                  onClose={() => closeWindow(win.id)}
-                  onFocus={() => focusWindow(win.id)}
-                  onMinimize={() => minimizeWindow(win.id)}
-                  onMaximize={() => maximizeWindow(win.id)}
-                  isDark={isDark}
-                  featureFlags={featureFlags}
-                >
-                  {win.type === "settings" && (
+            systemVolume={systemVolume}
+            setSystemVolume={setSystemVolume}
+            musicProgress={musicProgress}
+            setMusicProgress={setMusicProgress}
+            weatherCity={weatherCity}
+            userName={userName}
+            onLock={() => setIsLocked(true)}
+            searchBoxPosition={searchBoxPosition}
+            activeSearchPlaceholder={activeSearchPlaceholder}
+          />
+          <AnimatePresence>
+            {windows.filter(w => !w.isMinimized).map(win => (
+              <AppWindowContainer
+                key={win.id}
+                win={win}
+                isActive={activeWindowId === win.id}
+                onClose={() => closeWindow(win.id)}
+                onFocus={() => focusWindow(win.id)}
+                onMinimize={() => minimizeWindow(win.id)}
+                onMaximize={() => maximizeWindow(win.id)}
+                isDark={isDark}
+                featureFlags={featureFlags}
+              >
+                {win.type === "settings" && (
                     <div className="h-full overflow-y-auto p-6">
                       <SettingsContent 
                           isDark={isDark} 
@@ -10418,6 +10478,7 @@ export default function App() {
                           activeTab={activeTab}
                           setShowCanaryWarning={setShowCanaryWarning}
                           activeSearchPlaceholder={activeSearchPlaceholder}
+                          channels={scambidifiedChannels}
                         />
                     </div>
                   )}
@@ -10710,6 +10771,7 @@ export default function App() {
                       onLogout={handleLogout}
                       setSortOrder={setSortOrder}
                       position="top"
+                      channels={scambidifiedChannels}
                     />
                   </div>
                 )}
@@ -10859,7 +10921,7 @@ export default function App() {
                           <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-white/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
                           <div className="absolute -top-20 -left-20 w-80 h-80 bg-purple-500/20 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
                         </motion.div>
-                      <HomeContent isDark={isDark} onSwitchToDev={() => setShowDevConfirm(true)} featureFlags={featureFlags} liquidGlass={liquidGlass} />
+                      <HomeContent isDark={isDark} onSwitchToDev={() => setShowDevConfirm(true)} featureFlags={featureFlags} liquidGlass={liquidGlass} channels={scambidifiedChannels} />
                     </>
                   )}
                 </div>
@@ -10891,7 +10953,7 @@ export default function App() {
               )}
               {displayTab === "Gallery" && (
                 <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <GalleryContent isDark={isDark} liquidGlass={liquidGlass} featureFlags={featureFlags} onAction={onAIToolsAction} />
+                  <GalleryContent isDark={isDark} liquidGlass={liquidGlass} featureFlags={featureFlags} onAction={onAIToolsAction} channels={scambidifiedChannels} />
                 </div>
               )}
               {displayTab === "Pizza" && (
@@ -11043,6 +11105,7 @@ export default function App() {
                     activeTab={activeTab}
                     setShowCanaryWarning={() => {}} // Unlocked
                     activeSearchPlaceholder={activeSearchPlaceholder}
+                    channels={scambidifiedChannels}
                   />
                 </div>
               )}
@@ -11801,6 +11864,7 @@ export default function App() {
                   onLogin={handleLogin}
                   onLogout={handleLogout}
                   setSortOrder={setSortOrder}
+                  channels={scambidifiedChannels}
                 />
                 {searchBoxPosition === "sidebar" && (
                   <motion.div 
@@ -12835,7 +12899,8 @@ export default function App() {
         )}
     </div>
   </MotionConfig>
-);
+    </div>
+  );
 }
 
 
