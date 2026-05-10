@@ -16,6 +16,22 @@ import { channels, Channel } from "./channels";
 // Test connection as per critical directive
 // Test connection removed
 
+interface CustomTab {
+  id: string;
+  name: string;
+  icon: string;
+  content: string;
+  type: "html" | "visual";
+  visualItems?: {
+    id: string;
+    type: "button" | "text" | "heading" | "image";
+    label?: string;
+    value?: string;
+    style?: any;
+    action?: string;
+  }[];
+}
+
 const SettingsIcon = ({ className, size = 24 }: { className?: string, size?: number }) => (
   <Settings size={size} className={`${className} flex-shrink-0`} />
 );
@@ -340,13 +356,12 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
   featureFlags?: any,
   footer?: ReactNode
 }) {
-  const isRedesign = featureFlags?.dialog_redesign_v2;
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-      const timer = setTimeout(() => setIsLoading(false), 1000);
+      const timer = setTimeout(() => setIsLoading(false), 500);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -354,81 +369,52 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 text-left">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-transparent"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
           />
           <motion.div
-            initial={isRedesign ? { opacity: 0, scale: 0.85 } : { scale: 0.8, opacity: 0, y: 20 }}
-            animate={isRedesign ? { opacity: 1, scale: 1 } : { scale: 1, opacity: 1, y: 0 }}
-            exit={isRedesign ? { opacity: 0, scale: 0.85 } : { scale: 0.8, opacity: 0, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={isRedesign 
-              ? "relative w-full max-w-[calc(100%-32px)] md:max-w-[420px] bg-[#1c1c1e] rounded-[24px] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] flex flex-col mx-4 border border-white/10"
-              : `relative w-full max-w-sm overflow-hidden border shadow-2xl ${
-                  isDark 
-                    ? "bg-slate-900/90 border-white/10 text-white" 
-                    : "bg-white/90 border-white/60 text-slate-900"
-                } ${
-                  liquidGlass ? "rounded-[40px] backdrop-blur-3xl" : "rounded-2xl backdrop-blur-none"
-                }`
-            }
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            className={`relative w-full max-w-[480px] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] flex flex-col ${
+              isDark ? "bg-[#1c1c1c] text-white border border-white/5" : "bg-white text-slate-900"
+            } rounded-[12px]`}
           >
             {isLoading ? (
-              <div className="h-[250px] flex items-center justify-center">
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
-                />
+              <div className="h-[200px] flex items-center justify-center">
+                <LoadingAnimation featureFlags={featureFlags} isDark={isDark} className="w-8 h-8" />
               </div>
-            ) : isRedesign ? (
+            ) : (
               <>
-                {/* Header Section */}
-                <div className="p-8 pb-4">
-                  {title && <h2 className="text-white text-2xl font-bold mb-2">{title}</h2>}
+                <div className="p-10 space-y-4">
+                  {title && <h2 className="text-2xl font-bold tracking-tight">{title}</h2>}
                   {description && (
-                    <p className="text-slate-300 text-sm leading-relaxed">
+                    <p className={`text-sm leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                       {description}
                     </p>
                   )}
+                  {children && <div className="pt-2">{children}</div>}
                 </div>
                 
-                {/* Content Section */}
-                <div className="px-8 pb-8 flex-1">
-                  {children}
-                </div>
-
-                {/* Footer Section */}
-                <div className="bg-[#1a1a1a] p-4 flex justify-end gap-4">
-                   {footer ? footer : (
-                     <button 
-                      onClick={onClose}
-                      className="px-10 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all active:scale-95 w-full md:w-auto"
-                    >
-                      Ok
-                    </button>
-                   )}
+                <div className={`p-6 px-10 flex flex-col sm:flex-row justify-end gap-3 border-t ${isDark ? "border-white/5 bg-white/5" : "border-gray-100 bg-gray-50/50"}`}>
+                  {footer ? footer : (
+                    <>
+                      <button 
+                        onClick={onClose}
+                        className={`flex-1 sm:flex-none px-12 py-2.5 bg-[#005fb8] hover:bg-[#00519d] text-white rounded-[4px] font-medium text-sm transition-all active:scale-[0.98]`}
+                      >
+                        OK
+                      </button>
+                    </>
+                  )}
                 </div>
               </>
-            ) : (
-              <div className="p-8 text-center">
-                {title && <h3 className={`text-2xl font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>{title}</h3>}
-                {description && <p className={`${isDark ? "text-white/60" : "text-black/60"} text-sm leading-relaxed mb-6 font-medium`}>{description}</p>}
-                {children}
-                <button 
-                  onClick={onClose}
-                  className={`w-full py-4 rounded-full font-bold transition-all active:scale-95 ${
-                    isDark ? "bg-white text-black hover:bg-slate-100" : "bg-black text-white hover:bg-slate-800"
-                  }`}
-                >
-                  Ok
-                </button>
-              </div>
             )}
           </motion.div>
         </div>
@@ -546,12 +532,12 @@ function ChannelCard({ ch, onClick, isDark, isActive, favorites, toggleFavorite,
         className={`w-full ${isMetro ? 'aspect-square p-2' : 'aspect-video p-5 md:p-6'} flex items-center justify-center transition-all duration-500 border relative overflow-hidden ${
           isMetro ? 'bg-[#0078d4] text-white border-white/20' : 
           liquidGlass 
-            ? `rounded-[28px] ${
+            ? `rounded-[8px] ${
                 liquidGlass === "tinted" 
                   ? "bg-white/80 backdrop-blur-md border-white/20 shadow-lg" 
                   : "bg-white/5 backdrop-blur-2xl border-white/10"
               }` 
-            : "rounded-2xl backdrop-blur-none border-slate-200"
+            : "rounded-[8px] backdrop-blur-none border-slate-200"
         } ${
           isActive
             ? (isMetro ? 'ring-4 ring-white border-white' : `ring-2 ring-purple-500 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.15)]`)
@@ -561,7 +547,7 @@ function ChannelCard({ ch, onClick, isDark, isActive, favorites, toggleFavorite,
         }`}
       >
         {isMaintenance && (
-          <div className="absolute top-2 left-2 bg-amber-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full z-20 shadow-lg">
+          <div className="absolute top-2 left-2 bg-amber-500 text-white text-[8px] font-black px-2 py-0.5 rounded-[4px] z-20 shadow-lg">
             BẢO TRÌ
           </div>
         )}
@@ -569,7 +555,7 @@ function ChannelCard({ ch, onClick, isDark, isActive, favorites, toggleFavorite,
       </motion.button>
       <button 
         onClick={(e) => { e.stopPropagation(); toggleFavorite(ch); }}
-        className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10 ${
+        className={`absolute top-3 right-3 p-2 rounded-[4px] backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10 ${
           favorites.includes(ch.name) ? "text-red-500 bg-red-50/20" : "text-white bg-black/20"
         }`}
       >
@@ -653,7 +639,7 @@ function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass }: { isD
   );
 }
 
-function DesignHubContent({ isDark }: { isDark: boolean }) {
+function DesignHubContent({ isDark, onCreateComponent }: { isDark: boolean, onCreateComponent: () => void }) {
   const [toggle, setToggle] = useState(false);
   const [checkbox, setCheckbox] = useState(false);
   const [text, setText] = useState("");
@@ -675,30 +661,39 @@ function DesignHubContent({ isDark }: { isDark: boolean }) {
     <div className={`flex-1 overflow-y-auto p-8 md:p-12 space-y-16 custom-scrollbar ${isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900"}`}>
       <div className="max-w-6xl mx-auto space-y-20">
         <header className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/10 text-[10px] font-black uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] bg-blue-500/10 text-blue-500 border border-blue-500/10 text-[10px] font-black uppercase tracking-widest">
             <LayoutDashboard size={12} />
             Component System
           </div>
           <h2 className="text-6xl font-black tracking-tighter uppercase italic">Design Hub</h2>
           <p className="text-xl opacity-40 max-w-2xl font-medium leading-relaxed">Toàn bộ các UI elements của hệ thống Vplay Canary OS được chuẩn hóa một cách tỉ mỉ và đồng nhất.</p>
+          <div className="pt-4">
+            <button 
+              onClick={onCreateComponent}
+              className="px-8 py-4 bg-[#005fb8] hover:bg-[#00519d] text-white rounded-[4px] font-black uppercase tracking-widest text-sm shadow-2xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 group"
+            >
+              <Plus size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+              Create my own component
+            </button>
+          </div>
         </header>
 
         <Section title="Buttons">
           <div className="space-y-4">
             <p className="text-[10px] font-bold opacity-30 uppercase">Primary</p>
-            <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95">Primary Button</button>
+            <button className="px-8 py-3 bg-[#005fb8] hover:bg-[#00519d] text-white rounded-[4px] font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95">Primary Button</button>
           </div>
           <div className="space-y-4">
             <p className="text-[10px] font-bold opacity-30 uppercase">Secondary</p>
-            <button className={`px-8 py-3 rounded-2xl border font-bold transition-all active:scale-95 ${isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50 hover:shadow-lg"}`}>Secondary Button</button>
+            <button className={`px-8 py-3 rounded-[4px] border font-bold transition-all active:scale-95 ${isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50 hover:shadow-lg"}`}>Secondary Button</button>
           </div>
           <div className="space-y-4">
             <p className="text-[10px] font-bold opacity-30 uppercase">Glassy</p>
-            <button className="px-8 py-3 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-2xl font-bold transition-all hover:bg-white/20">Glass Button</button>
+            <button className="px-8 py-3 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-[4px] font-bold transition-all hover:bg-white/20">Glass Button</button>
           </div>
           <div className="space-y-4">
             <p className="text-[10px] font-bold opacity-30 uppercase">Destructive</p>
-            <button className="px-8 py-3 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-bold transition-all shadow-lg shadow-red-500/20">Delete Action</button>
+            <button className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-[4px] font-bold transition-all shadow-lg shadow-red-500/20">Delete Action</button>
           </div>
         </Section>
 
@@ -838,6 +833,264 @@ function DesignHubContent({ isDark }: { isDark: boolean }) {
         </Section>
       </div>
     </div>
+  );
+}
+
+function CustomTabContent({ isDark, tab, onDelete }: { isDark: boolean, tab: CustomTab, onDelete: () => void }) {
+  return (
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900"}`}>
+       <div className="p-8 border-b border-current opacity-10 flex items-center justify-between">
+          <div>
+             <h1 className="text-4xl font-black italic uppercase tracking-tighter">{tab.name}</h1>
+             <p className="opacity-40 text-[10px] font-black uppercase tracking-widest mt-1">Component System / Custom Tab</p>
+          </div>
+          <button 
+            onClick={onDelete}
+            className="px-6 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+          >
+             <Trash2 size={14} />
+             Delete Tab
+          </button>
+       </div>
+       <div className="flex-1 overflow-auto custom-scrollbar">
+          {tab.type === 'html' ? (
+            <div className="p-8 prose prose-slate dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: tab.content }} />
+          ) : (
+            <div className="p-12 space-y-8 max-w-4xl mx-auto">
+               {tab.visualItems?.map(item => (
+                  <div key={item.id} className="flex flex-col gap-2">
+                     {item.type === 'heading' && <h1 className="text-4xl font-bold">{item.value}</h1>}
+                     {item.type === 'text' && <p className="text-lg opacity-60 leading-relaxed">{item.value}</p>}
+                     {item.type === 'button' && (
+                       <button className="px-8 py-3 bg-[#005fb8] text-white rounded-[4px] font-bold w-fit shadow-xl shadow-blue-500/20">
+                          {item.label}
+                       </button>
+                     )}
+                     {item.type === 'image' && (
+                       <img src={item.value} className="rounded-[8px] shadow-2xl w-full border border-white/10" referrerPolicy="no-referrer" />
+                     )}
+                  </div>
+               ))}
+            </div>
+          )}
+       </div>
+    </div>
+  );
+}
+
+function CustomTabModal({ isOpen, onClose, onSave, isDark, initialData }: { isOpen: boolean, onClose: () => void, onSave: (tab: CustomTab) => void, isDark: boolean, initialData?: CustomTab | null }) {
+  const [name, setName] = useState(initialData?.name || "");
+  const [type, setType] = useState<"html" | "visual">(initialData?.type || "html");
+  const [content, setContent] = useState(initialData?.content || "");
+  const [visualItems, setVisualItems] = useState(initialData?.visualItems || [
+    { id: '1', type: 'heading', value: 'My New Component' },
+    { id: '2', type: 'text', value: 'This is a custom tab created using the Visual Editor.' },
+    { id: '3', type: 'button', label: 'Click Me' }
+  ]);
+
+  const handleSave = () => {
+    if (!name) return;
+    onSave({
+      id: initialData?.id || `custom-${Date.now()}`,
+      name,
+      type,
+      content,
+      visualItems: type === 'visual' ? visualItems : undefined,
+      icon: "Layout"
+    });
+    onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100002] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/80 backdrop-blur-xl" 
+          />
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className={`relative w-full max-w-5xl h-[80vh] flex flex-col rounded-[48px] overflow-hidden border ${isDark ? "bg-[#161618] border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"}`}
+          >
+            <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
+               <div>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter italic">Create Custom Component</h2>
+                  <p className="opacity-40 text-[10px] font-black uppercase tracking-widest mt-1">Design your own experience</p>
+               </div>
+               <button onClick={onClose} className="p-3 rounded-2xl hover:bg-white/5 transition-colors">
+                  <X size={20} />
+               </button>
+            </div>
+
+            <div className="flex-1 flex overflow-hidden">
+               {/* Left Controls */}
+               <div className="w-80 border-r border-white/5 p-8 space-y-8 overflow-y-auto custom-scrollbar">
+                  <div className="space-y-3">
+                     <label className="text-[10px] font-black uppercase tracking-widest opacity-40">Component Name</label>
+                     <input 
+                       value={name}
+                       onChange={(e) => setName(e.target.value)}
+                       placeholder="e.g. My Dashboard"
+                       className={`w-full px-6 py-4 rounded-2xl border-2 outline-none transition-all ${isDark ? "bg-white/5 border-white/5 focus:border-blue-500" : "bg-slate-50 border-slate-100 focus:border-blue-500"}`}
+                     />
+                  </div>
+
+                  <div className="space-y-3">
+                     <label className="text-[10px] font-black uppercase tracking-widest opacity-40">Editor Type</label>
+                     <div className="grid grid-cols-2 gap-2">
+                        <button 
+                          onClick={() => setType("visual")}
+                          className={`py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${type === "visual" ? "bg-blue-600 text-white" : "bg-white/5 border border-white/10"}`}
+                        >
+                           Visual
+                        </button>
+                        <button 
+                          onClick={() => setType("html")}
+                          className={`py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${type === "html" ? "bg-blue-600 text-white" : "bg-white/5 border border-white/10"}`}
+                        >
+                           HTML
+                        </button>
+                     </div>
+                  </div>
+
+                  {type === "visual" && (
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black uppercase tracking-widest opacity-40">Quick Elements</label>
+                       <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { icon: Type, label: 'Heading', type: 'heading' },
+                            { icon: TextIcon, label: 'Text', type: 'text' },
+                            { icon: MousePointer2, label: 'Button', type: 'button' },
+                            { icon: ImageIcon, label: 'Image', type: 'image' }
+                          ].map(el => (
+                            <button 
+                              key={el.type}
+                              onClick={() => {
+                                setVisualItems([...visualItems, { 
+                                  id: Math.random().toString(), 
+                                  type: el.type as any, 
+                                  label: el.label, 
+                                  value: el.type === 'heading' ? 'New Heading' : 'Sample content' 
+                                }]);
+                              }}
+                              className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/20 flex flex-col items-center gap-2 transition-all"
+                            >
+                               <el.icon size={16} className="opacity-40" />
+                               <span className="text-[9px] font-bold uppercase tracking-widest">{el.label}</span>
+                            </button>
+                          ))}
+                       </div>
+                    </div>
+                  )}
+               </div>
+
+               {/* Right Preview/Editor */}
+               <div className="flex-1 bg-black/20 p-8 overflow-hidden flex flex-col">
+                  {type === "html" ? (
+                    <div className="flex-1 flex flex-col gap-4">
+                       <label className="text-[10px] font-black uppercase tracking-widest opacity-40">HTML Source Code</label>
+                       <textarea 
+                         value={content}
+                         onChange={(e) => setContent(e.target.value)}
+                         placeholder="<div class='p-8'><h1>Hello World</h1></div>"
+                         className="flex-1 w-full bg-slate-900 border border-white/5 rounded-3xl p-8 font-mono text-xs text-blue-400 outline-none focus:border-blue-500/50 transition-all custom-scrollbar"
+                       />
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+                       <label className="text-[10px] font-black uppercase tracking-widest opacity-40">Live Preview & Visual Editing</label>
+                       <div className="flex-1 bg-white/[0.02] border border-white/5 rounded-[40px] overflow-y-auto p-12 space-y-8 custom-scrollbar">
+                          {visualItems.map((item, idx) => (
+                            <div key={item.id} className="relative group/item">
+                               <div className="absolute -left-12 top-0 bottom-0 flex flex-col gap-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                  <button onClick={() => setVisualItems(visualItems.filter(v => v.id !== item.id))} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><X size={12} /></button>
+                               </div>
+                               {item.type === 'heading' && (
+                                 <input 
+                                   value={item.value} 
+                                   onChange={e => {
+                                      const newItems = [...visualItems];
+                                      newItems[idx].value = e.target.value;
+                                      setVisualItems(newItems);
+                                   }}
+                                   className="text-5xl font-black tracking-tighter uppercase italic bg-transparent border-none outline-none w-full text-white"
+                                 />
+                               )}
+                               {item.type === 'text' && (
+                                 <textarea 
+                                   value={item.value} 
+                                   onChange={e => {
+                                      const newItems = [...visualItems];
+                                      newItems[idx].value = e.target.value;
+                                      setVisualItems(newItems);
+                                   }}
+                                   className="text-xl opacity-40 font-medium leading-relaxed bg-transparent border-none outline-none w-full resize-none min-h-[4em]"
+                                 />
+                               )}
+                               {item.type === 'button' && (
+                                 <div className="flex items-center gap-4">
+                                   <button className="px-10 py-4 bg-blue-600 text-white rounded-[24px] font-black uppercase tracking-widest text-xs shadow-2xl shadow-blue-500/20">
+                                      {item.label}
+                                   </button>
+                                   <input 
+                                     value={item.label}
+                                     onChange={e => {
+                                        const newItems = [...visualItems];
+                                        newItems[idx].label = e.target.value;
+                                        setVisualItems(newItems);
+                                     }}
+                                     className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-widest outline-none"
+                                   />
+                                 </div>
+                               )}
+                               {item.type === 'image' && (
+                                 <div className="space-y-4">
+                                   <div className="relative aspect-video rounded-[32px] overflow-hidden border border-white/10">
+                                      <img src={item.value || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2064&auto=format&fit=crop"} className="w-full h-full object-cover" />
+                                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                         <p className="text-[10px] font-black uppercase tracking-widest">Preview Mode</p>
+                                      </div>
+                                   </div>
+                                   <input 
+                                     placeholder="Image URL..."
+                                     value={item.value}
+                                     onChange={e => {
+                                        const newItems = [...visualItems];
+                                        newItems[idx].value = e.target.value;
+                                        setVisualItems(newItems);
+                                     }}
+                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs font-mono outline-none"
+                                   />
+                                 </div>
+                               )}
+                            </div>
+                          ))}
+                          <div className="h-20" />
+                       </div>
+                    </div>
+                  )}
+               </div>
+            </div>
+
+            <div className={`p-8 border-t border-white/5 flex items-center justify-end gap-4 shrink-0 ${isDark ? "bg-[#1a1a1a]" : "bg-gray-50"}`}>
+               <button onClick={onClose} className="px-10 py-4 rounded-[4px] font-black uppercase tracking-widest text-xs opacity-40 hover:opacity-100 transition-all">Cancel</button>
+               <button 
+                 onClick={handleSave}
+                 className="px-12 py-4 bg-[#005fb8] text-white rounded-[4px] font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-2xl"
+               >
+                 Create Component
+               </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -3090,7 +3343,7 @@ function FileExplorerContent({ isDark }: { isDark: boolean }) {
 function DebugContent({ isDark, featureFlags, setFeatureFlags, setUser, setIsAdmin, setIsDev, setIsDark, setLiquidGlass, setIsSidebarRight, setUseSidebar, onAlert, isFloating, setIsFloating }: { 
   isDark: boolean, 
   featureFlags: any, 
-  setFeatureFlags: (f: any) => void,
+  setFeatureFlags: (f: any, id: string, name: string, val: boolean) => void,
   setUser: (u: any) => void,
   setIsAdmin: (a: boolean) => void,
   setIsDev: (d: boolean) => void,
@@ -3332,10 +3585,9 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
                 onClick={() => {
                   const newState = !featureFlags[flag.id];
                   const newFlags = { ...featureFlags, [flag.id]: newState };
-                  setFeatureFlags(newFlags);
-                  localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
+                  setFeatureFlags(newFlags, flag.id, flag.name, newState);
                   
-                  window.location.reload();
+                  setTimeout(() => window.location.reload(), 100);
                 }}
                 className={`relative flex-shrink-0 transition-all duration-300 ${
                   featureFlags.minecraft_mode 
@@ -5160,7 +5412,7 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
   );
 }
 
-function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: { featureFlags: any, setFeatureFlags: any, isDark: boolean }) {
+function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: { featureFlags: any, setFeatureFlags: (f: any, id: string, name: string, val: boolean) => void, isDark: boolean }) {
   const [flagSearch, setFlagSearch] = useState("");
 
   const experiments = [
@@ -5179,10 +5431,10 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: { featur
     { id: 'disable_animation', name: 'Reduce Animation', desc: 'Giảm hiệu ứng chuyển động trên trang web. Thích hợp cho các thiết bị yếu' },
     { id: 'ai_tools', name: 'V-pilot', desc: 'Enable native Gemini-powered V-pilot and applications' },
     { id: 'ai_sidebar', name: 'AI Sidebar', desc: 'Open V-pilot as sidebar' },
+    { id: 'sidebar_v3', name: 'Collaspe sidebar', desc: 'Sidebar, but cleaner' },
     { id: 'taskbar_experimental', name: 'Use Taskbar Mode', desc: 'Turns sidebar into taskbar' },
     { id: 'search_placeholder_treatment', name: 'Search Placeholder Treatment', desc: 'Enable experimental placeholder treatments for the search box' },
     { id: 'debug_mode', name: 'Debug Mode', desc: 'Enable debug information and tools' },
-    { id: 'revamp_process_animation', name: 'Revamped Process', desc: 'Use the updated version of the processing loading circle' },
     { id: 'sort_newest', name: 'Sorting: Newest to oldest', desc: 'Sort channels from newest to oldest added' },
     { id: 'sort_oldest', name: 'Sorting: Oldest to newest', desc: 'Sort channels from oldest to newest added' },
   ].filter(exp => exp.name.toLowerCase().includes(flagSearch.toLowerCase()) || exp.desc.toLowerCase().includes(flagSearch.toLowerCase()));
@@ -5229,9 +5481,9 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: { featur
           <button 
             key={exp.id}
             onClick={() => {
-              const newFlags = { ...featureFlags, [exp.id]: !featureFlags[exp.id] };
-              setFeatureFlags(newFlags);
-              localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
+              const newVal = !featureFlags[exp.id];
+              const newFlags = { ...featureFlags, [exp.id]: newVal };
+              setFeatureFlags(newFlags, exp.id, exp.name, newVal);
             }}
             className={featureFlags.xaml_experience 
               ? `p-6 rounded-[32px] border transition-all text-left flex flex-col gap-3 h-full ${featureFlags[exp.id] ? "bg-blue-500/10 border-blue-500/20" : "bg-white/5 border-white/5"}`
@@ -5787,13 +6039,13 @@ const BroadcastExperimentalView = ({ onContinue, onSwitchToRelease }: { onContin
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 pt-4 md:pt-8 w-full max-w-lg mx-auto">
             <button 
               onClick={onSwitchToRelease}
-              className="w-full sm:flex-1 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 transition-all font-normal rounded-xl text-sm"
+              className="w-full sm:flex-1 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 transition-all font-normal rounded-[4px] text-sm"
             >
               Chuyển sang Vplay Release
             </button>
             <button 
               onClick={onContinue}
-              className="w-full sm:flex-1 px-8 py-4 bg-white text-[#004275] hover:bg-white/90 transition-all font-bold rounded-xl text-sm shadow-2xl active:scale-95"
+              className="w-full sm:flex-1 px-8 py-4 bg-white text-[#004275] hover:bg-white/90 transition-all font-bold rounded-[4px] text-sm shadow-2xl active:scale-95"
             >
               Tiếp tục thử nghiệm
             </button>
@@ -5881,13 +6133,23 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
   }, [phase, onContinue]);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100000] bg-[#004275] text-white flex flex-col font-sans overflow-hidden"
-    >
-       <AnimatePresence mode="wait">
+    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onContinue}
+      />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        className={`relative w-full max-w-4xl max-h-[85vh] flex flex-col font-sans overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border ${
+          isDark ? "bg-[#1c1c1c] text-white border-white/5" : "bg-white text-slate-900 border-gray-100"
+        } rounded-[12px]`}
+      >
+         <AnimatePresence mode="wait">
          {phase === "initial_loading" ? (
            <motion.div 
              key="loading_initial"
@@ -6175,6 +6437,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
          )}
        </AnimatePresence>
     </motion.div>
+    </div>
   );
 };
 
@@ -9019,6 +9282,59 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
+  const [history, setHistory] = useState<{id: string, type: string, content: string, time: number}[]>(() => {
+    const saved = localStorage.getItem("vplay_history");
+    try {
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [historyStats, setHistoryStats] = useState<{buttonClicks: number, switchesToggled: number, popupsOpened: number, channelsWatched: number, lastVisit: string}>(() => {
+    const saved = localStorage.getItem("vplay_history_stats");
+    try {
+      return saved ? JSON.parse(saved) : {
+        buttonClicks: 0,
+        switchesToggled: 0,
+        popupsOpened: 0,
+        channelsWatched: 0,
+        lastVisit: new Date().toISOString()
+      };
+    } catch {
+      return {
+        buttonClicks: 0,
+        switchesToggled: 0,
+        popupsOpened: 0,
+        channelsWatched: 0,
+        lastVisit: new Date().toISOString()
+      };
+    }
+  });
+
+  const logHistory = (type: string, content: string) => {
+    const newEvent = {
+        id: Math.random().toString(36).substr(2, 9),
+        type,
+        content,
+        time: Date.now()
+    };
+    setHistory(prev => {
+        const updated = [newEvent, ...prev].slice(0, 100);
+        localStorage.setItem("vplay_history", JSON.stringify(updated));
+        return updated;
+    });
+  };
+
+  const incrementStat = (key: string) => {
+    setHistoryStats(prev => {
+        const updated = { ...prev, [key]: (prev as any)[key] + 1 };
+        localStorage.setItem("vplay_history_stats", JSON.stringify(updated));
+        return updated;
+    });
+  };
+
+  useEffect(() => {
+    setHistoryStats(prev => ({ ...prev, lastVisit: new Date().toISOString() }));
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("vplay_notifications", JSON.stringify(notifications));
@@ -9046,6 +9362,7 @@ export default function App() {
         multiview_experimental: false, 
         disable_animation: false, 
         sidebar_resizable: false, 
+        sidebar_v3: false,
         windows_mode: false,
         xaml_view_test: true,
         dialog_redesign_v2: true,
@@ -9066,7 +9383,7 @@ export default function App() {
         ai_tools: false,
         ai_sidebar: false,
         taskbar_experimental: false,
-        xaml_experience: false
+        xaml_experience: true
       };
       if (!saved) return defaults;
       const parsed = JSON.parse(saved);
@@ -9076,6 +9393,7 @@ export default function App() {
         multiview_experimental: false, 
         disable_animation: false, 
         sidebar_resizable: false, 
+        sidebar_v3: false,
         windows_mode: false,
         xaml_view_test: true,
         settings_vertical: true,
@@ -9423,6 +9741,16 @@ export default function App() {
 
   const [isConsoleFloating, setIsConsoleFloating] = useState(false);
   const [isSpeakForMeOpen, setIsSpeakForMeOpen] = useState(false);
+  const [customTabs, setCustomTabs] = useState<CustomTab[]>(() => {
+    try {
+      const saved = localStorage.getItem("vplay_custom_tabs");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isCustomTabModalOpen, setIsCustomTabModalOpen] = useState(false);
+  const [editingCustomTab, setEditingCustomTab] = useState<CustomTab | null>(null);
   const [isCopyForMeOpen, setIsCopyForMeOpen] = useState(false);
   const [isPlayForMeOpen, setIsPlayForMeOpen] = useState(false);
   const [isCaptureForMeOpen, setIsCaptureForMeOpen] = useState(false);
@@ -9689,11 +10017,15 @@ export default function App() {
     }
     if (ch.name === "VTV6") {
       setShowVTV6Popup(true);
+      logHistory('action', 'Mở popup VTV6');
+      incrementStat('popupsOpened');
       return;
     }
     setActiveChannel(ch);
     setActiveTab("Phát sóng");
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    logHistory('channel', `Đã xem kênh: ${ch.name}`);
+    incrementStat('channelsWatched');
   };
 
   useEffect(() => {
@@ -9763,14 +10095,19 @@ export default function App() {
     }
   };
 
-  const tabs = baseTabs.filter(t => {
+  const tabs = baseTabs.concat(customTabs.map(ct => ({
+    name: ct.name,
+    icon: Layout,
+    id: ct.id,
+    isCustom: true
+  } as any))).filter(t => {
     if (t.id === "Quản trị" && !isDev && !isAdmin) return false;
     if (t.id === "Vids" && !featureFlags?.vids_for_uploads) return false;
     if (t.id === "V-pilot" && (featureFlags?.ai_tools)) return false;
     if (t.id === "V-pilot" && !featureFlags?.ai_tools_preview && !featureFlags?.ai_tools) return false;
     if (t.id === "Search" && featureFlags?.ai_tools) return false;
     if (t.id === "Speak for me" && !featureFlags?.speaking_feature) return false;
-    if (t.id === "Pizza" && !featureFlags?.xaml_experience) return false;
+    // Pizza tab now persists through factory reset as requested (by removing flag dependency)
     return true;
   });
   
@@ -9831,9 +10168,9 @@ export default function App() {
                     : "bg-gradient-to-br from-rose-200 via-purple-200 to-red-100 text-slate-950"))
         } min-h-screen flex transition-colors duration-500 ${useSidebar ? "flex-row" : "flex-col"} ${featureFlags?.disable_animation ? "reduce-animations" : ""} ${featureFlags?.minecraft_mode ? "minecraft-mode" : ""} ${featureFlags?.win8_metro ? "metro-mode" : ""} relative`}
         style={(!featureFlags?.xaml_view_test || featureFlags?.xaml_experience) ? {
-          background: wallpaperType === "solid" ? solidColor : 
-                     wallpaperType === "gradient" ? `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)` :
-                     `url(${currentWallpaper})`,
+          backgroundColor: wallpaperType === "solid" ? solidColor : undefined,
+          backgroundImage: wallpaperType === "gradient" ? `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)` :
+                      wallpaperType === "image" ? `url(${currentWallpaper})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -9965,8 +10302,8 @@ export default function App() {
               : "px-0"
           }`}
           style={useSidebar && !isMobile ? {
-            paddingRight: isSidebarRight ? (isSidebarExpanded ? sidebarWidth : 80) : undefined,
-            paddingLeft: !isSidebarRight ? (isSidebarExpanded ? sidebarWidth : 80) : undefined,
+            paddingRight: isSidebarRight ? (isSidebarExpanded ? (featureFlags.sidebar_v3 ? 100 : sidebarWidth) : 80) : undefined,
+            paddingLeft: !isSidebarRight ? (isSidebarExpanded ? (featureFlags.sidebar_v3 ? 100 : sidebarWidth) : 80) : undefined,
           } : {}}
         >
           <WindowsDesktop 
@@ -10130,8 +10467,8 @@ export default function App() {
                 : "px-0"
             }`}
             style={useSidebar && !isMobile ? {
-              paddingRight: isSidebarRight ? (isSidebarExpanded ? sidebarWidth : 80) : undefined,
-              paddingLeft: !isSidebarRight ? (isSidebarExpanded ? sidebarWidth : 80) : undefined,
+              paddingRight: isSidebarRight ? (isSidebarExpanded ? (featureFlags.sidebar_v3 ? 100 : sidebarWidth) : 80) : undefined,
+              paddingLeft: !isSidebarRight ? (isSidebarExpanded ? (featureFlags.sidebar_v3 ? 100 : sidebarWidth) : 80) : undefined,
             } : {}}
           >
         {/* Background Watermarks */}
@@ -10534,7 +10871,22 @@ export default function App() {
               )}
               {displayTab === "Design Hub" && (
                 <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <DesignHubContent isDark={isDark} />
+                  <DesignHubContent isDark={isDark} onCreateComponent={() => setIsCustomTabModalOpen(true)} />
+                </div>
+              )}
+              {/* Custom Tabs Rendering */}
+              {customTabs.find(ct => ct.id === activeTab) && (
+                <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                   <CustomTabContent 
+                     isDark={isDark} 
+                     tab={customTabs.find(ct => ct.id === activeTab)!} 
+                     onDelete={() => {
+                        const newTabs = customTabs.filter(ct => ct.id !== activeTab);
+                        setCustomTabs(newTabs);
+                        localStorage.setItem("vplay_custom_tabs", JSON.stringify(newTabs));
+                        setActiveTab("Trang chủ");
+                     }}
+                   />
                 </div>
               )}
               {displayTab === "Gallery" && (
@@ -10546,9 +10898,11 @@ export default function App() {
                 <ExperimentalContent 
                   isDark={isDark} 
                   featureFlags={featureFlags} 
-                  setFeatureFlags={(f) => {
+                  setFeatureFlags={(f, id, name, val) => {
                     setFeatureFlags(f);
                     localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
+                    logHistory('settings', `${val ? 'Bật' : 'Tắt'} flag: ${name}`);
+                    incrementStat('switchesToggled');
                   }} 
                 />
               )}
@@ -10630,9 +10984,11 @@ export default function App() {
                       <DebugContent 
                         isDark={isDark} 
                         featureFlags={featureFlags} 
-                        setFeatureFlags={(f) => {
+                        setFeatureFlags={(f, id, name, val) => {
                           setFeatureFlags(f);
                           localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
+                          logHistory('settings', `${val ? 'Bật' : 'Tắt'} flag: ${name}`);
+                          incrementStat('switchesToggled');
                         }}
                         setUser={setUser}
                         setIsAdmin={setIsAdmin}
@@ -10690,87 +11046,10 @@ export default function App() {
                   />
                 </div>
               )}
-              {displayTab === "Cài đặt" && (
-                <div className={`flex-1 overflow-y-auto p-4 md:p-8 space-y-8 max-w-4xl mx-auto w-full rounded-[32px] ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-4 rounded-3xl ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
-                        <Settings className={`w-10 h-10 ${isDark ? "text-white" : "text-slate-900"}`} />
-                      </div>
-                      <div>
-                        <h2 className={`text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Cài đặt</h2>
-                        <p className={`mt-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Quản lý trải nghiệm và cấu hình hệ thống Vplay</p>
-                      </div>
-                    </div>
-                    {(featureFlags?.xaml_view_test && featureFlags?.music_background && backgroundMusicOption !== "off") && (
-                      <div className="relative group">
-                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                         <div className={`relative px-4 py-2 rounded-xl flex items-center gap-3 ${isDark ? "bg-[#1a1c23]" : "bg-white"} border border-white/5`}>
-                            <motion.div
-                              animate={{ 
-                                scale: [1, 1.2, 1],
-                                opacity: [0.7, 1, 0.7]
-                              }}
-                              transition={{ repeat: Infinity, duration: 2 }}
-                            >
-                              <Music size={16} className="text-purple-500" />
-                            </motion.div>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-purple-500">Music Playing</span>
-                         </div>
-                      </div>
-                    )}
-                  </div>
-                  <SettingsContent 
-                    isDark={isDark} 
-                    setIsDark={setIsDark} 
-                    isDev={isDev} 
-                    setIsDev={setIsDev} 
-                    featureFlags={featureFlags}
-                    setFeatureFlags={setFeatureFlags}
-                    liquidGlass={liquidGlass} 
-                    setLiquidGlass={setLiquidGlass}
-                    useSidebar={useSidebar}
-                    setUseSidebar={setUseSidebar}
-                    isSidebarRight={isSidebarRight}
-                    setIsSidebarRight={setIsSidebarRight}
-                    isPinningEnabled={isPinningEnabled}
-                    setIsPinningEnabled={setIsPinningEnabled}
-                    user={user}
-                    userData={userData}
-                    setUserData={setUserData}
-                    onAlert={(title, msg) => setCustomAlert({ title, message: msg })}
-                    onLogin={handleLogin}
-                    favorites={favorites}
-                    onUpdateLogsClick={() => setActiveTab("Update Logs")}
-                    backgroundMusicOption={backgroundMusicOption}
-                    setBackgroundMusicOption={setBackgroundMusicOption}
-                    customMusicId={customMusicId}
-                    setCustomMusicId={setCustomMusicId}
-                    searchBoxPosition={searchBoxPosition}
-                    setSearchBoxPosition={setSearchBoxPosition}
-                    sidebarStyle={sidebarStyle}
-                    setSidebarStyle={setSidebarStyle}
-                    setActiveTab={setActiveTab}
-                    wallpaperType={wallpaperType}
-                    setWallpaperType={setWallpaperType}
-                    solidColor={solidColor}
-                    setSolidColor={setSolidColor}
-                    gradientColors={gradientColors}
-                    setGradientColors={setGradientColors}
-                    desktopWallpaper={desktopWallpaper}
-                    setDesktopWallpaper={setDesktopWallpaper}
-                  />
-                </div>
-              )}
-              {displayTab === "Update Logs" && (
-                <UpdateLogsContent isDark={isDark} onBack={() => setActiveTab("Cài đặt")} />
-              )}
             </motion.div>
           </AnimatePresence>
         </div>
-      </div>
-      
-      {/* Sidebar Redesign */}
+
       <LiquidModal
         isOpen={showVTV6Popup}
         onClose={() => setShowVTV6Popup(false)}
@@ -10790,7 +11069,7 @@ export default function App() {
       />
 
       <LiquidModal
-        isOpen={showCanaryWarning && featureFlags.dialog_redesign_v2}
+        isOpen={showCanaryWarning}
         onClose={() => {
           setShowCanaryWarning(false);
           setHasSeenCanaryWarning(true);
@@ -10812,6 +11091,7 @@ export default function App() {
           </button>
         }
       />
+    </div>
 
       <AnimatePresence>
         {useSidebar && !featureFlags.copilot_action_v2 && (
@@ -10823,7 +11103,7 @@ export default function App() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.5 }}
                 onClick={() => setIsSidebarExpanded(true)}
-                className={`fixed top-6 z-[51] p-3.5 rounded-2xl shadow-2xl transition-all active:scale-95 ${
+                className={`fixed top-6 z-[51] p-3.5 rounded-[4px] shadow-2xl transition-all active:scale-95 ${
                   isSidebarRight ? "right-6" : "left-6"
                 } ${
                   isDark ? "bg-[#11141d] text-white border border-white/10" : "bg-white text-slate-800 border border-slate-200"
@@ -10848,7 +11128,7 @@ export default function App() {
               initial={{ x: isSidebarRight ? sidebarWidth : -sidebarWidth }}
               animate={{ 
                 x: (featureFlags.taskbar_experimental && !isMobile) ? (isSidebarRight ? sidebarWidth : -sidebarWidth) : 0, 
-                width: (featureFlags.taskbar_experimental && !isMobile) ? 0 : (isSidebarExpanded ? sidebarWidth : (isMobile ? 0 : 80)),
+                width: (featureFlags.taskbar_experimental && !isMobile) ? 0 : (isSidebarExpanded ? (featureFlags.sidebar_v3 ? 100 : sidebarWidth) : (isMobile ? 0 : 80)),
                 opacity: ((isMobile && !isSidebarExpanded) || (featureFlags.taskbar_experimental && !isMobile)) ? 0 : 1,
                 visibility: ((isMobile && !isSidebarExpanded) || (featureFlags.taskbar_experimental && !isMobile)) ? "hidden" : "visible" as any
               }}
@@ -10883,16 +11163,16 @@ export default function App() {
                 </div>
               )}
               {/* Logo & Hamburger Section */}
-              <div className="p-6">
-                <div className={`flex items-center gap-4 h-12 ${!isSidebarExpanded ? "justify-center" : ""}`}>
+              <div className={featureFlags.sidebar_v3 ? "p-4" : "p-6"}>
+                <div className={`flex items-center gap-4 h-12 ${(!isSidebarExpanded && !featureFlags.sidebar_v3) ? "justify-center" : (featureFlags.sidebar_v3 ? "justify-center" : "")}`}>
                   <button 
                     onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-                    className={`p-2 rounded-xl transition-all ${isDark ? "hover:bg-white/5 text-white" : "hover:bg-slate-100 text-slate-800"}`}
+                    className={`p-2 rounded-[4px] transition-all ${isDark ? "hover:bg-white/5 text-white" : "hover:bg-slate-100 text-slate-800"}`}
                   >
-                    <Menu size={28} />
+                    {featureFlags.sidebar_v3 ? <ArrowLeft size={24} /> : <Menu size={28} />}
                   </button>
                   <AnimatePresence>
-                    {isSidebarExpanded && (
+                    {isSidebarExpanded && !featureFlags.sidebar_v3 && (
                       <motion.div 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -10902,39 +11182,61 @@ export default function App() {
                          <div className={`relative w-12 h-12 flex items-center justify-center rounded-xl bg-slate-900 border border-white/10 shadow-xl`}>
                             <img src={vplayLogo} alt="Vplay" className="w-8 h-8 object-contain" />
                           </div>
-                         <div className="flex flex-col">
-                            <span className="font-normal text-sm tracking-tight text-white/90">Vplay</span>
-                            <span className="text-[10px] font-normal text-blue-500 tracking-widest uppercase">Canary</span>
-                         </div>
-                         {featureFlags.xaml_experience && (
-                           <div className="relative group/pizza ml-1">
-                             <Pizza size={18} className="text-white cursor-help" />
-                             <div 
-                               className={`absolute ${isSidebarRight ? "right-full mr-4" : "left-full ml-4"} top-0 w-64 p-4 bg-black/95 text-white text-[11px] rounded-2xl shadow-2xl border border-white/10 pointer-events-none z-[100] backdrop-blur-xl font-medium opacity-0 group-hover/pizza:opacity-100 transition-all duration-300 transform translate-y-0 group-hover/pizza:translate-y-0`}
-                               style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
-                             >
-                               <div className="flex flex-col gap-2 text-left">
-                                 <p className="leading-relaxed opacity-90 font-bold">You're previewing the XAML-powered version of Vplay, which provides richer ways for us to build and design the user interface. You can go back to previous legacy Vplay by going to the "Pizza" tab</p>
+                         <div className="flex items-center gap-1.5 ml-2.5">
+                           {featureFlags.xaml_experience && (
+                             <div className="relative group/pizza">
+                               <Pizza size={18} className="text-white cursor-help" />
+                               <div 
+                                 className={`absolute ${isSidebarRight ? "right-full mr-4" : "left-full ml-4"} top-0 w-64 p-4 bg-black/95 text-white text-[11px] rounded-2xl shadow-2xl border border-white/10 pointer-events-none z-[100] backdrop-blur-xl font-medium opacity-0 group-hover/pizza:opacity-100 transition-all duration-300 transform translate-y-0 group-hover/pizza:translate-y-0`}
+                                 style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}
+                               >
+                                 <div className="flex flex-col gap-2 text-left">
+                                   <p className="leading-relaxed opacity-90 font-bold">You're previewing the XAML-powered version of Vplay, which provides richer ways for us to build and design the user interface. You can go back to previous legacy Vplay by going to the "Pizza" tab</p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                           )}
+
+                           <button 
+                             onClick={() => {
+                               setShowNotificationDrawer(true);
+                               incrementStat('popupsOpened');
+                               logHistory('action', 'Opened Notifications');
+                             }}
+                             className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-all relative group/bell"
+                           >
+                             <Bell size={18} className="group-hover/bell:scale-110 transition-transform" />
+                             {notifications.filter(n => !n.read).length > 0 && (
+                               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-slate-900" />
+                             )}
+                           </button>
+
+                           <button 
+                             onClick={() => {
+                               setShowHistoryDrawer(true);
+                               incrementStat('popupsOpened');
+                               logHistory('action', 'Opened History');
+                             }}
+                             className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-all group/hist"
+                           >
+                             <History size={18} className="group-hover/hist:scale-110 transition-transform" />
+                           </button>
+                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
               </div>
-
               {/* Integrated Search Bar */}
               <AnimatePresence>
-                {isSidebarExpanded && !featureFlags.ai_tools && (
+                {isSidebarExpanded && !featureFlags.ai_tools && !featureFlags.sidebar_v3 && (
                   <motion.div 
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="px-6 py-2 mb-4 relative"
                   >
-                    <div className={`relative group flex items-center gap-3 px-4 py-2 rounded-xl overflow-hidden transition-all ${
+                    <div className={`relative group flex items-center gap-3 px-4 py-2 rounded-[8px] overflow-hidden transition-all ${
                         (isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-slate-100")
                     } border border-white/5`}>
                       <input 
@@ -11033,25 +11335,7 @@ export default function App() {
               {/* Navigation Items */}
               <div className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
                 <AnimatePresence initial={false}>
-                {/* Notification Bell */}
-                <motion.button
-                  key="notif-bell"
-                  layout
-                  onClick={() => setShowNotificationDrawer(true)}
-                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all relative group h-[50px] ${
-                    isDark ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-600 hover:bg-slate-50"
-                  } ${!isSidebarExpanded ? "justify-center" : ""}`}
-                >
-                  <div className="relative">
-                    <Bell size={24} className={showNotificationDrawer ? "text-blue-600" : "group-hover:scale-110"} />
-                    {notifications.filter(n => !n.read).length > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[8px] font-black flex items-center justify-center text-white ring-2 ring-transparent">
-                        {notifications.filter(n => !n.read).length}
-                      </span>
-                    )}
-                  </div>
-                  {isSidebarExpanded && <span className="font-normal text-base">Thông báo</span>}
-                </motion.button>
+                {/* Notification Bell moved to header */}
 
                 {tabs.filter(t => t.id !== "Cài đặt").map((tab) => {
                   const Icon = tab.icon;
@@ -11085,18 +11369,19 @@ export default function App() {
                             return;
                           }
                           setActiveTab(tab.id || tab.name);
+                          logHistory('navigation', `Chuyển sang tab: ${tab.name}`);
                           if (isMobile) setIsSidebarExpanded(false);
                         }}
-                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all relative group h-[50px] overflow-hidden ${
+                        className={`w-full flex ${featureFlags.sidebar_v3 ? "flex-col items-center justify-center p-2 rounded-xl mb-4" : "items-center gap-4 px-4 py-3 rounded-[4px]"} transition-all relative group overflow-hidden ${
                           isActive 
                             ? (isDark ? "bg-[#2d2d2d] text-white" : "bg-slate-100 text-slate-900") 
                             : (isDark ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-600 hover:bg-slate-50")
-                        } ${!isSidebarExpanded ? "justify-center" : ""}`}
+                        } ${(!isSidebarExpanded && !featureFlags.sidebar_v3) ? "justify-center h-[50px]" : ""} ${featureFlags.sidebar_v3 ? "" : "h-[50px]"}`}
                       >
                         {isActive && (
                           <motion.div 
                             layoutId="sidebarActivePill"
-                            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full" 
+                            className={featureFlags.sidebar_v3 ? "absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-r-full" : "absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full"} 
                           />
                         )}
                         {typeof tab.icon === "string" ? (
@@ -11119,8 +11404,8 @@ export default function App() {
                             <Icon size={24} className={`flex-shrink-0 transition-all ${isActive ? "text-blue-600" : "group-hover:scale-110"} ${tab.className || ""}`} />
                           </motion.div>
                         )}
-                        {isSidebarExpanded && (
-                          <span className="font-normal text-base whitespace-nowrap">{tab.name}</span>
+                        {(isSidebarExpanded || featureFlags.sidebar_v3) && (
+                          <span className={featureFlags.sidebar_v3 ? "text-[11px] font-medium tracking-tight mt-1 opacity-70 group-hover:opacity-100 text-center w-full truncate" : "font-normal text-base whitespace-nowrap"}>{tab.name}</span>
                         )}
 
                         {/* Pizza Tooltip for Sidebar */}
@@ -11159,8 +11444,8 @@ export default function App() {
                 {isPinningEnabled && favorites.length > 0 && (
                   <div className="pt-4 pb-2">
                     <div className={`h-px mx-3 mb-4 ${isDark ? "bg-white/5" : "bg-slate-100"}`} />
-                    {isSidebarExpanded && (
-                      <span className="px-5 text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Ghim Kênh</span>
+                    {(isSidebarExpanded || featureFlags.sidebar_v3) && (
+                      <span className={`text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 ${featureFlags.sidebar_v3 ? "text-center px-1" : "px-5"}`}>{featureFlags.sidebar_v3 ? "Pinned" : "Ghim Kênh"}</span>
                     )}
                     <div className="space-y-1">
                       {favorites.map(favId => {
@@ -11174,18 +11459,18 @@ export default function App() {
                               setActiveChannel(channel);
                               if (isMobile) setIsSidebarExpanded(false);
                             }}
-                            className={`w-full flex items-center gap-4 px-4 py-2 rounded-xl transition-all group h-[48px] ${
+                            className={`w-full flex ${featureFlags.sidebar_v3 ? "flex-col items-center justify-center p-2 mb-2" : "items-center gap-4 px-4 py-2 h-[48px]"} rounded-xl transition-all group ${
                               isDark ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-600 hover:bg-slate-50"
-                            } ${!isSidebarExpanded ? "justify-center" : ""}`}
+                            } ${(!isSidebarExpanded && !featureFlags.sidebar_v3) ? "justify-center h-[48px]" : ""}`}
                           >
                             <img 
                               src={channel.logo} 
                               alt={channel.name}
-                              className={`w-8 h-8 object-contain transition-transform group-hover:scale-110 ${!isDark ? "bg-white rounded-md shadow-sm border border-slate-100 p-0.5" : ""}`}
+                              className={`${featureFlags.sidebar_v3 ? "w-10 h-10 mb-1" : "w-8 h-8"} object-contain transition-transform group-hover:scale-110 ${!isDark ? "bg-white rounded-md shadow-sm border border-slate-100 p-0.5" : ""}`}
                               referrerPolicy="no-referrer"
                             />
-                            {isSidebarExpanded && (
-                              <span className="font-normal text-sm whitespace-nowrap overflow-hidden text-ellipsis">{channel.name}</span>
+                            {(isSidebarExpanded || featureFlags.sidebar_v3) && (
+                              <span className={`${featureFlags.sidebar_v3 ? "text-[10px] opacity-70" : "text-sm"} font-normal whitespace-nowrap overflow-hidden text-ellipsis w-full text-center`}>{channel.name}</span>
                             )}
                           </button>
                         );
@@ -11222,16 +11507,16 @@ export default function App() {
                     setActiveTab("Cài đặt");
                     if (isMobile) setIsSidebarExpanded(false);
                   }}
-                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all w-full h-[50px] relative overflow-hidden ${
+                  className={`flex ${featureFlags.sidebar_v3 ? "flex-col py-2 h-auto gap-1 items-center justify-center p-2 rounded-xl mb-2" : "items-center gap-4 px-4 py-3 rounded-xl h-[50px]"} transition-all w-full relative overflow-hidden ${
                     activeTab === "Cài đặt"
                       ? (isDark ? "bg-[#2d2d2d] text-white" : "bg-slate-100 text-slate-900")
                       : (isDark ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-600 hover:bg-slate-50")
-                  } ${!isSidebarExpanded ? "justify-center" : ""}`}
+                  } ${(!isSidebarExpanded && !featureFlags.sidebar_v3) ? "justify-center" : (featureFlags.sidebar_v3 ? "justify-center" : "")}`}
                 >
                   {activeTab === "Cài đặt" && (
                       <motion.div 
                         layoutId="sidebarActivePill"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full" 
+                        className={featureFlags.sidebar_v3 ? "absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-r-full" : "absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full"} 
                       />
                   )}
                   <motion.div
@@ -11240,14 +11525,14 @@ export default function App() {
                   >
                     <SettingsIcon className={`w-6 h-6 ${activeTab === "Cài đặt" ? "text-blue-500" : ""}`} />
                   </motion.div>
-                  {isSidebarExpanded && <span className="font-normal text-base">Cài đặt</span>}
+                  {(isSidebarExpanded || featureFlags.sidebar_v3) && <span className={featureFlags.sidebar_v3 ? "text-[11px] font-medium tracking-tight mt-1 opacity-70 group-hover:opacity-100 text-center w-full truncate" : "font-normal text-base"}>Cài đặt</span>}
                 </button>
 
                 <button
                   onClick={() => setShowDevConfirm(true)}
-                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all w-full h-[50px] relative overflow-hidden ${
+                  className={`flex ${featureFlags.sidebar_v3 ? "flex-col py-2 h-auto gap-1 items-center justify-center p-2 rounded-xl" : "items-center gap-4 px-4 py-3 rounded-xl h-[50px]"} transition-all w-full relative overflow-hidden ${
                     isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:bg-slate-50"
-                  } ${!isSidebarExpanded ? "justify-center" : ""}`}
+                  } ${(!isSidebarExpanded && !featureFlags.sidebar_v3) ? "justify-center" : (featureFlags.sidebar_v3 ? "justify-center" : "")}`}
                 >
                   <motion.div
                     whileHover={{ rotateY: 180 }}
@@ -11255,7 +11540,7 @@ export default function App() {
                   >
                     <ExternalLink size={24} className="hover:scale-110 transition-transform" />
                   </motion.div>
-                  {isSidebarExpanded && <span className="font-normal text-base whitespace-nowrap">Switch to Dev</span>}
+                  {(isSidebarExpanded || featureFlags.sidebar_v3) && <span className={featureFlags.sidebar_v3 ? "text-[11px] font-medium tracking-tight mt-1 opacity-70 group-hover:opacity-100 text-center w-full truncate" : "font-normal text-base whitespace-nowrap"}>Switch to Dev</span>}
                 </button>
               </div>
             </motion.div>
@@ -11607,6 +11892,103 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* History Drawer */}
+        <AnimatePresence>
+          {showHistoryDrawer && (
+            <div className="fixed inset-0 z-[6000] flex justify-end">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowHistoryDrawer(false)}
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm shadow-2xl" 
+              />
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                className={`relative w-full sm:w-[450px] h-full shadow-2xl flex flex-col ${isDark ? "bg-[#0f0f11] text-white" : "bg-white text-slate-900"}`}
+              >
+                <div className="p-8 border-b border-current/10 flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <History size={20} className="text-purple-500" />
+                      <h3 className="text-xl font-black uppercase tracking-tighter italic">Lịch sử hoạt động</h3>
+                   </div>
+                   <button onClick={() => setShowHistoryDrawer(false)} className="p-2 rounded-full hover:bg-current/5 transition-all">
+                      <X size={20} />
+                   </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+                  {/* Stats Section */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className={`p-4 rounded-3xl border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Clicks</span>
+                      <p className="text-2xl font-black italic">{historyStats.buttonClicks}</p>
+                    </div>
+                    <div className={`p-4 rounded-3xl border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Switches</span>
+                      <p className="text-2xl font-black italic">{historyStats.switchesToggled}</p>
+                    </div>
+                    <div className={`p-4 rounded-3xl border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Popups</span>
+                      <p className="text-2xl font-black italic">{historyStats.popupsOpened}</p>
+                    </div>
+                    <div className={`p-4 rounded-3xl border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Channels</span>
+                      <p className="text-2xl font-black italic">{historyStats.channelsWatched}</p>
+                    </div>
+                  </div>
+
+                  <div className={`p-4 rounded-3xl border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"}`}>
+                     <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Truy cập lần cuối</span>
+                     <p className="text-sm font-bold">{new Date(historyStats.lastVisit).toLocaleString('vi-VN')}</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block">Hoạt động gần đây</span>
+                    {history.length === 0 ? (
+                      <div className="py-20 flex flex-col items-center justify-center opacity-20">
+                        <Clock size={40} className="mb-4" />
+                        <p className="text-[10px] font-black uppercase tracking-widest">Trống</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {history.map(item => (
+                          <div key={item.id} className={`p-4 rounded-2xl border transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100"}`}>
+                            <div className="flex items-center justify-between mb-2">
+                               <span className="text-[9px] font-black uppercase tracking-widest py-1 px-2 bg-current/10 rounded-md">
+                                 {item.type}
+                               </span>
+                               <span className="text-[9px] font-bold opacity-30">
+                                 {new Date(item.time).toLocaleTimeString()}
+                               </span>
+                            </div>
+                            <p className="text-xs font-medium leading-relaxed opacity-80">{item.content}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-6 border-t border-current/10">
+                   <button 
+                     onClick={() => {
+                       setHistory([]);
+                       localStorage.setItem("vplay_history", "[]");
+                     }}
+                     className="w-full py-4 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all"
+                   >
+                     Xóa lịch sử log
+                   </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Notification Drawer */}
         <AnimatePresence>
