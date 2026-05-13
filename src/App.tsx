@@ -61,11 +61,17 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
   if (featureFlags?.cobalt_ui) {
     return (
       <div className={`flex flex-col items-center justify-center gap-2 ${className}`}>
-        <div className={`h-1.5 w-full max-w-[120px] rounded-full overflow-hidden ${isDark ? "bg-white/20" : "bg-black/5"}`}>
+        <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? "bg-white/20" : "bg-black/5"}`}>
           <motion.div 
-            animate={{ x: ["-100%", "100%"] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-            className="h-full w-1/2 bg-blue-600 rounded-full"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity, 
+              repeatType: "reverse",
+              ease: "easeInOut"
+            }}
+            className="h-full bg-blue-600 rounded-full"
           />
         </div>
       </div>
@@ -227,15 +233,33 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
             transition={{ delay: 1, duration: 0.5 }}
             className="flex flex-col items-center gap-6"
           >
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-4">
-                <LoadingAnimation featureFlags={featureFlags} isDark={true} className="w-8 h-8" />
-                <span className="text-white/70 text-xl font-medium tracking-wide">
-                  {statusText}
-                </span>
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-4">
+                  <LoadingAnimation featureFlags={featureFlags} isDark={true} className="w-8 h-8" />
+                  <span className="text-white/70 text-xl font-medium tracking-wide">
+                    {statusText}
+                  </span>
+                </div>
+                
+                {/* Visual Progress Bar - Looping as requested */}
+                <div className="w-64 h-1.5 bg-white/10 rounded-full overflow-hidden mt-2 relative">
+                  <motion.div 
+                    initial={{ width: "0%", x: "-100%" }}
+                    animate={{ 
+                      width: ["0%", "100%", "0%"],
+                      x: ["0%", "0%", "100%"]
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="absolute h-full bg-blue-500 rounded-full"
+                  />
+                </div>
+
+                <span className="text-white/40 text-sm font-mono mt-2">{Math.floor(progress)}%</span>
               </div>
-              <span className="text-white/40 text-sm font-mono mt-2">{Math.floor(progress)}%</span>
-            </div>
 
             <AnimatePresence>
               {showBypass && !showPassPrompt && (
@@ -346,7 +370,6 @@ const baseTabs = [
   { name: "Home", icon: Home, id: "Trang chủ" },
   { name: "My Feed", icon: Search, id: "My Feed" },
   { name: "Design Hub", icon: LayoutDashboard, id: "Design Hub" },
-  { name: "Gallery", icon: ImageIcon, id: "Gallery", className: "rounded-lg bg-blue-500/10 p-1" },
   { name: "Search or use commands", icon: Search, id: "Search", tooltip: "Search for channels or use console commands" },
   { name: "Phát sóng", icon: Tv, id: "Phát sóng" },
   { name: "V-pilot", icon: Sparkles, id: "V-pilot" },
@@ -436,22 +459,22 @@ function LiquidModal({ isOpen, onClose, children, isDark, title, description, li
   );
 }
 
-function Tooltip({ text, show, targetRect, isDesktop = false }: { text: string, show: boolean, targetRect: DOMRect | null, isDesktop?: boolean }) {
+function Tooltip({ text, show, targetRect, isDesktop = false, position = 'top' }: { text: string, show: boolean, targetRect: DOMRect | null, isDesktop?: boolean, position?: 'top' | 'bottom' }) {
   return (
     <AnimatePresence>
       {show && targetRect && (
         <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.8 }}
+          initial={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.8 }}
+          exit={{ opacity: 0, y: position === 'top' ? 10 : -10, scale: 0.8 }}
           style={{ 
             position: 'fixed', 
-            top: targetRect.top - 10, 
+            top: position === 'top' ? targetRect.top - 10 : targetRect.bottom + 10, 
             left: targetRect.left + (targetRect.width / 2),
             translateX: '-50%',
-            translateY: '-100%'
+            translateY: position === 'top' ? '-100%' : '0%'
           }}
-          className={`px-3 py-1.5 backdrop-blur-xl text-[10px] font-black rounded-xl whitespace-nowrap pointer-events-none z-[10001] shadow-[0_10px_30px_rgba(0,0,0,0.2)] border ${
+          className={`px-3 py-1.5 backdrop-blur-xl text-[10px] font-normal rounded-[4px] whitespace-nowrap pointer-events-none z-[10001] shadow-[0_10px_30px_rgba(0,0,0,0.2)] border ${
             isDesktop 
               ? "bg-[#1f1f1f]/90 text-white border-white/10" 
               : "bg-white/80 text-slate-900 border-white/40"
@@ -459,9 +482,9 @@ function Tooltip({ text, show, targetRect, isDesktop = false }: { text: string, 
         >
           {text}
           <div className={`absolute left-1/2 -translate-x-1/2 border-[5px] border-transparent ${
-            isDesktop 
-              ? "top-full border-t-[#1f1f1f]/90" 
-              : "top-full border-t-white/80"
+            position === 'top' 
+              ? (isDesktop ? "top-full border-t-[#1f1f1f]/90" : "top-full border-t-white/80")
+              : (isDesktop ? "bottom-full border-b-[#1f1f1f]/90" : "bottom-full border-b-white/80")
           }`} />
         </motion.div>
       )}
@@ -653,9 +676,8 @@ function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass, channel
           }`}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <Zap size={18} className="text-purple-500" />
-          <span className="text-sm font-bold tracking-tight">Switch to Vplay Dev</span>
-          <ArrowRight size={16} className="translate-x-0 group-hover:translate-x-1 transition-transform" />
+          <Terminal size={18} className="group-hover:rotate-12 transition-transform duration-500" />
+          <span className="font-bold text-sm tracking-widest uppercase italic">Developer Mode</span>
         </motion.button>
       </motion.div>
     </div>
@@ -667,6 +689,24 @@ function DesignHubContent({ isDark, onCreateComponent }: { isDark: boolean, onCr
   const [checkbox, setCheckbox] = useState(false);
   const [text, setText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [iconSearch, setIconSearch] = useState("");
+
+  const galleryIcons = [
+    { name: "Search", icon: Search }, { name: "User", icon: User }, { name: "Copy", icon: Copy }, 
+    { name: "Tv", icon: Tv }, { name: "Calendar", icon: Calendar }, { name: "Home", icon: Home }, 
+    { name: "Play", icon: Play }, { name: "Pause", icon: Pause }, { name: "Radio", icon: Radio }, 
+    { name: "Info", icon: Info }, { name: "Sun", icon: Sun }, { name: "Moon", icon: Moon }, 
+    { name: "Settings", icon: Settings }, { name: "CheckCircle2", icon: CheckCircle2 }, 
+    { name: "Check", icon: Check }, { name: "Shield", icon: Shield }, { name: "Heart", icon: Heart }, 
+    { name: "X", icon: X }, { name: "Lock", icon: Lock }, { name: "Terminal", icon: Terminal }, 
+    { name: "Zap", icon: Zap }, { name: "Clock", icon: Clock }, { name: "Compass", icon: Compass }, 
+    { name: "ImageIcon", icon: ImageIcon }, { name: "Sparkles", icon: Sparkles }, 
+    { name: "ShieldCheck", icon: ShieldCheck }, { name: "LayoutGrid", icon: LayoutGrid }, 
+    { name: "LayoutDashboard", icon: LayoutDashboard }, { name: "Download", icon: Download }, 
+    { name: "Pizza", icon: Pizza }, { name: "Gavel", icon: Gavel }, { name: "Upload", icon: Upload }
+  ];
+
+  const filteredIcons = galleryIcons.filter(i => i.name.toLowerCase().includes(iconSearch.toLowerCase()));
 
   const Section = ({ title, children }: { title: string, children: ReactNode }) => (
     <div className="space-y-6">
@@ -688,7 +728,7 @@ function DesignHubContent({ isDark, onCreateComponent }: { isDark: boolean, onCr
             <LayoutDashboard size={12} />
             Component System
           </div>
-          <h2 className="text-6xl font-black tracking-tighter uppercase italic">Design Hub</h2>
+          <h2 className="text-6xl font-black tracking-tighter uppercase italic leading-none">Design Hub</h2>
           <p className="text-xl opacity-40 max-w-2xl font-medium leading-relaxed">Toàn bộ các UI elements của hệ thống Vplay Canary OS được chuẩn hóa một cách tỉ mỉ và đồng nhất.</p>
           <div className="pt-4">
             <button 
@@ -790,7 +830,7 @@ function DesignHubContent({ isDark, onCreateComponent }: { isDark: boolean, onCr
             </button>
             <AnimatePresence>
               {isModalOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4" key="design-modal-overlay">
                   <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -836,12 +876,24 @@ function DesignHubContent({ isDark, onCreateComponent }: { isDark: boolean, onCr
         </Section>
 
         <Section title="Iconography">
-          <div className="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-12 gap-8">
-            {[Search, User, Settings, Tv, Calendar, Home, Sparkles, Heart, Bell, Trash2, Globe, Clock, Shield, Lock, Zap, Camera, Palette, Droplet, Trophy, Film, Music, Compass, Scissors, Trash2].map((Icon, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <Icon size={24} className="opacity-40" />
-              </div>
-            ))}
+          <div className="w-full space-y-6">
+            <div className={`p-4 rounded-[24px] border flex items-center gap-4 ${isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100"}`}>
+               <Search size={18} className="opacity-40" />
+               <input 
+                 value={iconSearch}
+                 onChange={(e) => setIconSearch(e.target.value)}
+                 placeholder="Search standard iconography..."
+                 className="bg-transparent border-none outline-none text-sm font-semibold w-full"
+               />
+            </div>
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-6 h-96 overflow-y-auto custom-scrollbar pr-4">
+              {filteredIcons.map((item, i) => (
+                <div key={`icon-grid-${item.name}-${i}`} className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border transition-all ${isDark ? "bg-white/[0.02] border-white/5 hover:bg-white/10" : "bg-white border-slate-100 hover:shadow-xl"}`}>
+                  <item.icon size={28} className="opacity-70" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest opacity-40 text-center truncate w-full">{item.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </Section>
 
@@ -849,7 +901,7 @@ function DesignHubContent({ isDark, onCreateComponent }: { isDark: boolean, onCr
            <div className={`w-full h-40 rounded-2xl border p-4 overflow-y-auto custom-scrollbar ${isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100"}`}>
               <div className="space-y-4">
                   {[...Array(10)].map((_, i) => (
-                    <div key={i} className={`h-12 w-full rounded-xl ${isDark ? "bg-white/5" : "bg-slate-50"}`} />
+                    <div key={`scrollbar-sample-${i}`} className={`h-12 w-full rounded-xl ${isDark ? "bg-white/5" : "bg-slate-50"}`} />
                   ))}
               </div>
            </div>
@@ -1030,7 +1082,7 @@ function CustomTabModal({ isOpen, onClose, onSave, isDark, initialData }: { isOp
                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40">Live Preview & Visual Editing</label>
                        <div className="flex-1 bg-white/[0.02] border border-white/5 rounded-[40px] overflow-y-auto p-12 space-y-8 custom-scrollbar">
                           {visualItems.map((item, idx) => (
-                            <div key={item.id} className="relative group/item">
+                            <div key={`visual-edit-item-${item.id}-${idx}`} className="relative group/item">
                                <div className="absolute -left-12 top-0 bottom-0 flex flex-col gap-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
                                   <button onClick={() => setVisualItems(visualItems.filter(v => v.id !== item.id))} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><X size={12} /></button>
                                </div>
@@ -1117,622 +1169,121 @@ function CustomTabModal({ isOpen, onClose, onSave, isDark, initialData }: { isOp
   );
 }
 
-function GalleryContent({ isDark, onAction, featureFlags, liquidGlass, channels }: { isDark: boolean, onAction: (a: string, data?: any) => void, featureFlags?: any, liquidGlass: "glassy" | "tinted", channels: Channel[] }) {
+function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags, activeSearchPlaceholder, setShowWidgets }: { isDark: boolean, onAction: (a: string, data?: any) => void, onNavigate: (t: string) => void, liquidGlass: "glassy" | "tinted", featureFlags?: any, activeSearchPlaceholder: string, setShowWidgets: (s: boolean) => void }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewType, setViewType] = useState<"grid" | "list">("grid");
-  const [selectedItem, setSelectedItem] = useState<{ type: 'icon' | 'logo', name: string, url?: string, icon?: any } | null>(null);
-  const [downloadOptions, setDownloadOptions] = useState({ resolution: "1024", color: "original" });
-
-  const galleryIcons = [
-    { name: "Search", icon: Search }, { name: "User", icon: User }, { name: "Copy", icon: Copy }, 
-    { name: "Tv", icon: Tv }, { name: "Calendar", icon: Calendar }, { name: "Home", icon: Home }, 
-    { name: "Play", icon: Play }, { name: "Pause", icon: Pause }, { name: "Radio", icon: Radio }, 
-    { name: "Info", icon: Info }, { name: "Sun", icon: Sun }, { name: "Moon", icon: Moon }, 
-    { name: "Settings", icon: Settings }, { name: "CheckCircle2", icon: CheckCircle2 }, 
-    { name: "Check", icon: Check }, { name: "Shield", icon: Shield }, { name: "Heart", icon: Heart }, 
-    { name: "X", icon: X }, { name: "Lock", icon: Lock }, { name: "Terminal", icon: Terminal }, 
-    { name: "Zap", icon: Zap }, { name: "Clock", icon: Clock }, { name: "Compass", icon: Compass }, 
-    { name: "ImageIcon", icon: ImageIcon }, { name: "Sparkles", icon: Sparkles }, 
-    { name: "ShieldCheck", icon: ShieldCheck }, { name: "LayoutGrid", icon: LayoutGrid }, 
-    { name: "LayoutDashboard", icon: LayoutDashboard }, { name: "Download", icon: Download }, 
-    { name: "Pizza", icon: Pizza }, { name: "Gavel", icon: Gavel }, { name: "Upload", icon: Upload }
-  ];
-
-  const filteredIcons = galleryIcons.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const filteredChannels = channels.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
-  const handleDownload = async () => {
-    if (!selectedItem) return;
-    
-    // In a real app, we'd use a canvas to apply color filters and resize
-    // For this simulation, we'll just log the parameters and "trigger" a download
-    const { name, url, type } = selectedItem;
-    console.log(`Downloading ${name} at ${downloadOptions.resolution}px in ${downloadOptions.color} mode`);
-    
-    if (type === 'logo' && url) {
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `${name}_${downloadOptions.resolution}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(blobUrl);
-      } catch (e) {
-        window.open(url, '_blank');
-      }
-    } else {
-      alert(`Download started: ${name} (${downloadOptions.resolution}px, ${downloadOptions.color})`);
-    }
-    setSelectedItem(null);
-  };
-
-  return (
-    <div className={`flex-1 flex flex-col h-full overflow-hidden ${featureFlags?.xaml_experience ? "bg-transparent" : (isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900")}`}>
-      {/* Windows 11 Style Toolbar */}
-      <div className={`px-6 py-3 border-b flex flex-wrap items-center justify-between gap-4 ${isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-black/5"}`}>
-        <div className="flex items-center gap-2">
-           <button 
-             onClick={() => onAction("play_for_me")}
-             className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"} flex items-center gap-2 text-xs font-semibold px-3`}
-           >
-             <Play size={16} className="text-blue-500" />
-             Open in Play For Me
-           </button>
-           <div className={`w-px h-6 mx-1 ${isDark ? "bg-white/10" : "bg-black/10"}`} />
-           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`} title="Copy"><Copy size={16} /></button>
-           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`} title="Share"><Share2 size={16} /></button>
-           <div className={`w-px h-6 mx-1 ${isDark ? "bg-white/10" : "bg-black/10"}`} />
-           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"} flex items-center gap-2 text-xs font-semibold px-3`}>
-             <List size={16} />
-             Sort
-           </button>
-           <button 
-             onClick={() => setViewType(viewType === "grid" ? "list" : "grid")}
-             className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"} flex items-center gap-2 text-xs font-semibold px-3`}
-           >
-             {viewType === "grid" ? <LayoutGrid size={16} /> : <List size={16} />}
-             View
-           </button>
-           <button className={`p-2 rounded-lg transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
-             <MoreHorizontal size={16} />
-           </button>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className={`relative flex items-center px-4 py-2 rounded-xl border transition-all ${isDark ? "bg-white/5 border-white/10 focus-within:bg-white/10" : "bg-black/5 border-black/10 focus-within:bg-white focus-within:shadow-xl"}`}>
-            <Search size={14} className="opacity-40 mr-2" />
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search assets..."
-              className="bg-transparent border-none outline-none text-xs w-48 font-medium"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-        <div className="max-w-7xl mx-auto space-y-12">
-          {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 mb-8">
-             <Home size={14} className="opacity-40" />
-             <ChevronRight size={14} className="opacity-40" />
-             <span className="text-sm font-semibold opacity-40">Home</span>
-             <ChevronRight size={14} className="opacity-40" />
-             <span className="text-sm font-bold">Gallery</span>
-          </div>
-
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Iconography</h2>
-                <p className={`text-xs opacity-40 font-semibold tracking-wide`}>{filteredIcons.length} icons</p>
-              </div>
-            </div>
-            <div className={`grid ${viewType === "grid" ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6" : "grid-cols-1"} gap-4`}>
-                <AnimatePresence mode="popLayout">
-                  {filteredIcons.map((icon, idx) => (
-                    <motion.div
-                      layout
-                      key={`icon-${icon.name}`}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ delay: idx * 0.01 }}
-                      className={`group relative aspect-square rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition-all ${isDark ? "bg-white/[0.03] hover:bg-white/[0.08]" : "bg-white shadow-sm hover:shadow-xl hover:-translate-y-1"}`}
-                    >
-                      <icon.icon size={48} className={isDark ? "text-white/60 group-hover:text-white" : "text-slate-400 group-hover:text-blue-600"} strokeWidth={1.5} />
-                      <span className="text-[10px] font-semibold opacity-30 text-center truncate w-full">{icon.name}</span>
-                      
-                      <button 
-                        onClick={() => setSelectedItem({ type: 'icon', name: icon.name, icon: icon.icon })}
-                        className="absolute inset-0 flex items-center justify-center bg-blue-600 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                         <Download size={28} />
-                      </button>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-            </div>
-          </section>
-
-          <section>
-             <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-2xl font-bold tracking-tight">Broadcast Logos</h3>
-                <p className={`text-xs opacity-40 font-semibold tracking-wide`}>{filteredChannels.length} channel logos</p>
-              </div>
-            </div>
-            <div className={`grid ${viewType === "grid" ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"} gap-6`}>
-              <AnimatePresence mode="popLayout">
-                {filteredChannels.map((channel, idx) => (
-                  <motion.div
-                    layout
-                    key={`channel-${channel.name}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ delay: idx * 0.02 }}
-                    className={`group relative overflow-hidden rounded-2xl transition-all ${isDark ? "bg-white/[0.03] hover:bg-white/[0.08]" : "bg-white shadow-sm hover:shadow-xl hover:-translate-y-1"}`}
-                  >
-                    <div className="p-10 flex items-center justify-center relative z-10 h-48">
-                      <img 
-                        src={channel.logo} 
-                        alt={channel.name} 
-                        className="max-w-full max-h-full object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                    <div className={`p-4 border-t ${isDark ? "border-white/5 bg-white/[0.02]" : "border-black/5 bg-slate-50"} text-center`}>
-                      <span className="text-[11px] font-semibold tracking-wide">{channel.name}</span>
-                    </div>
-
-                    <button 
-                      onClick={() => setSelectedItem({ type: 'logo', name: channel.name, url: channel.logo })}
-                      className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-opacity z-20 space-y-3"
-                    >
-                       <Download size={36} />
-                       <span className="text-[11px] font-bold tracking-wider">Download Asset</span>
-                    </button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </section>
-        </div>
-      </div>
-
-      {/* Download Options Modal */}
-      <AnimatePresence>
-        {selectedItem && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedItem(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-xl" 
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`relative w-full max-w-md rounded-3xl p-8 shadow-2xl overflow-hidden ${isDark ? "bg-[#1a1a1a] border border-white/10" : "bg-white border border-black/5"}`}
-            >
-               <div className="flex items-center justify-between mb-8">
-                 <div className="flex items-center gap-3">
-                   <div className="p-3 bg-blue-600/10 rounded-2xl">
-                     <Download size={20} className="text-blue-500" />
-                   </div>
-                   <h3 className="font-bold text-lg">Download Settings</h3>
-                 </div>
-                 <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-black/5 rounded-full"><X size={20} /></button>
-               </div>
-
-               <div className="space-y-6">
-                 <div>
-                   <p className="text-sm font-semibold mb-3 opacity-60">Resolution</p>
-                   <div className="grid grid-cols-3 gap-2">
-                     {["512", "1024", "2048"].map(res => (
-                       <button 
-                         key={res}
-                         onClick={() => setDownloadOptions(prev => ({ ...prev, resolution: res }))}
-                         className={`py-2 rounded-xl text-xs font-bold transition-all ${downloadOptions.resolution === res ? "bg-blue-600 text-white" : (isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200")}`}
-                       >
-                         {res}px
-                       </button>
-                     ))}
-                   </div>
-                 </div>
-
-                 {selectedItem.type === 'icon' && (
-                   <div>
-                     <p className="text-sm font-semibold mb-3 opacity-60">Color Mode</p>
-                     <div className="grid grid-cols-2 gap-2">
-                       {["original", "monochrome"].map(mode => (
-                         <button 
-                           key={mode}
-                           onClick={() => setDownloadOptions(prev => ({ ...prev, color: mode }))}
-                           className={`py-2 rounded-xl text-xs font-bold transition-all ${downloadOptions.color === mode ? "bg-blue-600 text-white" : (isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200")}`}
-                         >
-                           {mode === "original" ? "Default" : "Black & White"}
-                         </button>
-                       ))}
-                     </div>
-                   </div>
-                 )}
-
-                 <div className={`p-6 rounded-2xl border ${isDark ? "bg-white/[0.02] border-white/5" : "bg-slate-50 border-black/5"} flex flex-col items-center justify-center gap-4`}>
-                    <div className={`p-4 rounded-2xl ${isDark ? "bg-white/5" : "bg-white shadow-sm"}`}>
-                       {selectedItem.type === 'icon' ? (
-                         <selectedItem.icon size={48} className={downloadOptions.color === "monochrome" ? "text-black" : "text-blue-500"} />
-                       ) : (
-                         <img src={selectedItem.url} alt="" className="w-24 h-24 object-contain" />
-                       )}
-                    </div>
-                    <p className="text-[10px] font-bold opacity-40">{selectedItem.name}</p>
-                 </div>
-
-                 <button 
-                   onClick={handleDownload}
-                   className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-xl shadow-blue-500/20 active:scale-95"
-                 >
-                   Confirm & Download
-                 </button>
-               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags, setGlobalSearch, addNotification, setShowVTV6Popup }: { isDark: boolean, onAction: (a: string, data?: any) => void, onNavigate: (t: string) => void, liquidGlass: "glassy" | "tinted", featureFlags?: any, setGlobalSearch: (q: string) => void, addNotification: (t: string, m: string) => void, setShowVTV6Popup: (s: boolean) => void }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [location, setLocation] = useState(localStorage.getItem("explore_location") || "");
-  const [tempLocation, setTempLocation] = useState("");
-  const [showLocationPrompt, setShowLocationPrompt] = useState(!location);
   const [time, setTime] = useState(new Date());
-  
-  const [availableWidgets] = useState([
-    { type: "weather", label: "Thời tiết", icon: Cloud, description: "Cập nhật thời tiết theo vị trí của bạn." },
-    { type: "clock", label: "Đồng hồ", icon: Clock, description: "Theo dõi thời gian hiện tại một cách rõ nét." },
-    { type: "calendar", label: "Lịch", icon: Calendar, description: "Xem các sự kiện sắp tới của bạn." },
-    { type: "stocks", label: "Chứng khoán", icon: TrendingUp, description: "Theo dõi biến động thị trường tài chính." },
-    { type: "news", label: "Tin tức", icon: Globe, description: "Thông tin nóng hổi từ khắp thế giới." },
-    { type: "vtv6", label: "VTV6 Special", icon: Tv, description: "Kênh thể thao VTV6 sắp trở lại." },
-    { type: "countdown", label: "Đếm ngược", icon: Timer, description: "Đặt mục tiêu và theo dõi thời gian còn lại." },
-    { type: "stopwatch", label: "Bấm giờ", icon: Timer, description: "Đo thời gian cho các hoạt động của bạn." },
-    { type: "notify", label: "Nhắc nhở", icon: Bell, description: "Tạo thông báo và nhắc nhở nhanh." },
-    { type: "speak", label: "Speak For Me", icon: Mic, description: "Chuyển đổi văn bản thành giọng nói." },
-    { type: "copy", label: "Copy For Me", icon: Clipboard, description: "Quản lý clipboard thông minh." },
-    { type: "capture", label: "Capture", icon: Camera, description: "Chụp ảnh màn hình nhanh chóng." },
-    { type: "record", label: "Record", icon: Video, description: "Ghi lại những khoảnh khắc quan trọng." },
-    { type: "today", label: "Today Event", icon: Hash, description: "Hôm nay có sự kiện gì trên thế giới?" },
-    { type: "fifa", label: "World Cup 2026", icon: Trophy, description: "Theo dõi thông tin về FIFA World Cup 2026." },
-    { type: "quickaccess", label: "Truy cập nhanh", icon: LayoutGrid, description: "9 kênh truyền hình yêu thích của bạn." },
-    { type: "tictactoe", label: "Tic Tac Toe", icon: Gamepad, description: "Giải trí nhanh với Bot thông minh." }
-  ]);
-
-  const [widgets, setWidgets] = useState<any[]>(() => {
-    const saved = localStorage.getItem("explore_widgets_v3");
-    return saved ? JSON.parse(saved) : [
-      { id: 'w1', type: "weather", size: "medium" },
-      { id: 'w2', type: "clock", size: "medium" },
-      { id: 'quickaccess_init', type: "quickaccess", size: "large" }
-    ];
-  });
-  const [showWidgetPicker, setShowWidgetPicker] = useState(false);
-  const [selectedWidgetType, setSelectedWidgetType] = useState<string>("weather");
-
-  const toggleWidget = (type: string) => {
-    if (widgets.find(w => w.type === type)) {
-      setWidgets(widgets.filter(w => w.type !== type));
-    } else {
-      addWidget(type);
-    }
-  };
-
-  useEffect(() => {
-    localStorage.setItem("explore_widgets_v3", JSON.stringify(widgets));
-  }, [widgets]);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (showLocationPrompt && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const geoResp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const geoData = await geoResp.json();
-            const city = geoData.address.city || geoData.address.town || geoData.address.village || "Unknown City";
-            setLocation(city);
-            localStorage.setItem("explore_location", city);
-            
-            const weatherResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-            const weatherData = await weatherResp.json();
-            if (weatherData.current_weather) {
-              setWidgets(prev => prev.map(w => w.type === "weather" ? { ...w, temp: Math.round(weatherData.current_weather.temperature) } : w));
-            }
-            setShowLocationPrompt(false);
-          } catch (e) {
-            console.error("Weather/Location fetch failed", e);
-          }
-        },
-        (error) => console.error("Location access denied", error)
-      );
-    }
-  }, [showLocationPrompt]);
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      onAction("app_search", searchQuery);
-    }
+  const greetings = () => {
+    const hour = time.getHours();
+    if (hour < 12) return "Chào buổi sáng";
+    if (hour < 18) return "Chào buổi chiều";
+    return "Chào buổi tối";
   };
-
-  const updateLocation = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (tempLocation.trim()) {
-      setLocation(tempLocation);
-      localStorage.setItem("explore_location", tempLocation);
-      setShowLocationPrompt(false);
-    }
-  };
-
-  const removeWidget = (id: string) => setWidgets(widgets.filter(w => w.id !== id));
-
-  const resizeWidget = (id: string) => {
-    const sizes = ["small", "medium", "large"];
-    setWidgets(widgets.map(w => {
-      if (w.id === id) {
-        const nextSize = sizes[(sizes.indexOf(w.size) + 1) % sizes.length];
-        return { ...w, size: nextSize };
-      }
-      return w;
-    }));
-  };
-
-  const addWidget = (type: string) => {
-    const newWidget = {
-      id: `${type}_${Date.now()}`,
-      type,
-      size: type === "quickaccess" ? "large" : "medium"
-    };
-    setWidgets([...widgets, newWidget]);
-  };
-
-  const activeWidgetInfo = availableWidgets.find(w => w.type === selectedWidgetType);
-
-  if (showLocationPrompt) {
-    return (
-      <div className={`flex-1 flex flex-col items-center justify-center p-8 text-center ${isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900"}`}>
-        <div className="w-20 h-20 bg-blue-500/10 rounded-[2.5rem] flex items-center justify-center mb-8">
-           <MapPin size={40} className="text-blue-500" />
-        </div>
-        <h2 className="text-3xl font-black uppercase tracking-tighter mb-4 italic italic">Chào mừng tới My Feed</h2>
-        <p className="text-slate-500 max-w-sm mb-8 font-medium">Chúng tôi cần biết vị trí của bạn để cung cấp thông tin trải nghiệm chính xác nhất.</p>
-        <form onSubmit={updateLocation} className="w-full max-w-md relative">
-          <input 
-            type="text"
-            autoFocus
-            value={tempLocation}
-            onChange={(e) => setTempLocation(e.target.value)}
-            placeholder="Nhập tên thành phố của bạn (Vd: Hanoi)..."
-            className={`w-full px-8 py-5 rounded-full border-2 text-lg font-medium outline-none transition-all ${isDark ? "bg-white/5 border-white/10 focus:border-blue-500 text-white" : "bg-white border-slate-200 focus:border-blue-500 text-slate-900"}`}
-          />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors shadow-lg">
-            <ArrowRight size={20} />
-          </button>
-        </form>
-      </div>
-    );
-  }
 
   return (
-    <div className={`flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative ${featureFlags?.xaml_experience ? "bg-transparent" : (isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900")}`}>
-      <div className={`fixed inset-0 pointer-events-none transition-opacity duration-1000 ${(liquidGlass === "glassy" && !featureFlags?.xaml_experience) ? "opacity-100" : "opacity-0"}`} style={{ background: 'linear-gradient(135deg, #2d0b3b 0%, #1a0525 100%)', zIndex: 0 }} />
-      <div className="relative z-10 w-full h-full flex flex-col">
-      {/* Search Bar */}
-      <div className="max-w-4xl mx-auto mb-12 relative group mt-4 w-full">
-        <form onSubmit={handleFormSubmit}>
-          <div className={`absolute inset-0 bg-blue-500/5 blur-3xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity`} />
-          <div className={`relative flex items-center shadow-sm rounded-[2.5rem] px-8 py-5 border transition-all ${isDark ? "bg-white/5 border-white/10" : "bg-slate-200 border-transparent focus-within:bg-white focus-within:border-blue-500 focus-within:shadow-2xl focus-within:shadow-blue-500/10"}`}>
-            <div className="flex items-center gap-3 mr-6 text-slate-400">
-              <Search size={22} />
-              <div className="h-6 w-px bg-slate-300/30" />
-              <Globe size={18} />
-            </div>
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Nhập nội dung tìm kiếm..."
-              className={`flex-1 bg-transparent border-none outline-none text-lg font-medium ${isDark ? "text-white placeholder-white/20" : "text-slate-900 placeholder-slate-400"}`}
-            />
-            <button type="submit" className="p-2 text-blue-600 hover:scale-110 transition-transform">
-              <ArrowRight size={24} />
-            </button>
+    <div className={`flex-1 overflow-y-auto custom-scrollbar relative ${isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900"}`}>
+      <div className="max-w-4xl mx-auto px-6 py-20 flex flex-col items-center">
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16 space-y-4"
+        >
+          <div className="flex flex-col items-center gap-1">
+             <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30 italic">Vplay Intelligence</span>
+             <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-2 italic">
+               {greetings()}
+             </h1>
           </div>
-        </form>
-        <div className="flex flex-wrap gap-4 mt-6 justify-center">
-           <button 
-            onClick={() => {
-              if (searchQuery.trim()) {
-                onAction("app_search", searchQuery);
-              }
-            }}
-            className={`px-8 py-3 rounded-full text-sm font-black transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 uppercase tracking-widest ${isDark ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 border border-slate-200 hover:shadow-xl"}`}
-          >
-            <Search size={16} />
-            Search Vplay
-          </button>
-          <button 
-            onClick={() => {
-              if (searchQuery.trim()) {
-                onAction("web_search", searchQuery);
-              }
-            }}
-            className={`px-8 py-3 rounded-full text-sm font-black transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 uppercase tracking-widest ${isDark ? "bg-blue-500 text-white hover:bg-blue-400" : "bg-blue-600 text-white hover:bg-blue-700"}`}
-          >
-            <Globe size={16} />
-            Search the web
-          </button>
-        </div>
-      </div>
+          
+          <div className="flex items-center justify-center gap-4 text-[11px] font-black uppercase tracking-widest opacity-40">
+            <div className="flex items-center gap-2">
+              <Clock size={14} className="text-blue-500" />
+              <span>{time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <div className="w-1 h-1 bg-current rounded-full" />
+            <div className="flex items-center gap-2">
+              <Calendar size={14} className="text-purple-500" />
+              <span>{time.toLocaleDateString('vi-VN', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            </div>
+          </div>
+        </motion.div>
 
-      <div className="max-w-7xl mx-auto mb-20 w-full">
-        <div className="flex items-center justify-between mb-8 px-4">
-           <h3 className="text-sm font-black uppercase tracking-[0.3em] opacity-40 italic">My Widgets</h3>
-           <div className="flex items-center gap-2">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="w-full max-w-xl mb-20"
+        >
+          <SearchBar 
+            isDark={isDark}
+            query={searchQuery}
+            setQuery={setSearchQuery}
+            onClose={() => {}}
+            liquidGlass={liquidGlass}
+            featureFlags={featureFlags}
+            placeholder={activeSearchPlaceholder}
+            onNavigate={onNavigate}
+            variant="minimal"
+          />
+          <div className="flex flex-wrap justify-center gap-2 mt-8">
+             {["Bóng đá", "Thời tiết", "VTV6", "Tin tức", "Chứng khoán", "Film"].map(tag => (
+               <button 
+                key={tag}
+                onClick={() => {
+                  setSearchQuery(tag);
+                  onAction("app_search", tag);
+                }}
+                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${isDark ? "border-white/10 hover:bg-white/5 bg-white/2" : "border-black/5 hover:bg-black/5 bg-black/2"} opacity-40 hover:opacity-100 hover:scale-105 active:scale-95`}
+               >
+                 {tag}
+               </button>
+             ))}
+          </div>
+        </motion.div>
+
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div className={`p-8 rounded-[32px] border flex flex-col gap-6 transition-all hover:translate-y-[-4px] hover:shadow-2xl ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-sm"}`}>
+              <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                       <Zap size={20} className="text-blue-500" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 italic">Tiện ích nhanh</span>
+                 </div>
+              </div>
+              <p className="text-2xl font-black tracking-tighter italic">Cá nhân hóa bảng tin của bạn với các widgets thông minh.</p>
               <button 
-                onClick={() => setShowWidgetPicker(true)}
-                className={`flex items-center gap-3 px-8 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-xl active:scale-95 ${isDark ? "bg-blue-500 text-white hover:bg-blue-400" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                onClick={() => setShowWidgets(true)}
+                className="mt-4 py-3 px-6 rounded-2xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all self-start shadow-xl active:scale-95"
               >
-                <Plus size={16} />
-                Thêm tiện ích
+                Mở bảng tiện ích
               </button>
-              
+           </div>
+
+           <div className={`p-8 rounded-[32px] border flex flex-col gap-6 transition-all hover:translate-y-[-4px] hover:shadow-2xl ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-sm"}`}>
+              <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                       <Sparkles size={20} className="text-purple-500" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 italic">V-pilot AI</span>
+                 </div>
+              </div>
+              <p className="text-2xl font-black tracking-tighter italic">Hãy để trợ lý ảo V-pilot giúp bạn tìm kiếm nội dung yêu thích.</p>
               <button 
-                onClick={() => setWidgets([])}
-                className="p-3 rounded-2xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
-                title="Clear all"
+                onClick={() => onNavigate("V-pilot")}
+                className="mt-4 py-3 px-6 rounded-2xl bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all self-start shadow-xl active:scale-95"
               >
-                <Trash2 size={18} />
+                Trò chuyện ngay
               </button>
            </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 auto-rows-[200px]">
-          <AnimatePresence mode="popLayout">
-            {widgets.map((w) => (
-              <WidgetWrapper 
-                key={w.id} 
-                w={w} 
-                isDark={isDark} 
-                location={location} 
-                time={time} 
-                onResize={() => resizeWidget(w.id)} 
-                onRemove={() => removeWidget(w.id)}
-                addNotification={addNotification}
-                onAction={onAction}
-                onNavigate={onNavigate}
-                setShowVTV6Popup={setShowVTV6Popup}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* NEW WIDGET DIALOG */}
-      <AnimatePresence>
-        {showWidgetPicker && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowWidgetPicker(false)}
-                className="absolute inset-0 bg-black/80 backdrop-blur-md" 
-              />
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                className={`relative w-full max-w-4xl h-[600px] flex rounded-[48px] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.6)] border ${isDark ? "bg-[#18181b] border-white/10" : "bg-white border-slate-200"}`}
-              >
-                {/* Left: List */}
-                <div className={`w-80 border-r flex flex-col ${isDark ? "bg-black/20 border-white/5" : "bg-slate-50 border-slate-200"}`}>
-                   <div className="p-8 border-b border-current opacity-10">
-                      <h4 className="text-lg font-black uppercase tracking-tighter italic">Pick Widget</h4>
-                   </div>
-                   <div className="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
-                      {availableWidgets.map(widget => {
-                        const isPinned = widgets.find(w => w.type === widget.type);
-                        const isSelected = selectedWidgetType === widget.type;
-                        return (
-                          <button
-                            key={widget.type}
-                            onClick={() => setSelectedWidgetType(widget.type)}
-                            className={`w-full flex items-center justify-between p-4 rounded-3xl transition-all ${isSelected ? (isDark ? "bg-white/10" : "bg-white shadow-xl") : "hover:bg-current hover:opacity-5_"}`}
-                          >
-                            <div className="flex items-center gap-4">
-                               <div className={`p-2 rounded-xl ${isSelected ? "bg-blue-600 text-white" : "bg-current opacity-10 text-current"}`}>
-                                 <widget.icon size={18} />
-                               </div>
-                               <span className={`text-sm font-bold ${isSelected ? "opacity-100" : "opacity-40"}`}>{widget.label}</span>
-                            </div>
-                            {isPinned && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
-                          </button>
-                        );
-                      })}
-                   </div>
-                   <div className="p-4 border-t border-current opacity-10 flex items-center gap-2">
-                       <LayoutGrid size={14} className="opacity-40" />
-                       <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Find more at Store</span>
-                   </div>
-                </div>
-
-                {/* Right: Preview */}
-                <div className="flex-1 flex flex-col p-12 items-center justify-center text-center">
-                   <div className="mb-8 flex flex-col items-center">
-                      <h3 className="text-4xl font-black uppercase tracking-tighter italic mb-2">{activeWidgetInfo?.label}</h3>
-                      <p className="opacity-40 text-sm max-w-sm leading-relaxed">{activeWidgetInfo?.description}</p>
-                   </div>
-                   
-                   <div className="mb-12 transform scale-125">
-                      <div className={`w-64 h-32 rounded-[32px] border p-6 text-left flex flex-col justify-between ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"}`}>
-                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-600 rounded-xl text-white">
-                               {activeWidgetInfo && <activeWidgetInfo.icon size={18} />}
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Preview</span>
-                         </div>
-                         <div className="h-8 w-full bg-current opacity-10 rounded-full animate-pulse" />
-                      </div>
-                   </div>
-
-                   <button 
-                    onClick={() => {
-                      toggleWidget(selectedWidgetType);
-                    }}
-                    className={`px-12 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-2xl active:scale-95 flex items-center gap-3 ${widgets.find(w => w.type === selectedWidgetType) ? "bg-red-500 hover:bg-red-600 shadow-red-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20 text-white"}`}
-                  >
-                    {widgets.find(w => w.type === selectedWidgetType) ? (
-                      <>
-                        <Minus size={18} />
-                        Xóa khỏi Feed
-                      </>
-                    ) : (
-                      <>
-                        <Plus size={18} />
-                        Thêm vào Feed
-                      </>
-                    )}
-                  </button>
-
-                  <button 
-                    onClick={() => setShowWidgetPicker(false)}
-                    className="absolute top-8 right-8 p-3 rounded-full hover:bg-current hover:opacity-5_ transition-all"
-                  >
-                    <X size={24} className="opacity-40" />
-                  </button>
-                </div>
-              </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
       </div>
     </div>
   );
@@ -1783,7 +1334,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className={`group relative rounded-[40px] border p-8 flex flex-col justify-between overflow-hidden transition-all shadow-xl ${getBgClass()} ${
+      className={`group relative rounded-[20px] border p-8 flex flex-col justify-between overflow-hidden transition-all shadow-xl ${getBgClass()} ${
         w.size === "small" ? "col-span-1 row-span-1" :
         w.size === "medium" ? "col-span-2 row-span-1" :
         "col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-3 row-span-1"
@@ -7802,7 +7353,7 @@ function WidgetsDashboard({
             height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
             top: isWidgetsFullScreen ? 0 : 16,
             left: isWidgetsFullScreen ? 0 : 16,
-            borderRadius: isWidgetsFullScreen ? 0 : 32
+            borderRadius: isWidgetsFullScreen ? 0 : 20
           }}
           exit={{ opacity: 0, x: "-100%" }}
           transition={{ type: "spring", damping: 35, stiffness: 400 }}
@@ -7871,7 +7422,7 @@ function WidgetsDashboard({
               {pinnedWidgets.map((widget) => {
                 if (widget.type === 'weather') {
                   return (
-                    <div key={widget.id} className={`p-6 rounded-[32px] border flex flex-col gap-6 relative overflow-hidden group transition-all hover:translate-y-[-4px] hover:shadow-xl ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
+                    <div key={widget.id} className={`p-6 rounded-[20px] border flex flex-col gap-6 relative overflow-hidden group transition-all hover:translate-y-[-4px] hover:shadow-xl ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                           <button onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><X size={12} /></button>
                        </div>
@@ -7896,7 +7447,7 @@ function WidgetsDashboard({
                 }
                 if (widget.type === 'stocks' || widget.type === 'sports') {
                   return (
-                    <div key={widget.id} className={`p-6 rounded-[32px] border flex flex-col gap-4 relative group transition-all hover:translate-y-[-4px] hover:shadow-xl ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
+                    <div key={widget.id} className={`p-6 rounded-[20px] border flex flex-col gap-4 relative group transition-all hover:translate-y-[-4px] hover:shadow-xl ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
                       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                          <button onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))} className="p-1.5 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><X size={10} /></button>
                       </div>
@@ -7922,7 +7473,7 @@ function WidgetsDashboard({
                 return null;
               })}
               {isWidgetsFullScreen && (
-                <div className={`p-6 rounded-[32px] border flex flex-col gap-4 relative transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
+                <div className={`p-6 rounded-[20px] border flex flex-col gap-4 relative transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
                    <div className="flex items-center gap-2 text-amber-500">
                       <Zap size={16} />
                       <span className="text-[10px] font-black uppercase tracking-widest text-current">Đề xuất cho bạn</span>
@@ -7943,7 +7494,7 @@ function WidgetsDashboard({
                    { title: "Windows Mode cho TV - Kỷ nguyên mới", time: "5 giờ trước", category: "Giải trí", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", desc: "Biến chiếc TV của bạn thành một trung tâm giải trí đa năng hơn bao giờ hết." },
                    { title: "V-League 2024: Cuộc đua vô địch gay cấn", time: "8 giờ trước", category: "Thể thao", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", desc: "Những diễn biến mới nhất từ các sân cỏ Việt Nam cuối tuần qua." }
                  ].map((item, i) => (
-                   <div key={i} className={`group cursor-pointer rounded-[32px] border overflow-hidden transition-all hover:translate-y-[-4px] hover:shadow-2xl ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-black/5 border-black/5 hover:bg-black/10"}`}>
+                   <div key={`news-feed-${i}`} className={`group cursor-pointer rounded-[20px] border overflow-hidden transition-all hover:translate-y-[-4px] hover:shadow-2xl ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-black/5 border-black/5 hover:bg-black/10"}`}>
                       <div className="h-40 overflow-hidden relative">
                          <img src={item.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="News" />
                          <div className="absolute top-4 left-4">
@@ -8912,7 +8463,7 @@ function WindowsDesktop({
 }
 
 
-function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featureFlags, placeholder, onNavigate }: { isDark: boolean, query: string, setQuery: (q: string) => void, onClose: () => void, liquidGlass: "glassy" | "tinted", isTop?: boolean, featureFlags?: any, placeholder?: string, onNavigate?: (tab: string) => void }) {
+function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featureFlags, placeholder, onNavigate, setHoveredItem, setHoveredRect, variant = "standard" }: { isDark: boolean, query: string, setQuery: (q: string) => void, onClose: () => void, liquidGlass: "glassy" | "tinted", isTop?: boolean, featureFlags?: any, placeholder?: string, onNavigate?: (tab: string) => void, setHoveredItem?: (s: string | null) => void, setHoveredRect?: (r: DOMRect | null) => void, variant?: "standard" | "minimal" }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isListening, setIsListening] = useState(false);
 
@@ -8945,26 +8496,42 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featu
 
   const isGlassy = liquidGlass === "glassy";
   
-  const iconColor = (isGlassy ? "text-white" : "text-black");
-  const placeholderColor = (isGlassy ? "placeholder-white/60" : "placeholder-black/60");
+  const iconColor = (isGlassy ? "text-white/60" : "text-black/60");
+  const placeholderColor = (isGlassy ? "placeholder-white/40" : "placeholder-black/40");
   const textColor = (isGlassy ? "text-white" : "text-black");
 
+  // Fluent design matches the user's reference image
+  const containerBg = isDark ? "bg-[#1c1c1c]" : "bg-[#f3f3f3]";
+  const borderColor = isDark ? "border-white/10" : "border-black/10";
+
   return (
-    <div className={`flex items-center gap-1 md:gap-4 px-0 md:px-6 py-2 ${isTop ? "h-10 md:h-12" : "h-14 md:h-16"} w-full ${isTop ? "max-w-xl" : "max-w-4xl"} relative group transition-all ${(isGlassy ? (isTop ? "bg-transparent" : "bg-white/5") : (isTop ? "bg-transparent" : "bg-black/5"))}`}>
-      <div className="flex items-center gap-1 md:gap-2 flex-1">
-        <Search className={`h-4 w-4 md:h-5 md:w-5 ${iconColor} flex-shrink-0 transition-colors group-focus-within:text-blue-500`} />
+    <div className={`flex items-center gap-1 md:gap-4 px-3 md:px-4 py-1.5 ${isTop ? "h-10" : "h-12"} w-full ${isTop ? "max-w-xl" : "max-w-3xl"} relative group transition-all rounded-[4px] ${variant === "minimal" ? "bg-transparent border-none shadow-none" : `border ${borderColor} ${containerBg} shadow-sm`} overflow-hidden`}>
+      <div className="flex items-center gap-1 md:gap-2 flex-1 h-full">
         <input
           ref={inputRef}
           type="text"
-          placeholder={placeholder || "Search Vplay"}
+          placeholder={placeholder || "Search controls and samples..."}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className={`flex-1 bg-transparent border-none outline-none ${isTop ? "text-sm" : "text-base"} font-medium ${textColor} ${placeholderColor}`}
+          className={`flex-1 bg-transparent border-none outline-none ${isTop ? "text-sm" : "text-[15px]"} font-normal ${textColor} ${placeholderColor} h-full py-0`}
         />
+        <Search className={`h-4 w-4 ${iconColor} flex-shrink-0 transition-colors group-focus-within:text-blue-400`} />
       </div>
-      <div className={`absolute bottom-0 left-0 h-[2px] w-full transition-all duration-300 ${(isGlassy ? "bg-white/20" : "bg-black/10")} group-focus-within:bg-blue-500 group-focus-within:shadow-[0_0_15px_rgba(59,130,246,0.6)]`} />
-      <div className="flex items-center gap-4">
+      
+      {/* Bottom Accent Line - Fluent active indicator */}
+      <div className={`absolute bottom-0 left-0 h-[1.5px] w-full transition-all duration-300 opacity-80 ${isDark ? "bg-white/40" : "bg-black/20"} group-focus-within:bg-blue-500 group-focus-within:opacity-100 group-focus-within:h-[2px]`} />
+
+      {/* Floating Tooltips/Buttons moved inside search bar for compact look */}
+      <div className="flex items-center gap-3 ml-2 border-l border-white/5 pl-3">
         <button 
+          onMouseEnter={(e) => {
+            setHoveredItem?.("V-pilot");
+            setHoveredRect?.(e.currentTarget.getBoundingClientRect());
+          }}
+          onMouseLeave={() => {
+            setHoveredItem?.(null);
+            setHoveredRect?.(null);
+          }}
           onClick={() => {
             if (featureFlags?.ai_tools) {
               onNavigate?.("V-pilot");
@@ -8972,27 +8539,41 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featu
               window.open("https://copilot.microsoft.com", "_blank");
             }
           }}
-          className={`p-2 rounded-full transition-all hover:scale-110 active:scale-95 bg-black/5 hover:bg-black/10`}
-          title="V-pilot"
+          className={`transition-all hover:scale-110 active:scale-95 opacity-60 hover:opacity-100`}
         >
           <img 
             src={vpilotIcon} 
-            className="w-5 h-5 object-contain" 
-            alt="V-pilot"          />
+            className="w-4 h-4 object-contain grayscale hover:grayscale-0 transition-all" 
+            alt="V-pilot"
+          />
         </button>
         <button 
+          onMouseEnter={(e) => {
+            setHoveredItem?.("Operator Console");
+            setHoveredRect?.(e.currentTarget.getBoundingClientRect());
+          }}
+          onMouseLeave={() => {
+            setHoveredItem?.(null);
+            setHoveredRect?.(null);
+          }}
           onClick={() => onNavigate?.("Search")}
-          className={`p-2 rounded-full transition-all hover:scale-110 active:scale-95 bg-black/5 hover:bg-black/10`}
-          title="Operator Console"
+          className={`transition-all hover:scale-110 active:scale-95 opacity-60 hover:opacity-100`}
         >
-          <Terminal size={20} className={iconColor} />
+          <Terminal size={16} className={iconColor} />
         </button>
         <button 
+          onMouseEnter={(e) => {
+            setHoveredItem?.(isListening ? "Đang nghe..." : "Voice Search");
+            setHoveredRect?.(e.currentTarget.getBoundingClientRect());
+          }}
+          onMouseLeave={() => {
+            setHoveredItem?.(null);
+            setHoveredRect?.(null);
+          }}
           onClick={startVoiceSearch}
-          className={`p-2 rounded-full transition-all ${isListening ? "bg-red-500 text-white animate-pulse" : `${iconColor} hover:opacity-70 group`}`}
-          title="Đang nghe..."
+          className={`transition-all ${isListening ? "text-red-500 animate-pulse" : `opacity-60 hover:opacity-100`}`}
         >
-          <Mic className={`${isTop ? "h-5 w-5" : "h-7 w-7"} group-hover:scale-110 transition-transform`} />
+          <Mic size={16} className={iconColor} />
         </button>
       </div>
     </div>
@@ -9192,11 +8773,11 @@ function AIToolsMenu({ onAction, align = "bottom", featureFlags, tabs, activeTab
       {featureFlags.copilot_action_v2 ? (
         <div className="max-h-[70vh] overflow-y-auto custom-scrollbar p-1 space-y-1">
           <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Navigation</div>
-          {tabs.map((tab: any) => {
+          {tabs.map((tab: any, idx) => {
             const Icon = tab.icon;
             return (
               <button 
-                key={tab.id || tab.name}
+                key={`floating-tab-${tab.id || tab.name}-${idx}`}
                 onClick={() => {
                   if (tab.id === "VTV6_Tab") {
                     setShowVTV6Popup(true);
@@ -9870,7 +9451,7 @@ export default function App() {
   }, [activeTab, featureFlags?.search_placeholder_treatment, featureFlags?.search_placeholder_treatment_id, randomSearchSeed, showWidgets, isWidgetsFullScreen]);
 
   const showSearchBar = useMemo(() => {
-    const allowedTabs = ["Trang chủ", "My Feed", "Phát sóng", "Pizza", "Design Hub", "Gallery", "Cài đặt"];
+    const allowedTabs = ["Trang chủ", "My Feed", "Phát sóng", "Pizza", "Design Hub", "Cài đặt"];
     return allowedTabs.includes(activeTab as string) || (showWidgets && isWidgetsFullScreen);
   }, [activeTab, showWidgets, isWidgetsFullScreen]);
 
@@ -10600,19 +10181,6 @@ export default function App() {
             paddingLeft: !isSidebarRight ? (isSidebarExpanded ? (featureFlags.sidebar_v3 ? 100 : sidebarWidth) : 80) : undefined,
           } : {}}
         >
-          <WidgetsDashboard 
-            showWidgets={showWidgets} 
-            setShowWidgets={setShowWidgets} 
-            isWidgetsFullScreen={isWidgetsFullScreen} 
-            setIsWidgetsFullScreen={setIsWidgetsFullScreen} 
-            isMobile={isMobile}
-            weatherCity={weatherCity}
-            weatherData={weatherData}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            setIsSearchOpen={setIsSearchOpen}
-            isDark={isDark}
-          />
           <WindowsDesktop 
             channels={scambidifiedChannels} 
             onOpenApp={openWindow} 
@@ -10791,81 +10359,50 @@ export default function App() {
                   )}
                </div>
 
-               {/* Center Section (Search) */}
-               {showSearchBar && (
-                 <div className="flex-1 flex justify-center px-4 md:px-8 relative">
-                    <div className="w-full max-w-[640px] relative">
-                      <div className="relative group bg-black/30 hover:bg-black/50 border border-white/5 rounded-lg transition-all flex items-center px-4 py-2 focus-within:bg-black/60 focus-within:border-white/10">
-                         <Search size={14} className="text-white/20 mr-3 shrink-0" />
-                         <input 
-                           type="text"
-                           value={searchQuery}
-                           onChange={(e) => {
-                             setSearchQuery(e.target.value);
-                             if (e.target.value.length > 0) setIsSearchOpen(true);
-                           }}
-                           placeholder={activeSearchPlaceholder}
-                           className="bg-transparent border-none outline-none text-[11px] font-medium w-full placeholder:text-white/10 text-white"
-                         />
-                         <div className="flex items-center gap-2 ml-2">
-                             {featureFlags.cobalt_ui && (
-                               <motion.div 
-                                 onMouseEnter={(e) => {
-                                   setHoveredHeadingItem("Pizza - Thử nghiệm");
-                                   setHoveredHeadingRect(e.currentTarget.getBoundingClientRect());
-                                 }}
-                                 onMouseLeave={() => {
-                                   setHoveredHeadingItem(null);
-                                   setHoveredHeadingRect(null);
-                                 }}
-                                 initial={{ scale: 0 }} 
-                                 animate={{ scale: 1 }} 
-                                 className="p-1.5 bg-white/10 rounded-md cursor-help hover:bg-white/20 transition-all focus:outline-none"
-                               >
-                                 <Pizza size={14} className="text-amber-500" />
-                               </motion.div>
-                             )}
-                             <button 
-                               onMouseEnter={(e) => {
-                                 setHoveredHeadingItem("Tìm kiếm bằng giọng nói");
-                                 setHoveredHeadingRect(e.currentTarget.getBoundingClientRect());
-                               }}
-                               onMouseLeave={() => {
-                                 setHoveredHeadingItem(null);
-                                 setHoveredHeadingRect(null);
-                               }}
-                               className="p-1.5 hover:bg-white/10 rounded-md transition-all text-white/40 hover:text-white group/mic focus:outline-none"
-                             >
-                               <Mic size={14} className="group-hover/mic:scale-110 transition-transform" />
-                             </button>
-                          </div>
-                      </div>
+                {showSearchBar && (
+                  <div className="flex-1 flex justify-center px-4 md:px-8 relative">
+                     <div className="w-full max-w-[640px]">
+                        <SearchBar 
+                          isDark={isDark}
+                          query={searchQuery}
+                          setQuery={(q) => {
+                            setSearchQuery(q);
+                            if (q.length > 0) setIsSearchOpen(true);
+                          }}
+                          onClose={() => setIsSearchOpen(false)}
+                          liquidGlass={liquidGlass}
+                          isTop={true}
+                          featureFlags={featureFlags}
+                          placeholder={activeSearchPlaceholder}
+                          onNavigate={setActiveTab}
+                          variant="minimal"
+                        />
                       
-                      <AnimatePresence>
-                        {isSearchOpen && searchQuery.trim().length > 0 && (
-                          <div className="absolute top-full left-0 right-0 mt-2 z-[70]">
-                            <SearchPopup 
-                              isDark={isDark} 
-                              searchQuery={searchQuery} 
-                              setActiveChannel={handleChannelSelect} 
-                              onClose={() => setIsSearchOpen(false)} 
-                              favorites={favorites}
-                              liquidGlass={liquidGlass}
-                              setActiveTab={setActiveTab}
-                              setIsDark={setIsDark}
-                              setLiquidGlass={setLiquidGlass}
-                              onLogin={handleLogin}
-                              onLogout={handleLogout}
-                              setSortOrder={setSortOrder}
-                              position="top"
-                              channels={scambidifiedChannels}
-                            />
-                          </div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                 </div>
-               )}
+                        <AnimatePresence>
+                          {isSearchOpen && searchQuery.trim().length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2 z-[70]">
+                              <SearchPopup 
+                                isDark={isDark} 
+                                searchQuery={searchQuery} 
+                                setActiveChannel={handleChannelSelect} 
+                                onClose={() => setIsSearchOpen(false)} 
+                                favorites={favorites}
+                                liquidGlass={liquidGlass}
+                                setActiveTab={setActiveTab}
+                                setIsDark={setIsDark}
+                                setLiquidGlass={setLiquidGlass}
+                                onLogin={handleLogin}
+                                onLogout={handleLogout}
+                                setSortOrder={setSortOrder}
+                                position="top"
+                                channels={scambidifiedChannels}
+                              />
+                            </div>
+                          )}
+                        </AnimatePresence>
+                     </div>
+                  </div>
+                )}
 
                {/* Right Section (Stats) */}
                <div className="flex items-center gap-6 px-6 select-none shrink-0">
@@ -11122,6 +10659,8 @@ export default function App() {
                     featureFlags={featureFlags}
                     placeholder={activeSearchPlaceholder}
                     onNavigate={setActiveTab}
+                    setHoveredItem={setHoveredHeadingItem}
+                    setHoveredRect={setHoveredHeadingRect}
                   />
                 </div>
               </div>
@@ -11171,13 +10710,8 @@ export default function App() {
                       >
                         <div className="text-center space-y-4">
                            <h2 className="text-2xl font-normal tracking-tight text-white/60">Working on it...</h2>
-                           <div className="flex items-center justify-center gap-3">
-                              <img 
-                                src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-                                alt="Loading" 
-                                className="w-8 h-8 filter brightness-200 opacity-20" 
-                                referrerPolicy="no-referrer"
-                              />
+                           <div className="flex items-center justify-center w-full">
+                              <LoadingAnimation featureFlags={{...featureFlags, cobalt_ui: true}} isDark={true} className="w-full max-w-md" />
                            </div>
                         </div>
                       </motion.div>
@@ -11300,7 +10834,7 @@ export default function App() {
               )}
               {(displayTab === "My Feed") && (
                 <div className={`rounded-[32px] overflow-hidden ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <MyFeedContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} setGlobalSearch={setSearchQuery} addNotification={addNotification} setShowVTV6Popup={setShowVTV6Popup} />
+                  <MyFeedContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} activeSearchPlaceholder={activeSearchPlaceholder} setShowWidgets={setShowWidgets} />
                 </div>
               )}
               {displayTab === "Design Hub" && (
@@ -11323,11 +10857,7 @@ export default function App() {
                    />
                 </div>
               )}
-              {displayTab === "Gallery" && (
-                <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <GalleryContent isDark={isDark} liquidGlass={liquidGlass} featureFlags={featureFlags} onAction={onAIToolsAction} channels={scambidifiedChannels} />
-                </div>
-              )}
+
               {displayTab === "Pizza" && (
                 <ExperimentalContent 
                   isDark={isDark} 
@@ -11369,6 +10899,8 @@ export default function App() {
                       featureFlags={featureFlags} 
                       placeholder={activeSearchPlaceholder}
                       onNavigate={setActiveTab}
+                      setHoveredItem={setHoveredHeadingItem}
+                      setHoveredRect={setHoveredHeadingRect}
                     />
                   </div>
                   <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -11778,13 +11310,13 @@ export default function App() {
                 <AnimatePresence initial={false}>
                 {/* Notification Bell moved to header */}
 
-                {tabs.filter(t => t.id !== "Cài đặt").map((tab) => {
+                {tabs.filter(t => t.id !== "Cài đặt").map((tab, idx) => {
                   const Icon = tab.icon;
                   const isActive = (tab.id === "V-pilot" && featureFlags.ai_sidebar) ? isAISidebarOpen : activeTab === (tab.id || tab.name);
                   const isAIToolsTab = tab.id === "V-pilot" && featureFlags.ai_tools;
 
                   return (
-                    <div key={tab.id || tab.name} className="relative">
+                    <div key={`sidebar-tab-${tab.id || tab.name}-${idx}`} className="relative">
                       <motion.button
                         layout
                         initial={{ opacity: 0, x: -10 }}
@@ -11807,11 +11339,6 @@ export default function App() {
                           }
                           if (tab.id === "VTV6_Tab") {
                             setShowVTV6Popup(true);
-                            return;
-                          }
-                          if (tab.id === "My Feed") {
-                            setShowWidgets(true);
-                            setIsWidgetsFullScreen(true);
                             return;
                           }
                           setActiveTab(tab.id || tab.name);
@@ -12091,11 +11618,6 @@ export default function App() {
                             }
                              if (tab.id === "VTV6_Tab") {
                               setShowVTV6Popup(true);
-                              return;
-                            }
-                            if (tab.id === "My Feed") {
-                              setShowWidgets(true);
-                              setIsWidgetsFullScreen(true);
                               return;
                             }
                             setActiveTab(tab.id || tab.name);
@@ -13057,6 +12579,23 @@ export default function App() {
       )}
 
       {/* Modals & Overlays */}
+      <AnimatePresence>
+        {showWidgets && (
+          <WidgetsDashboard 
+            showWidgets={showWidgets} 
+            setShowWidgets={setShowWidgets} 
+            isWidgetsFullScreen={isWidgetsFullScreen} 
+            setIsWidgetsFullScreen={setIsWidgetsFullScreen} 
+            isMobile={isMobile}
+            weatherCity={weatherCity}
+            weatherData={weatherData}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            setIsSearchOpen={setIsSearchOpen}
+            isDark={isDark}
+          />
+        )}
+      </AnimatePresence>
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
@@ -13276,9 +12815,9 @@ export default function App() {
             isNarratorActive={isNarratorActive}
           />
         )}
-        <Tooltip text={hoveredHeadingItem || ""} show={!!hoveredHeadingItem} targetRect={hoveredHeadingRect} isDesktop={true} />
-    </div>
-  </MotionConfig>
+        <Tooltip text={hoveredHeadingItem || ""} show={!!hoveredHeadingItem} targetRect={hoveredHeadingRect} isDesktop={true} position="bottom" />
+      </div>
+    </MotionConfig>
     </div>
   );
 }
