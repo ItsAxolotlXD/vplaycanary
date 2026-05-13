@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, ChangeEvent, FormEvent, MouseEvent, ReactNode, Fragment, Dispatch, SetStateAction } from "react";
-import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad } from "lucide-react";
+import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
@@ -61,17 +61,16 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
   if (featureFlags?.cobalt_ui) {
     return (
       <div className={`flex flex-col items-center justify-center gap-2 ${className}`}>
-        <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? "bg-white/20" : "bg-black/5"}`}>
+        <div className={`h-1.5 w-full rounded-full overflow-hidden relative ${isDark ? "bg-white/20" : "bg-black/5"}`}>
           <motion.div 
-            initial={{ width: "0%" }}
-            animate={{ width: "100%" }}
+            initial={{ left: "-100%", width: "100%" }}
+            animate={{ left: "100%" }}
             transition={{ 
               duration: 2,
               repeat: Infinity, 
-              repeatType: "reverse",
               ease: "easeInOut"
             }}
-            className="h-full bg-blue-600 rounded-full"
+            className="absolute top-0 bottom-0 bg-blue-600 rounded-full w-2/3"
           />
         </div>
       </div>
@@ -367,15 +366,12 @@ const backgroundTracks = [
 ];
 
 const baseTabs = [
-  { name: "Home", icon: Home, id: "Trang chủ" },
+  { name: "Trang chủ", icon: Home, id: "Trang chủ" },
   { name: "My Feed", icon: Search, id: "My Feed" },
   { name: "Design Hub", icon: LayoutDashboard, id: "Design Hub" },
-  { name: "Search or use commands", icon: Search, id: "Search", tooltip: "Search for channels or use console commands" },
   { name: "Phát sóng", icon: Tv, id: "Phát sóng" },
   { name: "V-pilot", icon: Sparkles, id: "V-pilot" },
-  { name: "Quản trị", icon: Shield, id: "Quản trị" },
   { name: "Pizza", icon: Pizza, id: "Pizza", className: "-scale-x-100", tooltip: "Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary" },
-  { name: "VTV6 - Coming soon", icon: "https://static.wikia.nocookie.net/logos/images/2/21/VTV6_logo_%282026%29.png/revision/latest/scale-to-width-down/1000?cb=20260508074729&path-prefix=vi", id: "VTV6_Tab", tooltip: "Kênh VTV6 sắp trở lại!" },
   { name: "Cài đặt", icon: Settings, id: "Cài đặt" },
 ];
 
@@ -7326,7 +7322,8 @@ function WidgetsDashboard({
   searchQuery,
   setSearchQuery,
   setIsSearchOpen,
-  isDark 
+  isDark,
+  user
 }: any) {
   const [pinnedWidgets, setPinnedWidgets] = useState<any[]>(() => [
     { id: 'weather', type: 'weather', size: 'medium' },
@@ -7334,6 +7331,7 @@ function WidgetsDashboard({
     { id: 'sports', type: 'sports', size: 'small' }
   ]);
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed'>('widgets');
 
   const addWidget = (type: string, size: string) => {
     const newWidget = { id: Date.now().toString(), type, size };
@@ -7349,241 +7347,199 @@ function WidgetsDashboard({
           animate={{ 
             opacity: 1, 
             x: 0, 
-            width: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "500px"),
+            width: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "420px"),
             height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
             top: isWidgetsFullScreen ? 0 : 16,
             left: isWidgetsFullScreen ? 0 : 16,
-            borderRadius: isWidgetsFullScreen ? 0 : 20
+            borderRadius: isWidgetsFullScreen ? 0 : 12
           }}
           exit={{ opacity: 0, x: "-100%" }}
-          transition={{ type: "spring", damping: 35, stiffness: 400 }}
-          className={`fixed z-[10002] flex flex-col shadow-2xl border overflow-hidden backdrop-blur-3xl p-8 gap-6 ${
-            isDark ? "bg-[#0a0a0a]/80 border-white/10 text-white shadow-blue-500/10" : "bg-white/80 border-black/10 text-black shadow-2xl shadow-black/20"
+          transition={{ type: "spring", damping: 40, stiffness: 400 }}
+          className={`fixed z-[10002] flex shadow-2xl border overflow-hidden backdrop-blur-3xl ${
+            isDark ? "bg-[#1c1c1c]/90 border-white/10 text-white shadow-black/80" : "bg-[#f3f3f3]/90 border-black/10 text-black shadow-2xl shadow-black/20"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div 
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${isDark ? "bg-white/5" : "bg-black/5"}`}
-              >
-                <LayoutDashboard size={20} className="text-blue-500" />
-              </div>
-              <div className="flex flex-col">
-                <h2 className="text-xl font-black uppercase tracking-tighter leading-none text-current">Bảng tiện ích</h2>
-                <span className="text-[10px] font-bold opacity-30 mt-1 uppercase tracking-widest text-current">Cá nhân hóa không gian của bạn</span>
-              </div>
-            </div>
-
-            {isWidgetsFullScreen && (
-              <div className="flex-1 max-w-xl mx-8 relative group">
-                  <div className={`flex items-center px-6 py-3 rounded-2xl border transition-all ${isDark ? "bg-white/5 border-white/10 group-focus-within:bg-white/10 group-focus-within:border-white/20" : "bg-black/5 border-black/10 group-focus-within:bg-black/10 group-focus-within:border-black/20"}`}>
-                    <Search size={18} className="text-blue-500 mr-4" />
-                    <input 
-                      type="text" 
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        if (e.target.value.length > 0) setIsSearchOpen(true);
-                      }}
-                      placeholder="Search the web"
-                      className="bg-transparent border-none outline-none w-full text-sm font-bold placeholder:opacity-30 text-current"
-                    />
-                  </div>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2">
-              <button 
-                title={isWidgetsFullScreen ? "Thu nhỏ" : "show full screen"}
-                onClick={() => setIsWidgetsFullScreen(!isWidgetsFullScreen)}
-                className={`p-2.5 rounded-xl transition-all relative group ${isDark ? "hover:bg-white/10 text-white/60 hover:text-white" : "hover:bg-black/5 text-black/60 hover:text-black"}`}
-              >
-                 {isWidgetsFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-black text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                   {isWidgetsFullScreen ? "Thu nhỏ" : "show full screen"}
-                 </div>
-              </button>
-              <button className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-white/10" : "hover:bg-black/5"}`}>
-                 <Sparkles size={18} className="text-amber-500" />
-              </button>
-              <button className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-white/10" : "hover:bg-black/5"}`}>
-                 <Settings size={18} />
-              </button>
-              <div className="w-px h-6 bg-white/10 mx-1" />
-              <button onClick={() => setShowWidgets(false)} className={`p-2.5 rounded-xl transition-all ${isDark ? "bg-white/5 hover:bg-red-500/20 hover:text-red-500" : "bg-black/5 hover:bg-red-500/20 hover:text-red-500"}`}>
-                 <X size={18} />
-              </button>
-            </div>
-          </div>
-
-          <div className={`flex-1 overflow-y-auto pr-4 space-y-8 custom-scrollbar ${isWidgetsFullScreen ? "max-w-[1200px] mx-auto w-full" : ""}`}>
-            <div className={`grid gap-6 ${isWidgetsFullScreen ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
-              {pinnedWidgets.map((widget) => {
-                if (widget.type === 'weather') {
-                  return (
-                    <div key={widget.id} className={`p-6 rounded-[20px] border flex flex-col gap-6 relative overflow-hidden group transition-all hover:translate-y-[-4px] hover:shadow-xl ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
-                       <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                          <button onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))} className="p-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><X size={12} /></button>
-                       </div>
-                       <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                             <MapPin size={14} className="opacity-40 text-blue-500" />
-                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 text-current">{weatherCity || "Hồ Chí Minh"}, Việt Nam</span>
-                          </div>
-                          <button className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:underline">Chi tiết</button>
-                       </div>
-                       <div className="flex items-center gap-8">
-                          <div className="flex items-center gap-4 text-current">
-                             <Cloud size={widget.size === 'large' ? 80 : 64} className="text-blue-400 drop-shadow-[0_8px_16px_rgba(37,99,235,0.2)]" />
-                             <div>
-                                <p className={`${widget.size === 'large' ? 'text-6xl' : 'text-5xl'} font-black tracking-tighter text-current`}>{weatherData.temp}°C</p>
-                                <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.2em] text-current">Sáng sớm • 24° / 32°</p>
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                  );
-                }
-                if (widget.type === 'stocks' || widget.type === 'sports') {
-                  return (
-                    <div key={widget.id} className={`p-6 rounded-[20px] border flex flex-col gap-4 relative group transition-all hover:translate-y-[-4px] hover:shadow-xl ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
-                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))} className="p-1.5 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><X size={10} /></button>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className={`flex items-center gap-2 ${widget.type === 'stocks' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                           {widget.type === 'stocks' ? <TrendingUp size={16} /> : <Star size={16} />}
-                           <span className="text-[10px] font-black uppercase tracking-widest">{widget.type === 'stocks' ? 'Chứng khoán' : 'Thể thao'}</span>
-                        </div>
-                        {widget.type === 'stocks' && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-bold uppercase tracking-tighter">Live</span>}
-                      </div>
-                      <div className="text-current text-current">
-                         <p className="text-2xl font-black tracking-tight text-current">{widget.type === 'stocks' ? 'VN-Index' : 'V-League'}</p>
-                         <div className="flex items-baseline gap-2 mt-1">
-                           <p className={`text-3xl font-black ${widget.type === 'stocks' ? 'text-emerald-500' : 'opacity-40 tracking-tighter text-current'}`}>
-                             {widget.type === 'stocks' ? '1,284.5' : 'Hà Nội FC vs Hải Phòng'}
-                           </p>
-                           {widget.type === 'stocks' && <span className="text-sm font-bold text-emerald-500">+1.24%</span>}
-                         </div>
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              })}
-              {isWidgetsFullScreen && (
-                <div className={`p-6 rounded-[20px] border flex flex-col gap-4 relative transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"}`}>
-                   <div className="flex items-center gap-2 text-amber-500">
-                      <Zap size={16} />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-current">Đề xuất cho bạn</span>
-                   </div>
-                   <p className="text-xl font-bold text-current">Khám phá các kênh truyền hình mới đang thịnh hành trên Vplay</p>
-                   <button className="mt-auto px-4 py-2 rounded-xl bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all self-start">Xem ngay</button>
+          {/* Windows 11 Style Sidebar */}
+          <div className={`w-12 h-full flex flex-col items-center py-4 gap-4 border-r ${isDark ? "bg-black/20 border-white/5" : "bg-black/5 border-black/5"}`}>
+             <button 
+                onClick={() => setActiveBoardTab('widgets')}
+                className={`p-2 rounded-lg transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+             >
+                <LayoutDashboard size={20} />
+             </button>
+             <button 
+                onClick={() => setActiveBoardTab('feed')}
+                className={`p-2 rounded-lg transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+             >
+                <Newspaper size={20} />
+             </button>
+             <div className="mt-auto flex flex-col items-center gap-4">
+                <button className="opacity-40 hover:opacity-100 p-2"><Settings size={20} /></button>
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black overflow-hidden ring-1 ring-white/20">
+                   {user?.photoURL ? <img src={user.photoURL} alt="User" /> : "V"}
                 </div>
-              )}
-            </div>
-            <div className="space-y-6 pt-4 border-t border-white/5">
-              <div className="flex items-center justify-between px-2">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 text-current text-current">Feed tin tức của bạn</h3>
-                <button className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:underline">Quản lý feed</button>
-              </div>
-              <div className={`grid gap-4 ${isWidgetsFullScreen ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
-                 {[
-                   { title: "Vplay OS Canary SMR26 - Bản cập nhật lớn nhất năm", time: "2 giờ trước", category: "Công nghệ", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", desc: "Trải nghiệm mượt mà hơn với engine render mới và giao diện top_bar độc đáo..." },
-                   { title: "Windows Mode cho TV - Kỷ nguyên mới", time: "5 giờ trước", category: "Giải trí", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", desc: "Biến chiếc TV của bạn thành một trung tâm giải trí đa năng hơn bao giờ hết." },
-                   { title: "V-League 2024: Cuộc đua vô địch gay cấn", time: "8 giờ trước", category: "Thể thao", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", desc: "Những diễn biến mới nhất từ các sân cỏ Việt Nam cuối tuần qua." }
-                 ].map((item, i) => (
-                   <div key={`news-feed-${i}`} className={`group cursor-pointer rounded-[20px] border overflow-hidden transition-all hover:translate-y-[-4px] hover:shadow-2xl ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-black/5 border-black/5 hover:bg-black/10"}`}>
-                      <div className="h-40 overflow-hidden relative">
-                         <img src={item.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="News" />
-                         <div className="absolute top-4 left-4">
-                            <span className="px-3 py-1 rounded-full bg-blue-500 text-white text-[8px] font-black uppercase tracking-widest shadow-xl">{item.category}</span>
-                         </div>
+             </div>
+          </div>
+
+          <div className="flex-1 flex flex-col p-6 min-w-0">
+             <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold tracking-tight text-current">Widgets board</h2>
+                <div className="flex items-center gap-1">
+                   <button 
+                     onClick={() => setShowWidgetGallery(true)}
+                     className={`p-2 rounded-lg ${isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50 shadow-sm border border-black/5"}`}
+                   >
+                     <Plus size={18} />
+                   </button>
+                   <button 
+                     onClick={() => setIsWidgetsFullScreen(!isWidgetsFullScreen)}
+                     className={`p-2 rounded-lg ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}
+                   >
+                     {isWidgetsFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                   </button>
+                   <button 
+                     onClick={() => setShowWidgets(false)}
+                     className={`p-2 rounded-lg ${isDark ? "hover:bg-red-500/20 hover:text-red-500" : "hover:bg-red-500/20 hover:text-red-500"}`}
+                   >
+                     <X size={18} />
+                   </button>
+                </div>
+             </div>
+
+             <div className="flex-1 overflow-y-auto pr-1 space-y-6 custom-scrollbar">
+                {activeBoardTab === 'widgets' ? (
+                   <div className="space-y-4">
+                      {/* Search Bar inside panel */}
+                      <div className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border focus-within:ring-2 focus-within:ring-blue-500 transition-all ${isDark ? "bg-black/20 border-white/10" : "bg-white border-black/10 shadow-sm"}`}>
+                         <Search size={16} className="text-blue-500" />
+                         <input 
+                           type="text" 
+                           placeholder="Search the web" 
+                           className="bg-transparent border-none outline-none text-sm w-full font-medium"
+                           value={searchQuery}
+                           onChange={(e) => setSearchQuery(e.target.value)}
+                         />
                       </div>
-                      <div className="p-6 flex flex-col gap-2 text-current">
-                         <p className="text-base font-black leading-tight group-hover:text-blue-500 transition-colors text-current">{item.title}</p>
-                         {isWidgetsFullScreen && <p className="text-[11px] opacity-40 leading-relaxed line-clamp-2 text-current">{item.desc}</p>}
-                         <div className="flex items-center gap-2 mt-2">
-                            <div className="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center">
-                               <Clock size={8} className="text-blue-500" />
+
+                      <div className="grid grid-cols-1 gap-4">
+                        {pinnedWidgets.map((widget) => {
+                          if (widget.type === 'weather') {
+                            return (
+                              <div key={widget.id} className={`p-4 rounded-xl border relative group transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
+                                 <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                       <Cloud className="text-blue-400" size={16} />
+                                       <span className="text-[11px] font-bold opacity-60">Weather</span>
+                                    </div>
+                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded"><MoreHorizontal size={14} /></button>
+                                 </div>
+                                 <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                       <span className="text-2xl font-bold">{weatherData.temp}°C</span>
+                                       <span className="text-[10px] opacity-40 font-medium">Hanoi: Cloudy</span>
+                                    </div>
+                                    <div className="text-right">
+                                       <span className="text-[10px] block opacity-40 font-medium font-bold">24° / 32°</span>
+                                       <span className="text-[10px] block opacity-40 font-medium">Precipitation: 10%</span>
+                                    </div>
+                                 </div>
+                              </div>
+                            );
+                          }
+                          if (widget.type === 'stocks') {
+                             return (
+                               <div key={widget.id} className={`p-4 rounded-xl border relative group transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
+                                 <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                       <TrendingUp className="text-emerald-500" size={16} />
+                                       <span className="text-[11px] font-bold opacity-60">Watchlist</span>
+                                    </div>
+                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded"><MoreHorizontal size={14} /></button>
+                                 </div>
+                                 <div className="flex items-center justify-between">
+                                    <div>
+                                       <p className="text-sm font-bold">VN-Index</p>
+                                       <p className="text-[10px] opacity-40 font-bold">HOSE</p>
+                                    </div>
+                                    <div className="text-right">
+                                       <p className="text-sm font-bold text-emerald-500">1,284.5</p>
+                                       <p className="text-[10px] text-emerald-500 font-bold">+1.24%</p>
+                                    </div>
+                                 </div>
+                               </div>
+                             );
+                          }
+                          return (
+                            <div key={widget.id} className={`p-4 rounded-xl border relative group transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
+                               <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                     <Sparkles className="text-amber-500" size={16} />
+                                     <span className="text-[11px] font-bold opacity-60">{widget.type === 'sports' ? 'Sports' : 'Entertainment'}</span>
+                                  </div>
+                                  <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded"><MoreHorizontal size={14} /></button>
+                               </div>
+                               <p className="text-xs font-bold leading-tight line-clamp-2">The latest news and insights personalized just for you on Vplay Canary version.</p>
                             </div>
-                            <span className="text-[9px] font-bold opacity-30 uppercase tracking-widest text-current">{item.time}</span>
-                         </div>
+                          );
+                        })}
                       </div>
                    </div>
-                 ))}
-              </div>
-            </div>
-          </div>
-          
-          <div className={`pt-6 border-t border-white/5 flex items-center justify-between ${isWidgetsFullScreen ? "max-w-[1200px] mx-auto w-full" : ""}`}>
-            <div className="flex items-center gap-4 text-current">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20 text-current">Vplay Widgets Engine</span>
-              <div className="flex items-center gap-1">
-                 <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[8px] font-black uppercase tracking-widest opacity-40 text-current">Hệ thống ổn định</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-               <button 
-                 onClick={() => setShowWidgetGallery(true)}
-                 className={`flex items-center gap-2 p-2.5 px-6 rounded-2xl transition-all shadow-xl active:scale-95 ${isDark ? "bg-blue-600 text-white hover:bg-blue-500" : "bg-blue-500 text-white hover:bg-blue-600"}`}
-               >
-                  <Plus size={16} />
-                  <span className="text-xs font-black uppercase tracking-widest">Thêm tiện ích</span>
-               </button>
-            </div>
+                ) : (
+                   <div className="flex flex-col gap-4">
+                      {[
+                        { title: "Vplay OS Canary SMR26 - High Speed Edition", time: "2h", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80" },
+                        { title: "New widgets board UI is here for testing", time: "5h", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80" }
+                      ].map((item, i) => (
+                         <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-3 p-2 rounded-xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
+                            <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                               <img src={item.img} className="w-full h-full object-cover" alt="" />
+                            </div>
+                            <div className="flex flex-col justify-between py-1">
+                               <p className="text-xs font-bold leading-snug line-clamp-2 group-hover:text-blue-500 transition-colors">{item.title}</p>
+                               <span className="text-[10px] opacity-40 font-bold">{item.time} ago</span>
+                            </div>
+                         </div>
+                      ))}
+                      <button className="w-full py-2.5 rounded-lg border border-dashed border-current opacity-20 hover:opacity-100 transition-opacity text-[10px] font-bold uppercase tracking-widest mt-4">See more stories</button>
+                   </div>
+                )}
+             </div>
           </div>
 
           <AnimatePresence>
             {showWidgetGallery && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className={`absolute inset-0 z-[10003] rounded-[32px] p-8 flex flex-col gap-8 ${isDark ? "bg-[#0f0f0f]/98 text-white shadow-2xl" : "bg-slate-50/98 text-black shadow-2xl"}`}
+                initial={{ opacity: 0, x: "100%" }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: "100%" }}
+                className={`absolute inset-0 z-[10003] p-8 flex flex-col gap-6 ${isDark ? "bg-[#1c1c1c] text-white" : "bg-[#f3f3f3] text-black"}`}
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-black uppercase tracking-tighter text-current">Thư viện tiện ích</h2>
-                    <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest mt-1 text-current">Chọn để thêm vào bảng của bạn</p>
-                  </div>
-                  <button onClick={() => setShowWidgetGallery(false)} className={`p-3 rounded-2xl transition-all ${isDark ? "hover:bg-white/10 text-current" : "hover:bg-black/5 text-current text-current"}`}><X size={24} /></button>
+                  <h2 className="text-xl font-bold tracking-tight">Add widgets</h2>
+                  <button onClick={() => setShowWidgetGallery(false)} className={`p-2 rounded-lg ${isDark ? "hover:bg-white/10" : "hover:bg-black/5"}`}><X size={20} /></button>
                 </div>
-                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-current">
+                <div className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
                   {[
-                    { id: '1', type: 'weather', name: 'Thời tiết', desc: 'Theo dõi nhiệt độ và dự báo tại khu vực của bạn.', icon: Cloud, sizes: ['small', 'medium', 'large'] },
-                    { id: '2', type: 'stocks', name: 'Chứng khoán', desc: 'Bản tin tài chính và chỉ số thị trường trực tuyến.', icon: TrendingUp, sizes: ['small'] },
-                    { id: '3', type: 'sports', name: 'Thể thao', desc: 'Kết quả các trận đấu và tin tức thể thao mới nhất.', icon: Star, sizes: ['small'] },
-                    { id: '4', type: 'photos', name: 'Hình ảnh', desc: 'Gợi ý những khoảnh khắc đẹp từ thư viện của bạn.', icon: Image, sizes: ['medium'] }
+                    { type: 'weather', name: 'Weather', icon: Cloud },
+                    { type: 'stocks', name: 'Watchlist', icon: TrendingUp },
+                    { type: 'sports', name: 'Sports', icon: Star },
+                    { type: 'entertainment', name: 'Entertainment', icon: PlayCircle }
                   ].map(item => (
-                    <div key={item.id} className={`p-6 rounded-[32px] border transition-all hover:border-blue-500/50 ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/10 shadow-sm"}`}>
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                          <item.icon className="text-blue-500" size={24} />
-                        </div>
-                        <div>
-                          <span className="font-black text-lg tracking-tight leading-none text-current">{item.name}</span>
-                          <div className="flex items-center gap-1 mt-1">
-                             <div className="w-1 h-1 rounded-full bg-blue-500" />
-                             <span className="text-[8px] font-bold opacity-40 uppercase tracking-widest text-current">Sẵn dụng</span>
-                          </div>
-                        </div>
+                    <button
+                      key={item.type}
+                      onClick={() => addWidget(item.type, 'medium')}
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-black/5 hover:shadow-md"}`}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                        <item.icon size={20} />
                       </div>
-                      <p className="text-[11px] opacity-40 leading-relaxed mb-6 h-12 overflow-hidden text-current">{item.desc}</p>
-                      <div className="flex flex-wrap gap-2 text-current">
-                        {item.sizes.map(size => (
-                          <button
-                            key={size}
-                            onClick={() => addWidget(item.type, size)}
-                            className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${isDark ? "bg-blue-600 hover:bg-blue-500 text-white" : "bg-blue-500 hover:bg-blue-600 text-white text-white"}`}
-                          >
-                            Ghim ({size})
-                          </button>
-                        ))}
+                      <div className="flex-1">
+                        <p className="text-sm font-bold">{item.name}</p>
+                        <p className="text-[10px] opacity-40 font-bold">Vplay Experience</p>
                       </div>
-                    </div>
+                      <div className="p-1.5 rounded-full bg-blue-500 text-white"><Plus size={14} /></div>
+                    </button>
                   ))}
                 </div>
               </motion.div>
@@ -10361,7 +10317,7 @@ export default function App() {
 
                 {showSearchBar && (
                   <div className="flex-1 flex justify-center px-4 md:px-8 relative">
-                     <div className="w-full max-w-[640px]">
+                     <div className="w-full max-w-[640px] bg-white/[0.08] backdrop-blur-3xl rounded-full p-1 border border-white/5">
                         <SearchBar 
                           isDark={isDark}
                           query={searchQuery}
@@ -10631,7 +10587,7 @@ export default function App() {
           </button>
         </LiquidModal>
 
-        <div className={`flex-1 overflow-y-auto pb-32 flex flex-col transition-all duration-1000 ${featureFlags.taskbar_experimental && !isMobile ? "mb-16" : ""}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-1000 ${featureFlags.taskbar_experimental && !isMobile ? "mb-16" : ""} min-h-0`}>
           {searchBoxPosition === "top" && showSearchBar && (
             <div className="flex flex-col items-center p-6 sticky top-0 z-[100] gap-4">
               <div className="relative group w-full max-w-xl transition-all duration-500">
@@ -10833,8 +10789,60 @@ export default function App() {
                 </div>
               )}
               {(displayTab === "My Feed") && (
-                <div className={`rounded-[32px] overflow-hidden ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                <div className={`flex-1 h-full min-h-0 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
                   <MyFeedContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} activeSearchPlaceholder={activeSearchPlaceholder} setShowWidgets={setShowWidgets} />
+                </div>
+              )}
+              {displayTab === "Cài đặt" && (
+                <div className={`flex-1 flex flex-col min-h-0 ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <div className="h-full overflow-y-auto p-4 md:p-12 custom-scrollbar">
+                    <div className="max-w-4xl">
+                      <header className="mb-12">
+                        <h1 className="text-5xl font-bold tracking-tighter mb-4">Cài đặt</h1>
+                        <p className="text-slate-500 font-medium">Cá nhân hóa trải nghiệm Vplay Media Player của bạn</p>
+                      </header>
+                      <SettingsContent 
+                        isDark={isDark} 
+                        setIsDark={setIsDark} 
+                        isDev={isDev} 
+                        setIsDev={setIsDev} 
+                        featureFlags={featureFlags}
+                        setFeatureFlags={setFeatureFlags}
+                        liquidGlass={liquidGlass} 
+                        setLiquidGlass={setLiquidGlass}
+                        useSidebar={useSidebar}
+                        setUseSidebar={setUseSidebar}
+                        isSidebarRight={isSidebarRight}
+                        setIsSidebarRight={setIsSidebarRight}
+                        isPinningEnabled={isPinningEnabled}
+                        setIsPinningEnabled={setIsPinningEnabled}
+                        user={user}
+                        userData={userData}
+                        setUserData={setUserData}
+                        onAlert={(title, msg) => setCustomAlert({ title, message: msg })}
+                        onLogin={handleLogin}
+                        favorites={favorites}
+                        onUpdateLogsClick={() => openWindow("logs")}
+                        backgroundMusicOption={backgroundMusicOption}
+                        setBackgroundMusicOption={setBackgroundMusicOption}
+                        customMusicId={customMusicId}
+                        setCustomMusicId={setCustomMusicId}
+                        searchBoxPosition={searchBoxPosition}
+                        setSearchBoxPosition={setSearchBoxPosition}
+                        sidebarStyle={sidebarStyle}
+                        setSidebarStyle={setSidebarStyle}
+                        setActiveTab={setActiveTab}
+                        wallpaperType={wallpaperType}
+                        setWallpaperType={setWallpaperType}
+                        solidColor={solidColor}
+                        setSolidColor={setSolidColor}
+                        gradientColors={gradientColors}
+                        setGradientColors={setGradientColors}
+                        desktopWallpaper={desktopWallpaper}
+                        setDesktopWallpaper={setDesktopWallpaper}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
               {displayTab === "Design Hub" && (
