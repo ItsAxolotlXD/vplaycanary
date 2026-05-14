@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, ChangeEvent, FormEvent, MouseEvent, ReactNode, Fragment, Dispatch, SetStateAction } from "react";
-import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper } from "lucide-react";
+import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
@@ -41,7 +41,6 @@ const vplayLogo = "https://static.wikia.nocookie.net/ftv/images/0/0f/Nx626.png/r
 const vpilotIcon = "https://static.wikia.nocookie.net/ftv/images/3/30/Icon_AI_TOols.png/revision/latest?cb=20260507071656&path-prefix=vi";
 const SEARCH_TREATMENTS = [
   "Search Vplay",
-  "Search or use commands",
   "Search channels",
   "Find channels",
   "Search",
@@ -58,39 +57,14 @@ const STANDARD_LOADING_GIF = "https://upload.wikimedia.org/wikipedia/commons/3/3
 const REVAMPED_LOADING_GIF = "https://cdn.pixabay.com/animation/2023/10/08/03/19/03-19-26-213_512.gif";
 
 const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { isDark?: boolean, featureFlags?: any, className?: string }) => {
-  if (featureFlags?.cobalt_ui) {
-    return (
-      <div className={`flex flex-col items-center justify-center gap-2 ${className}`}>
-        <div className={`h-1.5 w-full rounded-full overflow-hidden relative ${isDark ? "bg-white/20" : "bg-black/5"}`}>
-          <motion.div 
-            initial={{ left: "-100%", width: "100%" }}
-            animate={{ left: "100%" }}
-            transition={{ 
-              duration: 2,
-              repeat: Infinity, 
-              ease: "easeInOut"
-            }}
-            className="absolute top-0 bottom-0 bg-blue-600 rounded-full w-2/3"
-          />
-        </div>
-      </div>
-    );
-  }
-  const isRevamped = featureFlags?.revamp_process_animation;
-  const src = isRevamped ? REVAMPED_LOADING_GIF : STANDARD_LOADING_GIF;
-  
-  const filterStyle = isRevamped 
-    ? (isDark ? "brightness(0) invert(1)" : "") 
-    : (isDark ? "invert(1)" : "brightness(200)"); 
-
   return (
-    <img 
-      src={src} 
-      alt="Loading" 
-      className={`${className} pointer-events-none transition-all duration-500`} 
-      style={{ filter: filterStyle }}
-      referrerPolicy="no-referrer"
-    />
+    <div className={`flex flex-col items-center justify-center ${className}`}>
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        className="w-8 h-8 border-4 border-[#FF00FF] border-t-transparent rounded-full shadow-[0_0_15px_rgba(255,0,255,0.5)]"
+      />
+    </div>
   );
 };
 
@@ -367,12 +341,9 @@ const backgroundTracks = [
 
 const baseTabs = [
   { name: "Trang chủ", icon: Home, id: "Trang chủ" },
-  { name: "My Feed", icon: Search, id: "My Feed" },
-  { name: "Design Hub", icon: LayoutDashboard, id: "Design Hub" },
   { name: "Phát sóng", icon: Tv, id: "Phát sóng" },
-  { name: "V-pilot", icon: Sparkles, id: "V-pilot" },
+  { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
   { name: "Pizza", icon: Pizza, id: "Pizza", className: "-scale-x-100", tooltip: "Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary" },
-  { name: "Cài đặt", icon: Settings, id: "Cài đặt" },
 ];
 
 // Channel type is imported from channels.ts
@@ -1268,12 +1239,12 @@ function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags
                     <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center">
                        <Sparkles size={20} className="text-purple-500" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 italic">V-pilot AI</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 italic">Do For Me AI</span>
                  </div>
               </div>
-              <p className="text-2xl font-black tracking-tighter italic">Hãy để trợ lý ảo V-pilot giúp bạn tìm kiếm nội dung yêu thích.</p>
+                      <p className="text-2xl font-black tracking-tighter italic">Hãy để trợ lý ảo Do For Me giúp bạn tìm kiếm nội dung yêu thích.</p>
               <button 
-                onClick={() => onNavigate("V-pilot")}
+                onClick={() => onNavigate("Do For Me")}
                 className="mt-4 py-3 px-6 rounded-2xl bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all self-start shadow-xl active:scale-95"
               >
                 Trò chuyện ngay
@@ -2940,11 +2911,11 @@ function DebugContent({ isDark, featureFlags, setFeatureFlags, setUser, setIsAdm
     { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
     { id: 'revamp_process_animation', name: 'Revamped Process', desc: 'Use the updated version of the processing loading circle' },
     { id: 'search_merge', name: 'Merge Search', desc: 'Merge the search button with the navigation bar' },
-    { id: 'ai_tools_preview', name: 'V-pilot (preview)', desc: 'The Microslop V-pilot Experience (TM)' },
-    { id: 'ai_tools', name: 'V-pilot', desc: 'Enable native Gemini-powered AI Tooling and applications' },
-    { id: 'ai_sidebar', name: 'AI Sidebar', desc: 'Open V-pilot as sidebar' },
+    { id: 'ai_tools_preview', name: 'Do For Me (preview)', desc: 'The Microslop Do For Me Experience (TM)' },
+    { id: 'ai_tools', name: 'Do For Me', desc: 'Enable native Gemini-powered AI Tooling and applications' },
+    { id: 'ai_sidebar', name: 'AI Sidebar', desc: 'Open Do For Me as sidebar' },
     { id: 'scrollable_bar', name: 'Scrollable Bar', desc: 'Makes the Navigation Bar scrollable' },
-    { id: 'copilot_action_v2', name: 'Advanced V-pilot Actions', desc: 'Use advanced V-pilot actions menu' },
+    { id: 'copilot_action_v2', name: 'Advanced Do For Me Actions', desc: 'Use advanced Do For Me actions menu' },
     { id: 'sort_az', name: 'Sorting: A-Z', desc: 'Sort channels alphabetically from A to Z' },
     { id: 'sort_za', name: 'Sorting: Z-A', desc: 'Sort channels alphabetically from Z to A' },
     { id: 'sort_newest', name: 'Sorting: Newest to oldest', desc: 'Sort channels from newest to oldest added' },
@@ -4326,7 +4297,6 @@ function SearchPopup({
     { name: "Trang chủ", type: "tab", icon: Home, action: () => setActiveTab("Trang chủ") },
     { name: "Truyền hình", type: "tab", icon: Tv, action: () => setActiveTab("Truyền hình") },
     { name: "Phát thanh", type: "tab", icon: Radio, action: () => setActiveTab("Phát thanh") },
-    { name: "Cài đặt", type: "tab", icon: SettingsIcon, action: () => setActiveTab("Cài đặt") },
     { name: "Hồ sơ", type: "tab", icon: User, action: () => setActiveTab("Hồ sơ") },
     { name: "Chế độ tối", type: "setting", icon: Moon, action: () => setIsDark(!isDark) },
     { name: "Hiệu ứng kính", type: "setting", icon: Layers, action: () => setLiquidGlass(liquidGlass === "glassy" ? "tinted" : "glassy") },
@@ -4807,8 +4777,8 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
                 <ArrowLeft className={isDark ? "text-white" : "text-slate-900"} />
               </button>
               <div className="flex items-center gap-3">
-                <img src={vpilotIcon} className="w-6 h-6" alt="V-pilot" />
-                <h2 className={`text-xl font-medium tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>V-pilot Chat</h2>
+                <img src={vpilotIcon} className="w-6 h-6" alt="Do For Me" />
+                <h2 className={`text-xl font-medium tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Do For Me Chat</h2>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -4821,7 +4791,7 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
               <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
                 <Sparkles size={48} className="text-purple-500 mb-4 animate-pulse" />
                 <h3 className={`text-xl font-medium ${isDark ? "text-white" : "text-slate-900"}`}>How can I help you today?</h3>
-                <p className={`text-xs max-w-xs ${isDark ? "text-white/60" : "text-slate-500"}`}>Chat with V-pilot about anything on Vplay or beyond.</p>
+                <p className={`text-xs max-w-xs ${isDark ? "text-white/60" : "text-slate-500"}`}>Chat with Do For Me about anything on Vplay or beyond.</p>
               </div>
             ) : (
               chatHistory.map((chat, idx) => (
@@ -4858,7 +4828,7 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
                     }, 1000);
                   }
                 }}
-                placeholder="Ask V-pilot anything..."
+                placeholder="Ask Do For Me anything..."
                 className={`flex-1 bg-transparent border-none outline-none py-4 text-sm font-normal ${isDark ? "text-white placeholder-white/20" : "text-slate-900 placeholder-slate-400"}`}
               />
               <button 
@@ -4898,7 +4868,7 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
             <Sparkles className="w-full h-full text-blue-500 relative z-10" />
           </motion.div>
           
-          <h2 className={`text-4xl font-medium mb-4 tracking-tighter leading-none ${isDark ? "text-white" : "text-slate-900"}`}>V-pilot</h2>
+          <h2 className={`text-4xl font-medium mb-4 tracking-tighter leading-none ${isDark ? "text-white" : "text-slate-900"}`}>Do For Me</h2>
           <p className={`max-w-xl text-sm font-normal mb-10 leading-relaxed ${isDark ? "text-white/60" : "text-slate-500"}`}>
             Native AI experience powered by Gemini. Experience faster, more secure, and integrated intelligence across Vplay.
           </p>
@@ -4955,11 +4925,11 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
         <div className="w-20 h-20 mb-6 relative">
           <img 
             src={vpilotIcon}
-            alt="V-pilot Icon"
+            alt="Do For Me Icon"
             className="w-full h-full object-contain animate-pulse"
           />
         </div>
-        <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Microslop V-pilot</h2>
+        <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Microslop Do For Me</h2>
         <p className="text-gray-400 max-w-md text-sm font-medium mb-8 leading-relaxed">
           Microsoft chặn việc nhúng trực tiếp V-pilot vào các ứng dụng bên thứ ba vì lý do bảo mật. 
           Vui lòng nhấn nút bên dưới để bắt đầu trải nghiệm.
@@ -5001,12 +4971,12 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, activeSear
     { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
     { id: 'settings_vertical', name: 'Vertical Settings', desc: 'Bố cục cài đặt danh sách đứng.' },
     { id: 'revamp_process_animation', name: 'Revamped Process', desc: 'Sử dụng vòng xoay tải tiến trình mới' },
-    { id: 'ai_tools_preview', name: 'V-pilot (preview)', desc: 'Trải nghiệm Microslop V-pilot (TM)' },
-    { id: 'copilot_action_v2', name: 'Advanced V-pilot Actions', desc: 'Sử dụng menu tác vụ V-pilot nâng cao (Ẩn sidebar/taskbar)' },
+    { id: 'ai_tools_preview', name: 'Do For Me (preview)', desc: 'Trải nghiệm Microslop Do For Me (TM)' },
+    { id: 'copilot_action_v2', name: 'Advanced Do For Me Actions', desc: 'Sử dụng menu tác vụ Do For Me nâng cao (Ẩn sidebar/taskbar)' },
     { id: 'multiview_experimental', name: 'Multiview', desc: 'Xem nhiều kênh truyền hình cùng một lúc' },
     { id: 'disable_animation', name: 'Reduce Animation', desc: 'Giảm hiệu ứng chuyển động trên trang web. Thích hợp cho các thiết bị yếu' },
-    { id: 'ai_tools', name: 'V-pilot', desc: 'Enable native Gemini-powered V-pilot and applications' },
-    { id: 'ai_sidebar', name: 'AI Sidebar', desc: 'Open V-pilot as sidebar' },
+    { id: 'ai_tools', name: 'Do For Me', desc: 'Enable native Gemini-powered Do For Me and applications' },
+    { id: 'ai_sidebar', name: 'AI Sidebar', desc: 'Open Do For Me as sidebar' },
     { id: 'sidebar_v3', name: 'Collaspe sidebar', desc: 'Sidebar, but cleaner' },
     { id: 'taskbar_experimental', name: 'Use Taskbar Mode', desc: 'Turns sidebar into taskbar' },
     { id: 'search_placeholder_treatment', name: 'Search Placeholder Treatment', desc: 'Enable experimental placeholder treatments for the search box' },
@@ -6102,89 +6072,78 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
   );
 };
 
-function SettingsContent({ 
+function VVerContent({ isDark, onUpdateLogsClick, liquidGlass }: { isDark: boolean, onUpdateLogsClick: () => void, liquidGlass: any }) {
+  return (
+    <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+      <div className="flex flex-col items-center justify-center text-center gap-4 mb-8">
+        <div className="flex items-center justify-center gap-3">
+          <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
+            <Info size={20} />
+          </div>
+          <h3 className={`font-semibold text-2xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>V-ver</h3>
+        </div>
+        <img 
+          src={vplayLogo} 
+          alt="Vplay Logo" 
+          className="h-32 w-auto object-contain drop-shadow-2xl"
+          referrerPolicy="no-referrer"
+        />
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-4xl font-semibold tracking-tighter bg-gradient-to-r from-purple-500 via-pink-400 to-amber-400 bg-clip-text text-transparent uppercase">
+            Summer 2026 Update
+          </p>
+          <div className="h-1.5 w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-transparent rounded-full" />
+        </div>
+      </div>
+      
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
+            <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Version</span>
+            <span className={`text-xl font-mono font-black ${isDark ? "text-green-400" : "text-green-600"}`}>SMR26 Canary</span>
+          </div>
+          <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
+            <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Build</span>
+            <span className={`text-xl font-mono font-black ${isDark ? "text-yellow-400" : "text-yellow-600"}`}>SMR26-CAN</span>
+          </div>
+          <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
+            <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Status</span>
+            <span className={`text-xl font-mono font-black ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>CAN</span>
+          </div>
+        </div>
+
+        <button 
+          onClick={onUpdateLogsClick}
+          className="w-full py-4 rounded-3xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition-all flex items-center justify-center gap-3 shadow-lg shadow-purple-600/20 active:scale-95"
+        >
+          <Clock size={18} />
+          UPDATE LOGS
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ManageAccountContent({ 
   isDark, 
-  setIsDark, 
-  isDev, 
-  setIsDev, 
-  featureFlags,
-  setFeatureFlags,
-  liquidGlass, 
-  setLiquidGlass,
-  useSidebar,
-  setUseSidebar,
-  isSidebarRight,
-  setIsSidebarRight,
-  isPinningEnabled,
-  setIsPinningEnabled,
-  user,
-  userData,
-  setUserData,
-  onAlert,
-  onLogin,
-  onUpdateLogsClick,
-  favorites,
-  backgroundMusicOption,
-  setBackgroundMusicOption,
-  customMusicId,
-  setCustomMusicId,
-  searchBoxPosition,
-  setSearchBoxPosition,
-  sidebarStyle,
-  setSidebarStyle,
-  setActiveTab,
-  wallpaperType,
-  setWallpaperType,
-  solidColor,
-  setSolidColor,
-  gradientColors,
-  setGradientColors,
-  desktopWallpaper,
-  setDesktopWallpaper
+  user, 
+  userData, 
+  setUserData, 
+  onLogin, 
+  onAlert, 
+  liquidGlass 
 }: { 
   isDark: boolean, 
-  setIsDark: (val: boolean) => void, 
-  isDev: boolean, 
-  setIsDev: (val: boolean) => void,
-  featureFlags: { [key: string]: any },
-  setFeatureFlags: (val: { [key: string]: any } | ((prev: { [key: string]: any }) => { [key: string]: any })) => void,
-  liquidGlass: "glassy" | "tinted",
-  setLiquidGlass: (val: "glassy" | "tinted") => void,
-  useSidebar: boolean,
-  setUseSidebar: (val: boolean) => void,
-  isSidebarRight: boolean,
-  setIsSidebarRight: (val: boolean) => void,
-  isPinningEnabled: boolean,
-  setIsPinningEnabled: (val: boolean) => void,
-  user: FirebaseUser | null,
-  userData: any,
-  setUserData: any,
-  onAlert: (title: string, msg: string) => void,
-  onLogin: () => void,
-  onUpdateLogsClick: () => void,
-  favorites: string[],
-  backgroundMusicOption: string,
-  setBackgroundMusicOption: (val: string) => void,
-  customMusicId: string,
-  setCustomMusicId: (val: string) => void,
-  searchBoxPosition: string,
-  setSearchBoxPosition: (val: string) => void,
-  sidebarStyle: "float" | "attach",
-  setSidebarStyle: (val: "float" | "attach") => void,
-  setActiveTab: (val: string) => void,
-  wallpaperType: "preset" | "solid" | "gradient",
-  setWallpaperType: (val: "preset" | "solid" | "gradient") => void,
-  solidColor: string,
-  setSolidColor: (val: string) => void,
-  gradientColors: [string, string],
-  setGradientColors: (val: [string, string]) => void,
-  desktopWallpaper: string,
-  setDesktopWallpaper: (val: string) => void
+  user: FirebaseUser | null, 
+  userData: any, 
+  setUserData: any, 
+  onLogin: () => void, 
+  onAlert: (t: string, m: string) => void, 
+  liquidGlass: any 
 }) {
   const [name, setName] = useState(userData?.displayName || user?.displayName || "");
   const [avatar, setAvatar] = useState(userData?.photoURL || user?.photoURL || "");
   const [saving, setSaving] = useState(false);
-  const [flagSearch, setFlagSearch] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -6256,6 +6215,228 @@ function SettingsContent({
     setSaving(false);
   };
 
+  return (
+    <div className={`p-6 rounded-3xl border flex flex-col ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 rounded-xl bg-purple-500/20 text-purple-500">
+          <User size={20} />
+        </div>
+        <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Manage account</h3>
+      </div>
+
+      {!user ? (
+        <div className="flex flex-col items-center justify-center text-center gap-4 py-8">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center border-2 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
+            <User className="w-10 h-10 text-slate-400" />
+          </div>
+          <p className="text-sm text-slate-500 font-medium">Đăng nhập để đồng bộ dữ liệu</p>
+          <button 
+            onClick={onLogin}
+            className="w-full max-w-xs py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl transition-all shadow-lg text-sm"
+          >
+            Đăng nhập ngay
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-8">
+            <div className="relative group cursor-pointer self-center" onClick={() => fileInputRef.current?.click()}>
+              {avatar ? (
+                <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-purple-500/30 shadow-2xl" />
+              ) : (
+                <div className={`w-24 h-24 rounded-full flex items-center justify-center border-4 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
+                  <User className="w-12 h-12 text-slate-400" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <Camera className="text-white w-6 h-6" />
+                <span className="text-[8px] text-white font-bold uppercase mt-1">Change</span>
+              </div>
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+            </div>
+            
+            <div className="flex-1 space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-30 ml-1">Tên hiển thị</label>
+                <input 
+                  value={name} 
+                  onChange={e => setName(e.target.value)} 
+                  placeholder="Tên của bạn..."
+                  className={`w-full px-5 py-3 text-sm border focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all rounded-2xl ${
+                    isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
+                  }`} 
+                />
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={handleSave} 
+                  disabled={saving}
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl disabled:opacity-50 transition-all text-sm shadow-xl shadow-purple-600/20"
+                >
+                  {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                </button>
+                <button 
+                  onClick={() => signOut(auth)}
+                  className={`p-3 rounded-2xl border transition-all ${isDark ? "bg-red-500/10 border-red-500/20 text-red-500" : "bg-red-50 border-red-200 text-red-600"}`}
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FeedbackContent({ isDark, liquidGlass }: { isDark: boolean, liquidGlass: any }) {
+  return (
+    <div className={`p-6 rounded-3xl border flex flex-col justify-between ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
+              <Info size={20} />
+            </div>
+            <div>
+              <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Give Feedback</h3>
+              <p className="text-[10px] opacity-50 font-mono">vDev.26415</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <div className="px-2 py-0.5 rounded bg-yellow-400 text-[10px] font-black text-black">PREVIEW</div>
+            <p className="text-[8px] opacity-40 font-bold uppercase tracking-tighter">OTA System</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <p className={`text-xs font-bold uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Ủng hộ chúng tôi</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[1, 2, 3, 4].map(num => (
+              <a 
+                key={num}
+                href={`https://www.youtube.com/@ota${num === 1 ? 'one' : num === 2 ? 'two' : num === 3 ? 'three' : 'four'}fr253`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={`flex items-center gap-2 p-2 rounded-xl border text-[10px] font-bold transition-all ${
+                  isDark ? "bg-white/5 border-white/5 hover:bg-white/10 text-slate-300" : "bg-slate-50 border-slate-100 hover:bg-slate-100 text-slate-600"
+                }`}
+              >
+                <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-white">
+                  <Play size={8} fill="currentColor" />
+                </div>
+                Youtube #{num}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-white/5 space-y-4">
+        <div className={`p-3 rounded-xl border ${isDark ? "bg-red-500/5 border-red-500/10" : "bg-red-50 border-red-100"}`}>
+          <p className="text-[10px] font-bold text-red-500 mb-1 uppercase tracking-wider">Firebase Debug</p>
+          <p className="text-[9px] opacity-70 mb-2">Nếu đăng nhập không hoạt động, hãy đảm bảo bạn đã bật "Email/Password" và "Google" trong Firebase Console.</p>
+          <a 
+            href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[9px] font-bold text-purple-500 hover:underline flex items-center gap-1"
+          >
+            Mở Firebase Console <ExternalLink size={8} />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsContent({ 
+  isDark, 
+  setIsDark, 
+  isDev, 
+  setIsDev, 
+  featureFlags,
+  setFeatureFlags,
+  liquidGlass, 
+  setLiquidGlass,
+  useSidebar,
+  setUseSidebar,
+  isSidebarRight,
+  setIsSidebarRight,
+  isPinningEnabled,
+  setIsPinningEnabled,
+  user,
+  userData,
+  setUserData,
+  onAlert,
+  onLogin,
+  onUpdateLogsClick,
+  favorites,
+  backgroundMusicOption,
+  setBackgroundMusicOption,
+  customMusicId,
+  setCustomMusicId,
+  searchBoxPosition,
+  setSearchBoxPosition,
+  sidebarStyle,
+  setSidebarStyle,
+  setActiveTab,
+  wallpaperType,
+  setWallpaperType,
+  solidColor,
+  setSolidColor,
+  gradientColors,
+  setGradientColors,
+  desktopWallpaper,
+  setDesktopWallpaper,
+  forcedFont,
+  setForcedFont
+}: { 
+  isDark: boolean, 
+  setIsDark: (val: boolean) => void, 
+  isDev: boolean, 
+  setIsDev: (val: boolean) => void,
+  featureFlags: { [key: string]: any },
+  setFeatureFlags: (val: { [key: string]: any } | ((prev: { [key: string]: any }) => { [key: string]: any })) => void,
+  liquidGlass: "glassy" | "tinted",
+  setLiquidGlass: (val: "glassy" | "tinted") => void,
+  useSidebar: boolean,
+  setUseSidebar: (val: boolean) => void,
+  isSidebarRight: boolean,
+  setIsSidebarRight: (val: boolean) => void,
+  isPinningEnabled: boolean,
+  setIsPinningEnabled: (val: boolean) => void,
+  user: FirebaseUser | null,
+  userData: any,
+  setUserData: any,
+  onAlert: (title: string, msg: string) => void,
+  onLogin: () => void,
+  onUpdateLogsClick: () => void,
+  favorites: string[],
+  backgroundMusicOption: string,
+  setBackgroundMusicOption: (val: string) => void,
+  customMusicId: string,
+  setCustomMusicId: (val: string) => void,
+  searchBoxPosition: string,
+  setSearchBoxPosition: (val: string) => void,
+  sidebarStyle: "float" | "attach",
+  setSidebarStyle: (val: "float" | "attach") => void,
+  setActiveTab: (val: string) => void,
+  wallpaperType: "preset" | "solid" | "gradient",
+  setWallpaperType: (val: "preset" | "solid" | "gradient") => void,
+  solidColor: string,
+  setSolidColor: (val: string) => void,
+  gradientColors: [string, string],
+  setGradientColors: (val: [string, string]) => void,
+  desktopWallpaper: string,
+  setDesktopWallpaper: (val: string) => void,
+  forcedFont: string,
+  setForcedFont: (val: string) => void
+}) {
+  const [saving, setSaving] = useState(false);
+  const [flagSearch, setFlagSearch] = useState("");
+
   const toggleFlag = (id: string) => {
     setFeatureFlags(prev => {
       const next = { ...prev, [id]: !prev[id] };
@@ -6266,192 +6447,52 @@ function SettingsContent({
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 pb-32 space-y-8">
-      <div className="flex flex-col lg:flex-row gap-8 items-stretch lg:items-start">
-        {/* Left Column - Main Settings */}
-        <div className="flex-1 space-y-8">
-          {/* Version Info Section */}
-          <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-            <div className="flex flex-col items-center justify-center text-center gap-4 mb-8">
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
-                    <Info size={20} />
-                  </div>
-                  <h3 className={`font-semibold text-2xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Thông tin</h3>
-                </div>
-              </div>
-              <img 
-                src={vplayLogo} 
-                alt="Vplay Logo" 
-                className="h-32 w-auto object-contain drop-shadow-2xl"
-                referrerPolicy="no-referrer"
-              />
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-4xl font-semibold tracking-tighter bg-gradient-to-r from-purple-500 via-pink-400 to-amber-400 bg-clip-text text-transparent uppercase">
-                  Summer 2026 Update
-                </p>
-                <div className="h-1.5 w-32 bg-gradient-to-r from-purple-500 via-pink-500 to-transparent rounded-full" />
-              </div>
-            </div>
-            
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
-                  <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Version</span>
-                  <span className={`text-xl font-mono font-black ${isDark ? "text-green-400" : "text-green-600"}`}>SMR26 Canary</span>
-                </div>
-                <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
-                  <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Build</span>
-                  <span className={`text-xl font-mono font-black ${isDark ? "text-yellow-400" : "text-yellow-600"}`}>SMR26-CAN</span>
-                </div>
-                <div className={`p-6 rounded-[32px] border flex flex-col items-center gap-2 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"}`}>
-                  <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Status</span>
-                  <span className={`text-xl font-mono font-black ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>CAN</span>
-                </div>
-              </div>
+      <div className="flex flex-col lg:flex-row gap-8 items-stretch lg:items-start opacity-30 grayscale pointer-events-none">
+        <p className="p-12 text-center w-full font-bold italic opacity-40">Một số mục cài đặt đã được chuyển vào Menu người dùng trên Top Bar.</p>
+      </div>
 
-              <button 
-                onClick={onUpdateLogsClick}
-                className="w-full py-4 rounded-3xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition-all flex items-center justify-center gap-3 shadow-lg shadow-purple-600/20 active:scale-95"
-              >
-                <Clock size={18} />
-                UPDATE LOGS
-              </button>
-            </div>
+      {/* Force fonts change */}
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"}`}>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-500">
+            <Type size={24} />
+          </div>
+          <div>
+            <h3 className={`font-bold text-xl ${isDark ? "text-white" : "text-slate-900"}`}>Force fonts change</h3>
+            <p className="text-sm opacity-50">Chọn font chữ cho toàn bộ ứng dụng (Hỗ trợ tiếng Việt)</p>
           </div>
         </div>
 
-        {/* Right Column */}
-        <div className="flex-1 flex flex-col gap-6">
-          {/* Profile Section */}
-          <div className={`p-6 rounded-3xl border flex flex-col ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-xl bg-purple-500/20 text-purple-500">
-                <User size={20} />
-              </div>
-              <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Hồ sơ</h3>
-            </div>
-
-            {!user ? (
-              <div className="flex flex-col items-center justify-center text-center gap-4 py-2">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center border-2 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
-                  <User className="w-8 h-8 text-slate-400" />
-                </div>
-                <p className="text-xs text-slate-500 font-medium">Đăng nhập để đồng bộ dữ liệu</p>
-                <button 
-                  onClick={onLogin}
-                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-2xl transition-all shadow-lg text-sm"
-                >
-                  Đăng nhập ngay
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center gap-5">
-                  <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    {avatar ? (
-                      <img src={avatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-purple-500/30" />
-                    ) : (
-                      <div className={`w-16 h-16 rounded-full flex items-center justify-center border-2 ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
-                        <User className="w-8 h-8 text-slate-400" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <Camera className="text-white w-4 h-4" />
-                    </div>
-                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-                  </div>
-                  
-                  <div className="flex-1 space-y-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase tracking-widest opacity-30 ml-1">Tên hiển thị</label>
-                      <input 
-                        value={name} 
-                        onChange={e => setName(e.target.value)} 
-                        placeholder="Tên của bạn..."
-                        className={`w-full px-4 py-2 text-sm border focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all rounded-xl ${
-                          isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
-                        }`} 
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={handleSave} 
-                        disabled={saving}
-                        className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl disabled:opacity-50 transition-all text-xs"
-                      >
-                        {saving ? "..." : "Lưu"}
-                      </button>
-                      <button 
-                        onClick={() => signOut(auth)}
-                        className={`p-2 rounded-xl border transition-all ${isDark ? "bg-red-500/10 border-red-500/20 text-red-500" : "bg-red-50 border-red-200 text-red-600"}`}
-                      >
-                        <LogOut size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <div className="relative group">
+          <select 
+            value={forcedFont}
+            onChange={(e) => setForcedFont(e.target.value)}
+            className={`w-full p-4 rounded-2xl border appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-bold ${
+              isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
+            }`}
+          >
+            <option value="">Mặc định (Inter)</option>
+            <option value="google-sans-flex">Google Sans Flex</option>
+            <option value="google-sans">Google Sans</option>
+            <option value="josefin-sans">Josefin Sans</option>
+            <option value="montserrat">Montserrat</option>
+            <option value="playfair-display">Playfair Display</option>
+            <option value="league-spartan">League Spartan</option>
+          </select>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+            <ChevronDown size={20} />
+          </div>
+        </div>
+        
+        <div className="mt-4 flex flex-wrap gap-2">
+            {forcedFont && (
+               <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest border border-indigo-500/20">
+                 Font hiện tại: {forcedFont}
+               </span>
             )}
-          </div>
-
-          {/* System Info */}
-          <div className={`p-6 rounded-3xl border flex flex-col justify-between ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
-                    <Info size={20} />
-                  </div>
-                  <div>
-                    <h3 className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Cộng đồng</h3>
-                    <p className="text-[10px] opacity-50 font-mono">vDev.26415</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <div className="px-2 py-0.5 rounded bg-yellow-400 text-[10px] font-black text-black">PREVIEW</div>
-                  <p className="text-[8px] opacity-40 font-bold uppercase tracking-tighter">OTA System</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <p className={`text-xs font-bold uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Ủng hộ chúng tôi</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[1, 2, 3, 4].map(num => (
-                    <a 
-                      key={num}
-                      href={`https://www.youtube.com/@ota${num === 1 ? 'one' : num === 2 ? 'two' : num === 3 ? 'three' : 'four'}fr253`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className={`flex items-center gap-2 p-2 rounded-xl border text-[10px] font-bold transition-all ${
-                        isDark ? "bg-white/5 border-white/5 hover:bg-white/10 text-slate-300" : "bg-slate-50 border-slate-100 hover:bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-white">
-                        <Play size={8} fill="currentColor" />
-                      </div>
-                      Youtube #{num}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-white/5 space-y-4">
-              <div className={`p-3 rounded-xl border ${isDark ? "bg-red-500/5 border-red-500/10" : "bg-red-50 border-red-100"}`}>
-                <p className="text-[10px] font-bold text-red-500 mb-1 uppercase tracking-wider">Firebase Debug</p>
-                <p className="text-[9px] opacity-70 mb-2">Nếu đăng nhập không hoạt động, hãy đảm bảo bạn đã bật "Email/Password" và "Google" trong Firebase Console.</p>
-                <a 
-                  href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication/providers`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[9px] font-bold text-purple-500 hover:underline flex items-center gap-1"
-                >
-                  Mở Firebase Console <ExternalLink size={8} />
-                </a>
-              </div>
-            </div>
-          </div>
+            <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
+              Vietnamese Support
+            </span>
         </div>
       </div>
 
@@ -6686,6 +6727,38 @@ function SettingsContent({
                   {featureFlags.xaml_view_test && featureFlags.settings_vertical && isDark && <CheckCircle2 size={16} />}
                 </button>
               </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 px-1">
+                <Type size={14} className="text-purple-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Force fonts change</span>
+              </div>
+              <div className="relative group">
+                <select 
+                  value={forcedFont}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setForcedFont(val);
+                    localStorage.setItem("vplay_forced_font", val);
+                  }}
+                  className={`w-full p-4 pr-10 rounded-2xl border appearance-none transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer font-bold text-sm ${
+                    isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700"
+                  }`}
+                >
+                  <option value="">Mặc định (Default)</option>
+                  <option value="google-sans-flex">Google Sans Flex</option>
+                  <option value="google-sans">Google Sans</option>
+                  <option value="josefin-sans">Josefin Sans</option>
+                  <option value="montserrat">Montserrat</option>
+                  <option value="playfair-display">Playfair Display</option>
+                  <option value="league-spartan">League Spartan</option>
+                </select>
+                <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity ${isDark ? "text-white" : "text-slate-900"}`}>
+                  <ChevronsUpDown size={16} />
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 font-medium px-1">Ghi đè phông chữ trên toàn bộ ứng dụng (Hỗ trợ tiếng Việt)</p>
             </div>
 
             <div className="space-y-3">
@@ -7268,7 +7341,6 @@ function AppWindowContainer({
           >
             <div className={`absolute bottom-2 right-2 w-2 h-2 rounded-full border border-blue-500/50 opacity-0 group-hover:opacity-100 transition-opacity`} />
           </div>
-          {/* Edge resizers could be added here for full win11 like experience, but corner is minimum requested */}
         </>
       )}
       
@@ -7333,10 +7405,30 @@ function WidgetsDashboard({
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
   const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed'>('widgets');
 
+  const getBoardGreeting = () => {
+    const hour = new Date().getHours();
+    // 5am - 9am: Sáng
+    if (hour >= 5 && hour <= 9) return "Chào buổi sáng";
+    // 10am - 12pm: Trưa
+    if (hour >= 10 && hour <= 12) return "Chào buổi trưa";
+    // 1pm - 5pm: Chiều (13h - 17h)
+    if (hour >= 13 && hour <= 17) return "Chào buổi chiều";
+    // 6pm - 11pm: Tối (18h - 23h)
+    if (hour >= 18 && hour <= 23) return "Chào buổi tối";
+    // 12am - 4am: Đêm (0h - 4h)
+    return "Chào buổi đêm";
+  };
+
   const addWidget = (type: string, size: string) => {
     const newWidget = { id: Date.now().toString(), type, size };
     setPinnedWidgets([...pinnedWidgets, newWidget]);
     setShowWidgetGallery(false);
+  };
+
+  const getWidgetSpan = (size: string) => {
+    if (size === 'large') return "col-span-3";
+    if (size === 'medium') return "col-span-2";
+    return "col-span-1";
   };
 
   return (
@@ -7347,161 +7439,178 @@ function WidgetsDashboard({
           animate={{ 
             opacity: 1, 
             x: 0, 
-            width: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "420px"),
+            width: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "840px"),
             height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
             top: isWidgetsFullScreen ? 0 : 16,
             left: isWidgetsFullScreen ? 0 : 16,
-            borderRadius: isWidgetsFullScreen ? 0 : 12
+            borderRadius: isWidgetsFullScreen ? 0 : 16
           }}
           exit={{ opacity: 0, x: "-100%" }}
           transition={{ type: "spring", damping: 40, stiffness: 400 }}
-          className={`fixed z-[10002] flex shadow-2xl border overflow-hidden backdrop-blur-3xl ${
-            isDark ? "bg-[#1c1c1c]/90 border-white/10 text-white shadow-black/80" : "bg-[#f3f3f3]/90 border-black/10 text-black shadow-2xl shadow-black/20"
+          className={`fixed z-[10002] flex shadow-2xl border overflow-hidden backdrop-blur-[50px] ${
+            isDark ? "bg-[#1c1c1c]/75 border-white/10 text-white shadow-black/80" : "bg-[#f3f3f3]/75 border-black/10 text-black shadow-2xl shadow-black/20"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Windows 11 Style Sidebar */}
-          <div className={`w-12 h-full flex flex-col items-center py-4 gap-4 border-r ${isDark ? "bg-black/20 border-white/5" : "bg-black/5 border-black/5"}`}>
+          <div className={`w-14 h-full flex flex-col items-center py-6 gap-6 border-r ${isDark ? "bg-black/20 border-white/5" : "bg-black/5 border-black/5"}`}>
              <button 
                 onClick={() => setActiveBoardTab('widgets')}
-                className={`p-2 rounded-lg transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+                className={`p-2 rounded-xl transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
              >
-                <LayoutDashboard size={20} />
+                <LayoutDashboard size={22} />
              </button>
              <button 
                 onClick={() => setActiveBoardTab('feed')}
-                className={`p-2 rounded-lg transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+                className={`p-2 rounded-xl transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
              >
-                <Newspaper size={20} />
+                <Newspaper size={22} />
              </button>
-             <div className="mt-auto flex flex-col items-center gap-4">
-                <button className="opacity-40 hover:opacity-100 p-2"><Settings size={20} /></button>
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black overflow-hidden ring-1 ring-white/20">
+             <div className="mt-auto flex flex-col items-center gap-6 pb-2">
+                <button className="opacity-40 hover:opacity-100 p-2"><Settings size={22} /></button>
+                <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-[11px] font-black overflow-hidden ring-1 ring-white/20">
                    {user?.photoURL ? <img src={user.photoURL} alt="User" /> : "V"}
                 </div>
              </div>
           </div>
 
-          <div className="flex-1 flex flex-col p-6 min-w-0">
-             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold tracking-tight text-current">Widgets board</h2>
-                <div className="flex items-center gap-1">
+          <div className="flex-1 flex flex-col p-8 min-w-0">
+             <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-black italic tracking-tighter text-current leading-none">{getBoardGreeting()}</h2>
+                <div className="flex items-center gap-2">
                    <button 
                      onClick={() => setShowWidgetGallery(true)}
-                     className={`p-2 rounded-lg ${isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50 shadow-sm border border-black/5"}`}
+                     className={`p-2.5 rounded-xl transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-white" : "bg-white hover:bg-slate-50 shadow-sm border border-black/5 text-slate-900"}`}
                    >
-                     <Plus size={18} />
+                     <Plus size={20} />
                    </button>
                    <button 
                      onClick={() => setIsWidgetsFullScreen(!isWidgetsFullScreen)}
-                     className={`p-2 rounded-lg ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}
+                     className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-white/5 text-white/70" : "hover:bg-black/5 text-slate-600"}`}
                    >
-                     {isWidgetsFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                     {isWidgetsFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
                    </button>
                    <button 
                      onClick={() => setShowWidgets(false)}
-                     className={`p-2 rounded-lg ${isDark ? "hover:bg-red-500/20 hover:text-red-500" : "hover:bg-red-500/20 hover:text-red-500"}`}
+                     className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-red-500/20 hover:text-red-500" : "hover:bg-red-500/20 hover:text-red-500"}`}
                    >
-                     <X size={18} />
+                     <X size={20} />
                    </button>
                 </div>
              </div>
 
-             <div className="flex-1 overflow-y-auto pr-1 space-y-6 custom-scrollbar">
+             <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar">
                 {activeBoardTab === 'widgets' ? (
-                   <div className="space-y-4">
+                   <div className="space-y-6">
                       {/* Search Bar inside panel */}
-                      <div className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border focus-within:ring-2 focus-within:ring-blue-500 transition-all ${isDark ? "bg-black/20 border-white/10" : "bg-white border-black/10 shadow-sm"}`}>
-                         <Search size={16} className="text-blue-500" />
+                      <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
+                         <Search size={18} className="text-blue-500" />
                          <input 
                            type="text" 
                            placeholder="Search the web" 
-                           className="bg-transparent border-none outline-none text-sm w-full font-medium"
+                           className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:opacity-30 text-current"
                            value={searchQuery}
                            onChange={(e) => setSearchQuery(e.target.value)}
                          />
                       </div>
 
-                      <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-3 gap-4 auto-rows-max">
                         {pinnedWidgets.map((widget) => {
+                          const spanClass = getWidgetSpan(widget.size);
+
                           if (widget.type === 'weather') {
                             return (
-                              <div key={widget.id} className={`p-4 rounded-xl border relative group transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
-                                 <div className="flex items-center justify-between mb-2">
+                              <div key={widget.id} className={`${spanClass} p-6 rounded-2xl border relative group transition-all hover:scale-[1.02] active:scale-[0.98] ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
+                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                       <Cloud className="text-blue-400" size={16} />
-                                       <span className="text-[11px] font-bold opacity-60">Weather</span>
+                                       <Cloud className="text-blue-400" size={18} />
+                                       <span className="text-[11px] font-black uppercase tracking-widest opacity-40">Weather</span>
                                     </div>
-                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded"><MoreHorizontal size={14} /></button>
+                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                       <button className="p-1 px-2 text-[8px] font-black bg-white/5 rounded-lg hover:bg-white/10 uppercase tracking-tighter" onClick={() => {
+                                          setPinnedWidgets(prev => prev.map(w => w.id === widget.id ? { ...w, size: w.size === 'small' ? 'medium' : (w.size === 'medium' ? 'large' : 'small') } : w));
+                                       }}>Resize</button>
+                                       <button className="p-1 px-2 text-[8px] font-black bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white uppercase tracking-tighter" onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))}>Del</button>
+                                    </div>
                                  </div>
                                  <div className="flex items-center justify-between">
                                     <div className="flex flex-col">
-                                       <span className="text-2xl font-bold">{weatherData.temp}°C</span>
-                                       <span className="text-[10px] opacity-40 font-medium">Hanoi: Cloudy</span>
+                                       <span className={`${widget.size === 'small' ? 'text-2xl' : 'text-5xl'} font-black tracking-tighter`}>{weatherData.temp}°C</span>
+                                       <span className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Hà Nội: Nhiều mây</span>
                                     </div>
-                                    <div className="text-right">
-                                       <span className="text-[10px] block opacity-40 font-medium font-bold">24° / 32°</span>
-                                       <span className="text-[10px] block opacity-40 font-medium">Precipitation: 10%</span>
-                                    </div>
+                                    {widget.size !== 'small' && (
+                                      <div className="text-right">
+                                         <span className="text-[12px] block font-black">24° / 32°</span>
+                                         <span className="text-[10px] block opacity-40 font-black uppercase tracking-widest leading-none mt-1">Độ ẩm: 65%</span>
+                                      </div>
+                                    )}
                                  </div>
                               </div>
                             );
                           }
                           if (widget.type === 'stocks') {
                              return (
-                               <div key={widget.id} className={`p-4 rounded-xl border relative group transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
-                                 <div className="flex items-center justify-between mb-2">
+                               <div key={widget.id} className={`${spanClass} p-6 rounded-2xl border relative group transition-all hover:scale-[1.02] active:scale-[0.98] ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
+                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                       <TrendingUp className="text-emerald-500" size={16} />
-                                       <span className="text-[11px] font-bold opacity-60">Watchlist</span>
+                                       <TrendingUp className="text-emerald-500" size={18} />
+                                       <span className="text-[11px] font-black uppercase tracking-widest opacity-40 text-emerald-500/70">Tài chính</span>
                                     </div>
-                                    <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded"><MoreHorizontal size={14} /></button>
+                                    <button className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-lg" onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))}><X size={14} /></button>
                                  </div>
                                  <div className="flex items-center justify-between">
                                     <div>
-                                       <p className="text-sm font-bold">VN-Index</p>
-                                       <p className="text-[10px] opacity-40 font-bold">HOSE</p>
+                                       <p className="text-base font-black tracking-tight">VN-Index</p>
+                                       <p className="text-[10px] opacity-40 font-black uppercase tracking-widest">Sàn HOSE</p>
                                     </div>
                                     <div className="text-right">
-                                       <p className="text-sm font-bold text-emerald-500">1,284.5</p>
-                                       <p className="text-[10px] text-emerald-500 font-bold">+1.24%</p>
+                                       <p className="text-base font-black text-emerald-500">1,284.5</p>
+                                       <p className="text-[10px] text-emerald-500 font-black">+1.24%</p>
                                     </div>
                                  </div>
                                </div>
                              );
                           }
                           return (
-                            <div key={widget.id} className={`p-4 rounded-xl border relative group transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
-                               <div className="flex items-center justify-between mb-2">
+                            <div key={widget.id} className={`${spanClass} p-6 rounded-2xl border relative group transition-all hover:scale-[1.02] active:scale-[0.98] ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
+                               <div className="flex items-center justify-between mb-4">
                                   <div className="flex items-center gap-2">
-                                     <Sparkles className="text-amber-500" size={16} />
-                                     <span className="text-[11px] font-bold opacity-60">{widget.type === 'sports' ? 'Sports' : 'Entertainment'}</span>
+                                     <Sparkles className="text-amber-500" size={18} />
+                                     <span className="text-[11px] font-black uppercase tracking-widest opacity-40 text-amber-500/70">{widget.type === 'sports' ? 'Thể thao' : 'Giải trí'}</span>
                                   </div>
-                                  <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded"><MoreHorizontal size={14} /></button>
+                                  <button className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-lg" onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))}><X size={14} /></button>
                                </div>
-                               <p className="text-xs font-bold leading-tight line-clamp-2">The latest news and insights personalized just for you on Vplay Canary version.</p>
+                               <p className="text-sm font-black italic tracking-tight leading-tight line-clamp-2">Những thông tin và nội dung mới nhất dành riêng cho bạn trên môi trường Vplay Media Player Canary.</p>
+                               {widget.size === 'large' && <div className="mt-4 p-4 rounded-xl bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-widest text-center">Khám phá ngay</div>}
                             </div>
                           );
                         })}
                       </div>
                    </div>
                 ) : (
-                   <div className="flex flex-col gap-4">
+                   <div className="flex flex-col gap-6">
                       {[
-                        { title: "Vplay OS Canary SMR26 - High Speed Edition", time: "2h", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80" },
-                        { title: "New widgets board UI is here for testing", time: "5h", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80" }
+                        { title: "Vplay OS Canary SMR26 - Công nghệ tăng tốc phần cứng mới", time: "2 giờ", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
+                        { title: "Bảng tiện ích Windows Style chính thức được cập nhật", time: "5 giờ", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
+                        { title: "Top 5 bộ phim đang thịnh hành trên Vplay trong tuần này", time: "8 giờ", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
                       ].map((item, i) => (
-                         <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-3 p-2 rounded-xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
-                            <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
-                               <img src={item.img} className="w-full h-full object-cover" alt="" />
+                         <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-5 p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
+                            <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/5">
+                               <img src={item.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                             </div>
                             <div className="flex flex-col justify-between py-1">
-                               <p className="text-xs font-bold leading-snug line-clamp-2 group-hover:text-blue-500 transition-colors">{item.title}</p>
-                               <span className="text-[10px] opacity-40 font-bold">{item.time} ago</span>
+                               <div>
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 block">{item.cat}</span>
+                                  <p className="text-base font-black italic tracking-tighter leading-tight line-clamp-2 group-hover:text-blue-500 transition-colors">{item.title}</p>
+                               </div>
+                               <div className="flex items-center gap-2">
+                                  <Clock size={10} className="opacity-40" />
+                                  <span className="text-[11px] opacity-40 font-black uppercase tracking-widest">{item.time} trước</span>
+                               </div>
                             </div>
                          </div>
                       ))}
-                      <button className="w-full py-2.5 rounded-lg border border-dashed border-current opacity-20 hover:opacity-100 transition-opacity text-[10px] font-bold uppercase tracking-widest mt-4">See more stories</button>
+                      <button className="w-full py-4 rounded-2xl border border-dashed border-current opacity-10 hover:opacity-100 transition-opacity text-[11px] font-black uppercase tracking-[0.4em] mt-6">Khám phá thêm nội dung</button>
                    </div>
                 )}
              </div>
@@ -8457,11 +8566,8 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featu
   const textColor = (isGlassy ? "text-white" : "text-black");
 
   // Fluent design matches the user's reference image
-  const containerBg = isDark ? "bg-[#1c1c1c]" : "bg-[#f3f3f3]";
-  const borderColor = isDark ? "border-white/10" : "border-black/10";
-
   return (
-    <div className={`flex items-center gap-1 md:gap-4 px-3 md:px-4 py-1.5 ${isTop ? "h-10" : "h-12"} w-full ${isTop ? "max-w-xl" : "max-w-3xl"} relative group transition-all rounded-[4px] ${variant === "minimal" ? "bg-transparent border-none shadow-none" : `border ${borderColor} ${containerBg} shadow-sm`} overflow-hidden`}>
+    <div className={`flex items-center gap-1 md:gap-4 px-3 md:px-4 py-1.5 ${isTop ? "h-10" : "h-12"} w-full ${isTop ? "max-w-xl" : "max-w-3xl"} relative group transition-all ${variant === "minimal" ? (isDark ? "bg-white/5 hover:bg-white/10" : "bg-black/5 hover:bg-black/10") + " rounded-full backdrop-blur-3xl" : (isDark ? "bg-[#1c1c1c] border-white/10 shadow-black/80" : "bg-white border-slate-200") + " rounded-[4px] border shadow-sm"} overflow-hidden inline-flex`}>
       <div className="flex items-center gap-1 md:gap-2 flex-1 h-full">
         <input
           ref={inputRef}
@@ -8474,8 +8580,10 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featu
         <Search className={`h-4 w-4 ${iconColor} flex-shrink-0 transition-colors group-focus-within:text-blue-400`} />
       </div>
       
-      {/* Bottom Accent Line - Fluent active indicator */}
-      <div className={`absolute bottom-0 left-0 h-[1.5px] w-full transition-all duration-300 opacity-80 ${isDark ? "bg-white/40" : "bg-black/20"} group-focus-within:bg-blue-500 group-focus-within:opacity-100 group-focus-within:h-[2px]`} />
+      {/* Bottom Accent Line removed for minimal/pill variant to avoid visual bug */}
+      {variant !== "minimal" && (
+        <div className={`absolute bottom-0 left-0 h-[1.5px] w-full transition-all duration-300 opacity-80 ${isDark ? "bg-white/10" : "bg-black/5"} group-focus-within:bg-blue-500 group-focus-within:opacity-100 group-focus-within:h-[2px]`} />
+      )}
 
       {/* Floating Tooltips/Buttons moved inside search bar for compact look */}
       <div className="flex items-center gap-3 ml-2 border-l border-white/5 pl-3">
@@ -9008,8 +9116,138 @@ function TaskBar({ items, activeTab, onTabClick, isDark, featureFlags, onAction,
   );
 }
 
+function UserMenu({ 
+  isDark, 
+  user, 
+  onLogin, 
+  onLogout, 
+  onNavigate,
+  isSidebarRight,
+  closeMenu,
+  onVVerClick,
+  onManageAccountClick,
+  onFeedbackClick
+}: { 
+  isDark: boolean, 
+  user: any, 
+  onLogin: () => void, 
+  onLogout: () => void, 
+  onNavigate: (tab: string) => void,
+  isSidebarRight: boolean,
+  closeMenu: () => void,
+  onVVerClick: () => void,
+  onManageAccountClick: () => void,
+  onFeedbackClick: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -40, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -40, scale: 0.95 }}
+      className={`absolute top-12 left-0 w-80 rounded-[32px] overflow-hidden border shadow-2xl z-[1000] ${
+        isDark ? "bg-[#1a1c23] border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+      }`}
+    >
+      <div className="p-8 flex flex-col items-center text-center space-y-4">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-slate-500/10 flex items-center justify-center border-2 border-purple-500/20 overflow-hidden">
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              <User size={32} className="text-slate-400" />
+            )}
+          </div>
+        </div>
+        
+        <div className="space-y-1">
+          <h3 className="text-xl font-bold tracking-tight">
+            {user ? (user.displayName || "Người dùng") : "Khách"}
+          </h3>
+          <p className="text-[11px] opacity-60 font-medium">
+            {user ? user.email : "Đăng nhập để có trải nghiệm tốt nhất"}
+          </p>
+        </div>
+
+        <button 
+          onClick={() => {
+            if (user) onLogout();
+            else onLogin();
+            closeMenu();
+          }}
+          className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-purple-600/20 active:scale-95 text-xs"
+        >
+          {user ? "Đăng xuất" : "Đăng nhập"}
+        </button>
+      </div>
+
+      <div className={`p-4 space-y-1 border-t ${isDark ? "border-white/5 bg-white/5" : "border-slate-100 bg-slate-50/50"}`}>
+        <button 
+          onClick={() => { onVVerClick(); closeMenu(); }}
+          className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all hover:bg-black/5 group text-left`}
+        >
+          <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500 group-hover:scale-110 transition-transform">
+            <Info size={18} />
+          </div>
+          <span className="text-[13px] font-bold">V-ver</span>
+        </button>
+
+        <button 
+          onClick={() => { onManageAccountClick(); closeMenu(); }}
+          className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all hover:bg-black/5 group text-left`}
+        >
+          <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500 group-hover:scale-110 transition-transform">
+            <Monitor size={18} />
+          </div>
+          <span className="text-[13px] font-bold">Manage account</span>
+        </button>
+
+        <button 
+          onClick={() => { onFeedbackClick(); closeMenu(); }}
+          className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all hover:bg-black/5 group text-left`}
+        >
+          <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 group-hover:scale-110 transition-transform">
+            <SendFeedback size={18} />
+          </div>
+          <span className="text-[13px] font-bold">Give Feedback</span>
+        </button>
+
+        <button 
+          onClick={() => { onNavigate("Cài đặt"); closeMenu(); }}
+          className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all hover:bg-black/5 group text-left`}
+        >
+          <div className="p-2 rounded-xl bg-slate-500/10 text-slate-500 group-hover:scale-110 transition-transform">
+            <Settings size={18} />
+          </div>
+          <span className="text-[13px] font-bold">Settings</span>
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+const SendFeedback = ({ size = 20, className }: { size?: number, className?: string }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+
 export default function App() {
   const [showWidgets, setShowWidgets] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showVVer, setShowVVer] = useState(false);
+  const [showManageAccount, setShowManageAccount] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [isWidgetsFullScreen, setIsWidgetsFullScreen] = useState(false);
   const [hoveredHeadingItem, setHoveredHeadingItem] = useState<string | null>(null);
   const [hoveredHeadingRect, setHoveredHeadingRect] = useState<DOMRect | null>(null);
@@ -9305,6 +9543,10 @@ export default function App() {
     return localStorage.getItem("vplay_search_position") || "sidebar";
   });
 
+  const [forcedFont, setForcedFont] = useState(() => {
+    return localStorage.getItem("vplay_forced_font") || "";
+  });
+
   const [desktopWallpaper, setDesktopWallpaper] = useState(() => {
     const saved = localStorage.getItem("vplay_desktop_wallpaper");
     return saved || ""; 
@@ -9390,12 +9632,9 @@ export default function App() {
   const activeSearchPlaceholder = useMemo(() => {
     const tabMapping: Record<string, string> = {
       "Trang chủ": "Search everything",
-      "My Feed": "Search the web",
+      "Do For Me": "Search with AI",
       "Phát sóng": "Search channels",
       "Pizza": "Search experiments",
-      "Design Hub": "Search components",
-      "Gallery": "Search iconography",
-      "Cài đặt": "Search settings",
     };
     if (tabMapping[activeTab as string]) return tabMapping[activeTab as string];
     if (showWidgets && isWidgetsFullScreen) return "Search the web";
@@ -9407,7 +9646,7 @@ export default function App() {
   }, [activeTab, featureFlags?.search_placeholder_treatment, featureFlags?.search_placeholder_treatment_id, randomSearchSeed, showWidgets, isWidgetsFullScreen]);
 
   const showSearchBar = useMemo(() => {
-    const allowedTabs = ["Trang chủ", "My Feed", "Phát sóng", "Pizza", "Design Hub", "Cài đặt"];
+    const allowedTabs = ["Trang chủ", "Phát sóng", "Pizza", "Do For Me"];
     return allowedTabs.includes(activeTab as string) || (showWidgets && isWidgetsFullScreen);
   }, [activeTab, showWidgets, isWidgetsFullScreen]);
 
@@ -9432,7 +9671,7 @@ export default function App() {
       if (featureFlags.ai_sidebar) {
         setIsAISidebarOpen(true);
       } else {
-        setActiveTab("V-pilot");
+        setActiveTab("Do For Me");
       }
     } else if (action === "select_channel") {
       handleChannelSelect(data);
@@ -9905,7 +10144,10 @@ export default function App() {
     id: ct.id,
     isCustom: true
   } as any))).filter(t => {
-    if (t.id === "Quản trị" && !isDev && !isAdmin) return false;
+    if (t.id === "Quản trị") return false;
+    if (t.id === "VTV6_Tab") return false;
+    if (t.id === "Design Hub" || t.name === "Design Hub") return false;
+    if (t.id === "My Feed" || t.name === "My Feed") return false;
     if (t.id === "Vids" && !featureFlags?.vids_for_uploads) return false;
     if (t.id === "V-pilot" && (featureFlags?.ai_tools)) return false;
     if (t.id === "V-pilot" && !featureFlags?.ai_tools_preview && !featureFlags?.ai_tools) return false;
@@ -9986,7 +10228,7 @@ export default function App() {
       transition={featureFlags?.disable_animation ? { duration: 0 } : undefined}
       reducedMotion={featureFlags?.disable_animation ? "always" : "user"}
     >
-      <div 
+        <div 
         className={`${
           featureFlags?.xaml_experience
             ? (isDark ? "bg-black/20 text-white" : "bg-white/20 text-slate-900")
@@ -9997,7 +10239,7 @@ export default function App() {
                 : (featureFlags.ai_tools 
                     ? "bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-slate-950 animate-gradient-slow bg-[length:400%_400%]" 
                     : "bg-gradient-to-br from-rose-200 via-purple-200 to-red-100 text-slate-950"))
-        } min-h-screen flex transition-colors duration-500 ${useSidebar ? "flex-row" : "flex-col"} ${featureFlags?.disable_animation ? "reduce-animations" : ""} ${featureFlags?.minecraft_mode ? "minecraft-mode" : ""} ${featureFlags?.win8_metro ? "metro-mode" : ""} relative`}
+        } h-full flex transition-colors duration-500 ${useSidebar ? "flex-row" : "flex-col"} ${featureFlags?.disable_animation ? "reduce-animations" : ""} ${featureFlags?.minecraft_mode ? "minecraft-mode" : ""} ${featureFlags?.win8_metro ? "metro-mode" : ""} ${forcedFont ? `font-forced-${forcedFont}` : ""} relative`}
         style={(!featureFlags?.xaml_view_test || featureFlags?.xaml_experience) ? {
           backgroundColor: wallpaperType === "solid" ? solidColor : undefined,
           backgroundImage: wallpaperType === "gradient" ? `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)` :
@@ -10229,6 +10471,8 @@ export default function App() {
                           setGradientColors={setGradientColors}
                           desktopWallpaper={desktopWallpaper}
                           setDesktopWallpaper={setDesktopWallpaper}
+                          forcedFont={forcedFont}
+                          setForcedFont={setForcedFont}
                         />
                     </div>
                   )}
@@ -10296,28 +10540,49 @@ export default function App() {
       {!featureFlags.windows_mode && !isChangingSession && !showSplash && (
         <Fragment>
           {featureFlags.top_bar && (
-            <div className="h-14 fixed top-0 left-0 w-full z-[60] bg-[#0a0518] text-white border-b border-white/5 flex items-center shadow-2xl">
+            <div className="h-14 fixed top-0 left-0 w-full z-[60] bg-[#0a0518] text-white flex items-center shadow-2xl">
                {/* Left Section (Sidebar Header) */}
                <div 
-                 className="flex items-center gap-4 px-6 h-full border-r border-white/5 overflow-hidden whitespace-nowrap"
+                 className="flex items-center gap-4 px-6 h-full whitespace-nowrap"
                  style={{ width: isSidebarExpanded ? (featureFlags.sidebar_v3 ? 100 : sidebarWidth) : 80 }}
                >
                   <button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="p-2 hover:bg-white/10 rounded-lg transition-all shrink-0">
                     <Menu size={20} />
                   </button>
-                  {isSidebarExpanded && !isMobile && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-4 overflow-hidden">
-                      <button onClick={handleLogin} className="p-1 hover:bg-white/10 rounded-full transition-all shrink-0">
-                        {user ? <img src={user.photoURL} className="w-5 h-5 rounded-full" /> : <User size={18} />}
-                      </button>
-                      <img src={vplayLogo} alt="Vplay" className="h-5 object-contain shrink-0" />
+                  {(!isMobile) && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-4 relative">
+                      <div 
+                        onClick={() => setShowUserMenu(!showUserMenu)} 
+                        className={`flex items-center gap-4 p-1 hover:bg-white/10 rounded-2xl transition-all cursor-pointer shrink-0 ${showUserMenu ? "bg-white/20" : ""}`}
+                      >
+                        <div className="p-1 rounded-full bg-white/5">
+                          {user ? <img src={user.photoURL} className="w-5 h-5 rounded-full" /> : <User size={18} />}
+                        </div>
+                        <img src={vplayLogo} alt="Vplay" className="h-5 object-contain shrink-0" />
+                      </div>
+                      <AnimatePresence>
+                        {showUserMenu && (
+                          <UserMenu 
+                            isDark={isDark}
+                            user={user}
+                            onLogin={handleLogin}
+                            onLogout={handleLogout}
+                            onNavigate={setActiveTab}
+                            isSidebarRight={isSidebarRight}
+                            closeMenu={() => setShowUserMenu(false)}
+                            onVVerClick={() => setShowVVer(true)}
+                            onManageAccountClick={() => setShowManageAccount(true)}
+                            onFeedbackClick={() => setShowFeedback(true)}
+                          />
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   )}
                </div>
 
                 {showSearchBar && (
                   <div className="flex-1 flex justify-center px-4 md:px-8 relative">
-                     <div className="w-full max-w-[640px] bg-white/[0.08] backdrop-blur-3xl rounded-full p-1 border border-white/5">
+                     <div className="w-full max-w-[640px]">
                         <SearchBar 
                           isDark={isDark}
                           query={searchQuery}
@@ -10788,12 +11053,8 @@ export default function App() {
                   )}
                 </div>
               )}
-              {(displayTab === "My Feed") && (
-                <div className={`flex-1 h-full min-h-0 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <MyFeedContent isDark={isDark} onAction={onAIToolsAction} onNavigate={setActiveTab} liquidGlass={liquidGlass} featureFlags={featureFlags} activeSearchPlaceholder={activeSearchPlaceholder} setShowWidgets={setShowWidgets} />
-                </div>
-              )}
-              {displayTab === "Cài đặt" && (
+              {/* Removed unused blocks */}
+               {displayTab === "Cài đặt" && (
                 <div className={`flex-1 flex flex-col min-h-0 ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
                   <div className="h-full overflow-y-auto p-4 md:p-12 custom-scrollbar">
                     <div className="max-w-4xl">
@@ -10840,16 +11101,14 @@ export default function App() {
                         setGradientColors={setGradientColors}
                         desktopWallpaper={desktopWallpaper}
                         setDesktopWallpaper={setDesktopWallpaper}
+                        forcedFont={forcedFont}
+                        setForcedFont={setForcedFont}
                       />
                     </div>
                   </div>
                 </div>
               )}
-              {displayTab === "Design Hub" && (
-                <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <DesignHubContent isDark={isDark} onCreateComponent={() => setIsCustomTabModalOpen(true)} />
-                </div>
-              )}
+               {/* Removed unused blocks */}
               {/* Custom Tabs Rendering */}
               {customTabs.find(ct => ct.id === activeTab) && (
                 <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
@@ -10867,17 +11126,21 @@ export default function App() {
               )}
 
               {displayTab === "Pizza" && (
-                <ExperimentalContent 
-                  isDark={isDark} 
-                  featureFlags={featureFlags} 
-                  activeSearchPlaceholder={activeSearchPlaceholder}
-                  setFeatureFlags={(f, id, name, val) => {
-                    setFeatureFlags(f);
-                    localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
-                    logHistory('settings', `${val ? 'Bật' : 'Tắt'} flag: ${name}`);
-                    incrementStat('switchesToggled');
-                  }} 
-                />
+                <div className={`flex-1 h-full min-h-0 overflow-y-auto custom-scrollbar rounded-[32px] ${isDark ? "bg-black/20" : "bg-white/20"}`}>
+                  <div className="p-4 md:p-8">
+                    <ExperimentalContent 
+                      isDark={isDark} 
+                      featureFlags={featureFlags} 
+                      activeSearchPlaceholder={activeSearchPlaceholder}
+                      setFeatureFlags={(f, id, name, val) => {
+                        setFeatureFlags(f);
+                        localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
+                        logHistory('settings', `${val ? 'Bật' : 'Tắt'} flag: ${name}`);
+                        incrementStat('switchesToggled');
+                      }} 
+                    />
+                  </div>
+                </div>
               )}
               {displayTab === "Phát nhạc" && (
                 <MusicSettingsContent 
@@ -10886,7 +11149,7 @@ export default function App() {
                   setBackgroundMusicOption={setBackgroundMusicOption}
                 />
               )}
-              {displayTab === "V-pilot" && (featureFlags.microslop_copilot || featureFlags.ai_tools) && (
+              {displayTab === "Do For Me" && (
                 <AIToolsContent isDark={isDark} liquidGlass={liquidGlass} featureFlags={featureFlags} />
               )}
               {displayTab === "Quản trị" && (isAdmin || isDev) && (
@@ -11068,6 +11331,94 @@ export default function App() {
           </button>
         }
       />
+
+      <AnimatePresence>
+        {showVVer && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setShowVVer(false)} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl z-10"
+            >
+              <button 
+                onClick={() => setShowVVer(false)}
+                className="absolute -top-4 -right-4 p-2 bg-red-500 text-white rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all z-20"
+              >
+                <X size={20} />
+              </button>
+              <VVerContent isDark={isDark} onUpdateLogsClick={() => openWindow("logs")} liquidGlass={liquidGlass} />
+            </motion.div>
+          </div>
+        )}
+
+        {showManageAccount && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setShowManageAccount(false)} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-3xl z-10"
+            >
+              <button 
+                onClick={() => setShowManageAccount(false)}
+                className="absolute -top-4 -right-4 p-2 bg-red-500 text-white rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all z-20"
+              >
+                <X size={20} />
+              </button>
+              <ManageAccountContent 
+                isDark={isDark} 
+                user={user} 
+                userData={userData} 
+                setUserData={setUserData} 
+                onLogin={handleLogin} 
+                onAlert={(t, m) => setCustomAlert({ title: t, message: m })} 
+                liquidGlass={liquidGlass} 
+              />
+            </motion.div>
+          </div>
+        )}
+
+        {showFeedback && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setShowFeedback(false)} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg z-10"
+            >
+              <button 
+                onClick={() => setShowFeedback(false)}
+                className="absolute -top-4 -right-4 p-2 bg-red-500 text-white rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all z-20"
+              >
+                <X size={20} />
+              </button>
+              <FeedbackContent isDark={isDark} liquidGlass={liquidGlass} />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
 
       <AnimatePresence>
@@ -11119,12 +11470,12 @@ export default function App() {
                 isMobile 
                   ? "top-0 h-full !rounded-none !m-0 !left-0 !right-0 transition-none" 
                   : (sidebarStyle === "attach" || featureFlags.win8_metro || featureFlags.top_bar)
-                    ? `!rounded-none !m-0 ${isSidebarRight ? "!right-0" : "!left-0"} border-r border-white/5`
+                    ? `!rounded-none !m-0 ${isSidebarRight ? "!right-0" : "!left-0"}`
                     : "top-6 !rounded-[32px] border shadow-2xl"
               } ${
                 featureFlags.xaml_experience
-                  ? (featureFlags.top_bar ? "bg-[#0a0518] border-r border-white/5 shadow-none" : (isDark ? "bg-black/40 border-white/10 shadow-black/50 backdrop-blur-[40px]" : "bg-white/40 border-slate-200 shadow-slate-200 backdrop-blur-[30px]"))
-                  : (isDark ? "bg-black/60 border-white/5 shadow-black/50 backdrop-blur-3xl" : "bg-white/80 border-slate-200 shadow-slate-200 backdrop-blur-md")
+                  ? (featureFlags.top_bar ? "bg-[#0a0518] shadow-none" : (isDark ? "bg-black/40 border-white/10 shadow-black/50 backdrop-blur-[40px]" : "bg-white/40 border-slate-200 shadow-slate-200 backdrop-blur-[30px]"))
+                  : (isDark ? "bg-black/60 shadow-black/50 backdrop-blur-3xl" : "bg-white/80 border-slate-200 shadow-slate-200 backdrop-blur-md")
               }`}
             >
               {/* Resize Handle */}
@@ -11232,16 +11583,16 @@ export default function App() {
                           if (featureFlags.ai_sidebar) {
                             setIsAISidebarOpen(!isAISidebarOpen);
                           } else {
-                            setActiveTab("V-pilot");
+                            setActiveTab("Do For Me");
                           }
                         }}
                         className="opacity-40 hover:opacity-100 transition-all hover:scale-110 active:scale-95"
-                        title="V-pilot"
+                        title="Do For Me"
                       >
                          <img 
                           src={vpilotIcon} 
                           className="w-4 h-4 object-contain" 
-                          alt="V-pilot"
+                          alt="Do For Me"
                         />
                       </button>
                       <button 
@@ -11318,10 +11669,10 @@ export default function App() {
                 <AnimatePresence initial={false}>
                 {/* Notification Bell moved to header */}
 
-                {tabs.filter(t => t.id !== "Cài đặt").map((tab, idx) => {
+                {tabs.map((tab, idx) => {
                   const Icon = tab.icon;
-                  const isActive = (tab.id === "V-pilot" && featureFlags.ai_sidebar) ? isAISidebarOpen : activeTab === (tab.id || tab.name);
-                  const isAIToolsTab = tab.id === "V-pilot" && featureFlags.ai_tools;
+                  const isActive = (tab.id === "Do For Me" || tab.id === "V-pilot") && featureFlags.ai_sidebar ? isAISidebarOpen : activeTab === (tab.id || tab.name);
+                  const isAIToolsTab = (tab.id === "Do For Me" || tab.id === "V-pilot") && featureFlags.ai_tools;
 
                   return (
                     <div key={`sidebar-tab-${tab.id || tab.name}-${idx}`} className="relative">
@@ -11362,13 +11713,13 @@ export default function App() {
                         {isActive && (
                           <motion.div 
                             layoutId="sidebarActivePill"
-                            className={featureFlags.sidebar_v3 ? "absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-r-full" : "absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full"} 
+                            className={featureFlags.sidebar_v3 ? "absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-[#FF00FF] rounded-r-full shadow-[0_0_10px_rgba(255,0,255,0.5)]" : "absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#FF00FF] rounded-r-full shadow-[0_0_8px_rgba(255,0,255,0.5)]"} 
                           />
                         )}
                         {typeof tab.icon === "string" ? (
                           <motion.div
-                            animate={hoveredTab === tab.name ? { rotateY: [0, 180, 360] } : { rotateY: 0 }}
-                            transition={{ duration: 1.5, repeat: hoveredTab === tab.name ? Infinity : 0, ease: "linear" }}
+                            animate={{ rotateY: 0 }}
+                            transition={{ duration: 0.5 }}
                           >
                             <img 
                               src={tab.id === "V-pilot" ? vpilotIcon : tab.icon} 
@@ -11379,10 +11730,10 @@ export default function App() {
                           </motion.div>
                         ) : (
                           <motion.div
-                            animate={hoveredTab === tab.name ? { rotateY: [0, 180, 360] } : { rotateY: 0 }}
-                            transition={{ duration: 1.5, repeat: hoveredTab === tab.name ? Infinity : 0, ease: "linear" }}
+                            animate={{ rotateY: 0 }}
+                            transition={{ duration: 0.5 }}
                           >
-                            <Icon size={24} className={`flex-shrink-0 transition-all ${isActive ? "text-blue-600" : "group-hover:scale-110"} ${tab.className || ""}`} />
+                            <Icon size={24} className={`flex-shrink-0 transition-all ${isActive ? "text-[#FF00FF] drop-shadow-[0_0_5px_rgba(255,0,255,0.5)]" : "group-hover:scale-110"} ${tab.className || ""}`} />
                           </motion.div>
                         )}
                         {(isSidebarExpanded || featureFlags.sidebar_v3) && (
@@ -11474,32 +11825,6 @@ export default function App() {
                   </div>
                 )}
                 
-                <button
-                  onClick={() => {
-                    setActiveTab("Cài đặt");
-                    if (isMobile) setIsSidebarExpanded(false);
-                  }}
-                  className={`flex ${featureFlags.sidebar_v3 ? "flex-col py-2 h-auto gap-1 items-center justify-center p-2 rounded-xl mb-2" : "items-center gap-4 px-4 py-3 rounded-xl h-[50px]"} transition-all w-full relative overflow-hidden ${
-                    activeTab === "Cài đặt"
-                      ? (isDark ? "bg-[#2d2d2d] text-white" : "bg-slate-100 text-slate-900")
-                      : (isDark ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-600 hover:bg-slate-50")
-                  } ${(!isSidebarExpanded && !featureFlags.sidebar_v3) ? "justify-center" : (featureFlags.sidebar_v3 ? "justify-center" : "")}`}
-                >
-                  {activeTab === "Cài đặt" && (
-                      <motion.div 
-                        layoutId="sidebarActivePill"
-                        className={featureFlags.sidebar_v3 ? "absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-r-full" : "absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full"} 
-                      />
-                  )}
-                  <motion.div
-                    whileHover={{ rotateY: 180 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <SettingsIcon className={`w-6 h-6 ${activeTab === "Cài đặt" ? "text-blue-500" : ""}`} />
-                  </motion.div>
-                  {(isSidebarExpanded || featureFlags.sidebar_v3) && <span className={featureFlags.sidebar_v3 ? "text-[11px] font-medium tracking-tight mt-1 opacity-70 group-hover:opacity-100 text-center w-full truncate" : "font-normal text-base"}>Cài đặt</span>}
-                </button>
-
                 <button
                   onClick={() => setShowDevConfirm(true)}
                   className={`flex ${featureFlags.sidebar_v3 ? "flex-col py-2 h-auto gap-1 items-center justify-center p-2 rounded-xl" : "items-center gap-4 px-4 py-3 rounded-xl h-[50px]"} transition-all w-full relative overflow-hidden ${
