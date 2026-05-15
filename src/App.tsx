@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, ChangeEvent, FormEvent, MouseEvent, ReactNode, Fragment, Dispatch, SetStateAction } from "react";
-import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown } from "lucide-react";
+import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown, CloudLightning, Grid } from "lucide-react";
 import Hls from "hls.js";
-import { motion, AnimatePresence, MotionConfig } from "motion/react";
+import { motion, AnimatePresence, MotionConfig, Reorder } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail, User as FirebaseUser, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, updateDoc, arrayUnion, getDocFromServer } from "firebase/firestore";
@@ -61,8 +61,8 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
     <div className={`flex flex-col items-center justify-center ${className}`}>
       <motion.div
         animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        className="w-8 h-8 border-4 border-[#FF00FF] border-t-transparent rounded-full shadow-[0_0_15px_rgba(255,0,255,0.5)]"
+        transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+        className="w-12 h-12 border-[12px] border-blue-600 border-t-transparent border-r-transparent border-l-transparent rounded-full"
       />
     </div>
   );
@@ -512,13 +512,15 @@ function ChannelLogo({ src, alt, className, isDark, liquidGlass }: { src: string
   );
 }
 
-function ChannelCard({ ch, onClick, isDark, isActive, favorites, toggleFavorite, liquidGlass, className, isMetro, featureFlags }: {
+function ChannelCard({ ch, onClick, isDark, isActive, favorites, toggleFavorite, togglePin, isPinned, liquidGlass, className, isMetro, featureFlags }: {
   ch: Channel,
   onClick: () => void,
   isDark: boolean,
   isActive?: boolean,
   favorites: string[],
   toggleFavorite: (ch: Channel) => void,
+  togglePin?: (ch: Channel) => void,
+  isPinned?: boolean,
   liquidGlass: "glassy" | "tinted",
   className?: string,
   key?: string | number,
@@ -574,6 +576,17 @@ function ChannelCard({ ch, onClick, isDark, isActive, favorites, toggleFavorite,
       >
         <Heart className={`h-4 w-4 ${favorites.includes(ch.name) ? "fill-red-500" : ""}`} />
       </button>
+
+      {togglePin && (
+        <button 
+          onClick={(e) => { e.stopPropagation(); togglePin(ch); }}
+          className={`absolute top-3 right-12 p-2 rounded-[4px] backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10 ${
+            isPinned ? "text-blue-500 bg-blue-50/20" : "text-white bg-black/20"
+          }`}
+        >
+          <Pin className={`h-4 w-4 ${isPinned ? "fill-blue-500" : ""}`} />
+        </button>
+      )}
     </div>
   );
 }
@@ -1256,330 +1269,203 @@ function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags
   );
 }
 
-function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotification, onAction, onNavigate, setShowVTV6Popup }: any) {
-  const [stopwatch, setStopwatch] = useState(0);
-  const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
-  const [countdown, setCountdown] = useState(60);
-  const [isCountdownRunning, setIsCountdownRunning] = useState(false);
-
-  useEffect(() => {
-    let timer: any;
-    if (isStopwatchRunning) {
-      timer = setInterval(() => setStopwatch(s => s + 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isStopwatchRunning]);
-
-  useEffect(() => {
-    let timer: any;
-    if (isCountdownRunning && countdown > 0) {
-      timer = setInterval(() => setCountdown(c => c - 1), 1000);
-    } else if (countdown === 0 && isCountdownRunning) {
-      addNotification("Cảnh báo!", "Thời gian đếm ngược của bạn đã kết thúc.");
-      setIsCountdownRunning(false);
-    }
-    return () => clearInterval(timer);
-  }, [isCountdownRunning, countdown]);
-
-  const formatTime = (s: number) => {
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
+function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotification, notifications, history, onAction, onNavigate, setShowVTV6Popup, channels }: any) {
   const getBgClass = () => {
-    if (w.type === "weather") return "bg-gradient-to-br from-cyan-400 to-blue-600 text-white border-transparent shadow-cyan-500/20";
-    if (w.type === "vtv6") return "bg-gradient-to-br from-red-600 to-red-800 text-white border-transparent shadow-red-500/20";
-    if (w.type === "stocks") return "bg-gradient-to-br from-emerald-500 to-emerald-700 text-white border-transparent shadow-emerald-500/20";
-    if (w.type === "clock") return isDark ? "bg-white text-black border-transparent" : "bg-white border-slate-200 text-slate-900";
-    return isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200";
+    if (w.type === 'weather') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
+    if (w.type === 'stocks') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
+    if (w.type === 'clock_date') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
+    if (w.type === 'vtv6_countdown') return 'bg-[#ed1c24] text-white border-none shadow-[0_12px_40px_rgba(237,28,36,0.25)]';
+    if (w.type === 'channel') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
+    return isDark ? "bg-[#2c2c2c] border-[#3c3c3c] text-white" : "bg-white border-slate-100 text-slate-900 shadow-sm";
   };
+
+  const formatTime = (seconds: number) => {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const [countdown, setCountdown] = useState(1245);
+  useEffect(() => {
+    const timer = setInterval(() => setCountdown(prev => prev > 0 ? prev - 1 : 0), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.8 }}
+      drag
+      dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
+      dragElastic={0.05}
+      whileDrag={{ scale: 1.02, zIndex: 100 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      className={`group relative rounded-[20px] border p-8 flex flex-col justify-between overflow-hidden transition-all shadow-xl ${getBgClass()} ${
-        w.size === "small" ? "col-span-1 row-span-1" :
-        w.size === "medium" ? "col-span-2 row-span-1" :
-        "col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-3 row-span-1"
+      exit={{ opacity: 0, scale: 0.98 }}
+      className={`group relative rounded-[24px] border p-6 flex flex-col justify-between overflow-hidden transition-all ${getBgClass()} ${
+        w.size === "small" ? "col-span-1 row-span-1 h-[200px]" :
+        w.size === "medium" ? "col-span-1 sm:col-span-2 row-span-1 h-[200px]" :
+        "col-span-1 sm:col-span-2 md:col-span-3 row-span-1 h-[200px]"
       }`}
     >
-      <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 z-20">
-          <button 
-          onClick={onResize}
-          className="p-2 bg-black/5 rounded-lg hover:bg-black/10 transition-colors"
-        >
-          <Maximize2 size={12} />
-        </button>
-        <button 
-          onClick={onRemove}
-          className="p-2 bg-red-500/10 rounded-lg hover:bg-red-500/20 text-red-500 transition-colors"
-        >
-          <X size={12} />
-        </button>
-      </div>
+        <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 p-1.5 bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl pointer-events-auto">
+          <button onClick={onResize} className="p-2 hover:bg-black/5 rounded-xl transition-colors"><Maximize2 size={12} /></button>
+          <button onClick={onRemove} className="p-2 hover:bg-red-500/10 text-red-500 rounded-xl transition-colors"><X size={12} /></button>
+        </div>
 
-      <div className="flex-1 flex flex-col h-full">
-        {w.type === "weather" && (
-          <>
-            <div className="flex items-center gap-3">
-              <Cloud size={24} strokeWidth={2.5} />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Weather</span>
-                <span className="text-sm font-bold uppercase">{location}</span>
-              </div>
-            </div>
-            <div className="flex items-end gap-3 translate-y-2 flex-1 justify-end">
-                <span className="text-5xl font-black tracking-tighter">{w.temp || 29}°C</span>
-                <span className="text-xs font-bold opacity-60 mb-2 uppercase">Hôm nay trời đẹp</span>
-            </div>
-          </>
-        )}
-
-        {w.type === "clock" && (
-          <>
-            <div className="flex items-center gap-3">
-              <Clock size={24} strokeWidth={2.5} />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Hệ thống</span>
-                <span className="text-sm font-bold uppercase">{time.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' })}</span>
-              </div>
-            </div>
-            <div className="flex flex-col translate-y-2 flex-1 justify-center items-center">
-                <span className="text-5xl font-black tracking-tighter">
-                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
-                </span>
-                <span className="text-[10px] font-bold opacity-30 tracking-[0.2em] uppercase mt-2">Vietnam Standard Time</span>
-            </div>
-          </>
-        )}
-
-        {w.type === "vtv6" && (
-          <div className="flex flex-col h-full italic">
-            <div className="flex items-center gap-3 mb-2">
-              <Tv size={24} strokeWidth={2.5} />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-60 italic">Live Station</span>
-                <span className="text-sm font-black uppercase italic">VTV6 Special</span>
-              </div>
-            </div>
-            <p className="text-[10px] opacity-70 mb-4 font-bold uppercase tracking-widest">Kênh thể thao hàng đầu Việt Nam sắp quay trở lại trên Canary OS.</p>
-            <div className="flex-1 flex flex-col justify-end">
-                <button 
-                onClick={() => {
-                  const vtv6 = channels.find(c => c.name === "VTV6");
-                  if (vtv6) {
-                    setShowVTV6Popup(true);
-                  }
-                }}
-                className="w-full py-3 bg-white text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95"
-              >
-                Xem chi tiết
-              </button>
-            </div>
-          </div>
-        )}
-
-        {w.type === "stocks" && (
-          <>
-            <div className="flex items-center gap-3 mb-4">
-              <TrendingUp size={24} strokeWidth={2.5} />
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Markets</span>
-            </div>
-            <div className="grid grid-cols-2 gap-6 flex-1">
-                <div className="flex flex-col justify-end">
-                  <p className="text-[9px] font-black uppercase opacity-60">NASDAQ</p>
-                  <p className="text-lg font-black">+4.24%</p>
+        <div className="flex-1 flex flex-col h-full pointer-events-none select-none">
+          {w.type === "weather" && (
+            <div className="flex flex-col h-full justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-500/10 rounded-[18px]">
+                  <Cloud size={20} className="text-blue-500" />
                 </div>
-                <div className="flex flex-col justify-end">
-                  <p className="text-[9px] font-black uppercase opacity-60">VPLAY</p>
-                  <p className="text-lg font-black">+12.12%</p>
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-semibold text-slate-400">Thời tiết</span>
+                  <span className="text-sm font-bold text-slate-800 tracking-tight">{location}</span>
                 </div>
+              </div>
+              <div className="flex items-end justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-5xl font-bold text-slate-900 tracking-tighter leading-none">29°C</span>
+                    <span className="text-[12px] font-medium text-slate-400 mt-1">Đẹp trời • 32° / 24°</span>
+                  </div>
+                  <CloudLightning size={48} className="text-blue-500/10 -mb-2" />
+              </div>
             </div>
-          </>
-        )}
+          )}
 
-        {w.type === "countdown" && (
-          <div className="flex flex-col h-full">
-             <div className="flex items-center gap-3 mb-4">
-                <Timer size={24} strokeWidth={2.5} />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Countdown</span>
-             </div>
-             <div className="flex-1 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black">{formatTime(countdown)}</span>
-                <div className="flex gap-2 mt-4">
-                   <button onClick={() => setIsCountdownRunning(!isCountdownRunning)} className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
-                      {isCountdownRunning ? <Pause size={16} /> : <Play size={16} />}
-                   </button>
-                   <button onClick={() => { setCountdown(60); setIsCountdownRunning(false); }} className="p-2 rounded-xl bg-slate-500/10 opacity-40">
-                      <RotateCcw size={16} />
-                   </button>
+          {w.type === "clock_date" && (
+            <div className="flex flex-col h-full justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-500/10 rounded-[18px]">
+                  <Clock size={20} className="text-blue-500" />
                 </div>
-             </div>
-          </div>
-        )}
-
-        {w.type === "stopwatch" && (
-          <div className="flex flex-col h-full">
-             <div className="flex items-center gap-3 mb-4">
-                <Timer size={24} strokeWidth={2.5} />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Stopwatch</span>
-             </div>
-             <div className="flex-1 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black">{formatTime(stopwatch)}</span>
-                <div className="flex gap-2 mt-4">
-                   <button onClick={() => setIsStopwatchRunning(!isStopwatchRunning)} className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
-                      {isStopwatchRunning ? <Pause size={16} /> : <Play size={16} />}
-                   </button>
-                   <button onClick={() => { setStopwatch(0); setIsStopwatchRunning(false); }} className="p-2 rounded-xl bg-slate-500/10 opacity-40">
-                      <RotateCcw size={16} />
-                   </button>
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-semibold text-slate-400">Hệ thống</span>
+                  <span className="text-sm font-bold text-slate-800 tracking-tight">{time.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                 </div>
-             </div>
-          </div>
-        )}
-
-        {w.type === "quickaccess" && (
-          <div className="flex flex-col h-full">
-             <div className="flex items-center gap-3 mb-6">
-                <LayoutGrid size={24} strokeWidth={2.5} />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Quick Access</span>
-             </div>
-             <div className="grid grid-cols-3 gap-3 flex-1">
-                {channels.slice(0, 9).map((ch, i) => (
-                  <button 
-                  key={i} 
-                  onClick={() => { onAction("select_channel", ch); onNavigate("Phát sóng"); }}
-                  className={`aspect-square rounded-2xl flex items-center justify-center border transition-all hover:scale-105 active:scale-95 ${isDark ? "bg-white/5 border-white/5" : "bg-white shadow-sm border-slate-100"}`}
-                >
-                    <img src={ch.logo} alt="" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
-                  </button>
-                ))}
-             </div>
-          </div>
-        )}
-
-        {w.type === "tictactoe" && <TicTacToe />}
-        
-        {/* Do For Me Widgets */}
-        {w.type === "speak" && (
-           <div className="flex flex-col h-full items-center justify-center text-center">
-              <div className="p-4 bg-blue-500/10 rounded-3xl mb-4">
-                  <Mic size={32} className="text-blue-500" />
               </div>
-              <h4 className="text-sm font-bold uppercase tracking-widest">Speak For Me</h4>
-              <button 
-                onClick={() => onAction("speak_for_me")}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-              >
-                Kích hoạt
-              </button>
-           </div>
-        )}
-        {w.type === "copy" && (
-           <div className="flex flex-col h-full items-center justify-center text-center">
-              <div className="p-4 bg-blue-500/10 rounded-3xl mb-4">
-                  <Clipboard size={32} className="text-blue-500" />
+              <div className="flex flex-col text-center translate-y-1">
+                  <span className="text-5xl font-black text-slate-900 tracking-tighter tabular-nums leading-none">
+                    {time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                  </span>
+                  <span className="text-[11px] font-bold text-blue-500 tracking-[0.25em] mt-3 opacity-30">CORE KERNEL ACTIVATED</span>
               </div>
-              <h4 className="text-sm font-bold uppercase tracking-widest">Copy For Me</h4>
-              <button 
-                onClick={() => onAction("copy_for_me")}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-              >
-                Kích hoạt
-              </button>
-           </div>
-        )}
-        {w.type === "capture" && (
-           <div className="flex flex-col h-full items-center justify-center text-center">
-              <div className="p-4 bg-blue-500/10 rounded-3xl mb-4">
-                  <Camera size={32} className="text-blue-500" />
-              </div>
-              <h4 className="text-sm font-bold uppercase tracking-widest">Capture Me</h4>
-              <button 
-                onClick={() => onAction("capture_for_me")}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-              >
-                Kích hoạt
-              </button>
-           </div>
-        )}
-        {w.type === "record" && (
-           <div className="flex flex-col h-full items-center justify-center text-center">
-              <div className="p-4 bg-blue-500/10 rounded-3xl mb-4">
-                  <Video size={32} className="text-blue-500" />
-              </div>
-              <h4 className="text-sm font-bold uppercase tracking-widest">Record Me</h4>
-              <button 
-                onClick={() => onAction("screen_recorder")}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-              >
-                Kích hoạt
-              </button>
-           </div>
-        )}
+            </div>
+          )}
 
-        {w.type === "today" && (
-          <div className="flex flex-col h-full">
-             <div className="flex items-center gap-3 mb-4">
-                <Hash size={24} strokeWidth={2.5} />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Today Event</span>
-             </div>
-             <div className="flex-1 flex flex-col justify-center">
-                <p className="text-sm font-bold italic line-clamp-2">"Hôm nay đánh dấu kỷ niệm ngày thành lập Vplay Canary OS..."</p>
-                <span className="text-[9px] opacity-40 mt-2">Nguồn: V-history</span>
-             </div>
-          </div>
-        )}
-
-        {w.type === "fifa" && (
-          <div className="flex flex-col h-full">
-             <div className="flex items-center gap-3 mb-4">
-                <Trophy size={24} strokeWidth={2.5} className="text-amber-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">World Cup 2026</span>
-             </div>
-             <div className="flex-1 flex flex-col justify-end">
-                <div className="mb-4">
-                   <p className="text-xs font-bold uppercase">United States, Canada, Mexico</p>
-                   <p className="text-[9px] opacity-40 mt-1 uppercase">11/06/2026 - 19/07/2026</p>
+          {w.type === "vtv6_countdown" && (
+            <div className="flex flex-col h-full justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-white/20 rounded-[18px]">
+                  <Tv size={20} className="text-white" />
                 </div>
-                <div className="h-2 w-full bg-current opacity-10 rounded-full overflow-hidden">
-                   <div className="h-full bg-amber-500 w-[15%]" />
+                <div className="flex flex-col text-white">
+                  <span className="text-[12px] font-semibold opacity-60">Sắp phát sóng</span>
+                  <span className="text-sm font-bold tracking-tight">VTV6 Live Event</span>
                 </div>
-             </div>
-          </div>
-        )}
+              </div>
+              <div className="flex flex-col items-center">
+                  <span className="text-4xl font-black font-mono tracking-tighter tabular-nums text-white leading-none">{formatTime(countdown)}</span>
+                  <div className="flex gap-2 mt-4">
+                     <span className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold text-white uppercase tracking-wider">LIVE_SCORE</span>
+                     <span className="px-3 py-1 bg-green-400 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-wider italic">VPLAY_READY</span>
+                  </div>
+              </div>
+            </div>
+          )}
 
-        {w.type === "notify" && (
-          <div className="flex flex-col h-full italic">
-             <div className="flex items-center gap-3 mb-4">
-                <Bell size={24} strokeWidth={2.5} />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Quick Recall</span>
-             </div>
-             <p className="text-[10px] font-bold opacity-40 mb-4 uppercase">Nhấn để gửi một thông báo hệ thống test.</p>
-             <button 
-                onClick={() => addNotification("Thông báo test", "Đây là một thông báo được gửi từ widget Quick Recall.")}
-                className="w-full py-3 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95"
+          {w.type === "stocks" && (
+            <div className="flex flex-col h-full justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-500/10 rounded-[18px]">
+                  <TrendingUp size={20} className="text-emerald-500" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-semibold text-slate-400">Tham chiếu</span>
+                  <span className="text-sm font-bold text-slate-800 tracking-tight">Thị trường nội địa</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-center">
+                    <p className="text-[10px] font-bold text-slate-400 mb-1">VN-INDEX</p>
+                    <p className="text-xl font-bold text-emerald-500 tracking-tighter leading-none">+12.4</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-center">
+                    <p className="text-[10px] font-bold text-slate-400 mb-1">VPLAY_INC</p>
+                    <p className="text-xl font-bold text-emerald-500 tracking-tighter leading-none">+1.1m</p>
+                  </div>
+              </div>
+            </div>
+          )}
+
+          {w.type === "channel" && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 bg-slate-100 rounded-[18px]">
+                  <Tv size={20} className="text-slate-400" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-semibold text-slate-400">TV Channel</span>
+                  <span className="text-sm font-bold text-slate-800 tracking-tight truncate max-w-[120px]">{w.channelId}</span>
+                </div>
+              </div>
+              <div 
+                className="flex-1 rounded-[20px] bg-slate-50 border border-slate-100 flex items-center justify-center p-4 relative group/player cursor-pointer pointer-events-auto"
+                onClick={() => onNavigate("Phát sóng")}
               >
-                Gửi thông báo
-              </button>
-          </div>
-        )}
-        
-        {/* Fillers for simpler widgets */}
-        {!["weather", "clock", "vtv6", "stocks", "countdown", "stopwatch", "quickaccess", "tictactoe", "speak", "copy", "capture", "record", "today", "fifa", "notify"].includes(w.type) && (
-          <div className="flex flex-col h-full items-center justify-center text-center">
-             <div className="p-4 bg-blue-500/10 rounded-3xl mb-4">
-                 <Flask size={32} className="text-blue-500" />
-             </div>
-             <h4 className="text-sm font-bold uppercase tracking-widest">{w.type} Widget</h4>
-             <p className="text-[10px] opacity-40 mt-1 uppercase">Experimental Feature</p>
-          </div>
-        )}
-      </div>
+                <img 
+                  src={channels.find((c: any) => c.name === w.channelId)?.logo} 
+                  alt="Logo" 
+                  className="w-full h-full object-contain opacity-40 group-hover/player:opacity-100 transition-opacity" 
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/player:opacity-100 transition-all backdrop-blur-[2px]">
+                   <div className="p-3 bg-white shadow-2xl rounded-full text-blue-600">
+                      <Play size={16} fill="currentColor" />
+                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {w.type === "notify" && (
+            <div className="flex flex-col h-full overflow-hidden">
+               <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 bg-orange-500/10 rounded-[18px]">
+                    <Bell size={20} className="text-orange-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[12px] font-semibold text-slate-400">Tin mới</span>
+                    <span className="text-sm font-bold text-slate-800 tracking-tight">Hệ thống Vplay</span>
+                  </div>
+               </div>
+               <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 pointer-events-auto">
+                  {notifications && notifications.length > 0 ? (
+                    notifications.slice(0, 5).map((n: any) => (
+                      <div key={n.id} className="p-3 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-slate-100 transition-colors">
+                        <p className="text-xs font-bold text-slate-700 leading-tight line-clamp-1">{n.title}</p>
+                        <p className="text-[10px] text-slate-400 mt-1">{n.time}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                       <span className="text-[11px] text-slate-300 italic">Không có thông báo</span>
+                    </div>
+                  )}
+               </div>
+            </div>
+          )}
+
+          {!["weather", "clock_date", "vtv6_countdown", "stocks", "ports", "entertainment", "notify", "history", "record", "channel"].includes(w.type) && (
+            <div className="flex flex-col h-full items-center justify-center text-center">
+               <div className="p-4 bg-blue-500/5 rounded-[28px] mb-3">
+                   <Flask size={32} className="text-blue-500/20" />
+               </div>
+               <p className="text-sm font-bold text-slate-800 tracking-tight">Widget Experimental</p>
+               <p className="text-[11px] font-medium text-slate-400 mt-1">Sắp có mặt trên Vplay OS</p>
+            </div>
+          )}
+        </div>
     </motion.div>
   );
 }
@@ -3251,7 +3137,7 @@ function IndividualPlayer({ channel, isMuted, volume, isDark }: { channel: Chann
 }
 
 function TVContent({ 
-  active, setActive, isDark, favorites, toggleFavorite, user, onLogin, isDev, liquidGlass, 
+  active, setActive, isDark, favorites, toggleFavorite, togglePin, isPinned, user, onLogin, isDev, liquidGlass, 
   sortOrder, setSortOrder, showSplash, featureFlags, searchQuery, 
   minimalMode = false, activeTab, setShowCanaryWarning, activeSearchPlaceholder = "Search Vplay",
   channels
@@ -3261,6 +3147,8 @@ function TVContent({
   isDark: boolean,
   favorites: string[],
   toggleFavorite: (ch: Channel) => void,
+  togglePin?: (ch: Channel) => void,
+  isPinned?: (channelName: string) => boolean,
   user: any,
   onLogin: () => void,
   isDev?: boolean,
@@ -4223,6 +4111,8 @@ function TVContent({
                           isActive={active.name === ch.name} 
                           favorites={favorites} 
                           toggleFavorite={toggleFavorite} 
+                          togglePin={togglePin}
+                          isPinned={isPinned?.(ch.name)}
                           liquidGlass={liquidGlass}
                           isMetro={featureFlags.win8_metro}
                           featureFlags={featureFlags}
@@ -4256,7 +4146,7 @@ function TVContent({
 }
 
 function SearchPopup({ 
-  isDark, 
+  isDark: _isDark, 
   searchQuery, 
   setActiveChannel, 
   onClose, 
@@ -4268,6 +4158,8 @@ function SearchPopup({
   onLogin,
   onLogout,
   setSortOrder,
+  togglePin,
+  isPinned,
   position = "bottom",
   channels
 }: {
@@ -4283,9 +4175,12 @@ function SearchPopup({
   onLogin: () => void,
   onLogout: () => void,
   setSortOrder: (val: "az" | "za") => void,
+  togglePin?: (ch: Channel) => void,
+  isPinned?: (channelName: string) => boolean,
   position?: "top" | "bottom",
   channels: Channel[]
 }) {
+  const isDark = false; // Always light mode per request
   if (searchQuery.trim() === "") return null;
 
   const filteredChannels = channels.filter(ch => 
@@ -4320,7 +4215,7 @@ function SearchPopup({
       transition={{ type: "spring", damping: 25, stiffness: 400 }}
       className={`absolute ${position === "top" ? "top-full mt-3" : "bottom-full mb-6"} w-[90vw] md:w-full max-w-[440px] border shadow-[0_20px_60px_rgba(0,0,0,0.4)] overflow-hidden ${
         liquidGlass ? "rounded-[24px] backdrop-blur-3xl" : "rounded-xl"
-      } ${isDark ? "bg-[#121212]/95 border-white/10 text-white" : "bg-white/95 border-slate-200 text-black"} shadow-2xl z-[100]`}
+      } bg-white border-slate-200 text-black shadow-2xl z-[100]`}
     >
       <div className="p-4 space-y-1 max-h-[60vh] overflow-y-auto">
         {searchQuery.trim() === "" ? (
@@ -4343,6 +4238,14 @@ function SearchPopup({
                     <div className="flex-1 text-left">
                       <p className={`font-bold text-sm text-black`}>{ch.name}</p>
                     </div>
+                    {togglePin && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); togglePin(ch); }}
+                        className={`p-2 rounded-full hover:bg-black/10 transition-all ${isPinned?.(ch.name) ? "text-blue-500" : "text-black/30"}`}
+                      >
+                        <Pin size={16} className={isPinned?.(ch.name) ? "fill-blue-500" : ""} />
+                      </button>
+                    )}
                     <ChevronRight className="w-4 h-4 text-black/30" />
                   </button>
                 ))}
@@ -4402,6 +4305,14 @@ function SearchPopup({
                       <p className={`font-bold text-sm text-black`}>{ch.name}</p>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-black/60">{ch.category}</p>
                     </div>
+                    {togglePin && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); togglePin(ch); }}
+                        className={`p-2 rounded-full hover:bg-black/10 transition-all ${isPinned?.(ch.name) ? "text-blue-500" : "text-black/30"}`}
+                      >
+                        <Pin size={16} className={isPinned?.(ch.name) ? "fill-blue-500" : ""} />
+                      </button>
+                    )}
                     <ChevronRight className="w-4 h-4 text-black/30" />
                   </button>
                 ))}
@@ -4959,7 +4870,7 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, activeSear
   const [flagSearch, setFlagSearch] = useState("");
 
   const experiments = [
-    { id: 'cobalt_ui', name: 'Cobalt UI', desc: "We're working on a new interface update. You can preview it early, remember that things may break or features missing. Only available for some devices and scenarios" },
+    { id: 'cobalt_ui', name: 'Cobalt UI 3', desc: 'Cobalt UI phiên bản 3 - đẹp hơn phiên bản 2! ... ừ nó chỉ là thế đó :)' },
     { id: 'xaml_experience', name: 'Switch to the new UI', desc: 'Use the brand-new rebuilt Vplay app based on XAML system', group: 'cobalt_ui' },
     { id: 'top_bar', name: 'Top bar', desc: 'Adds a nice top bar with "Desktop Interface" enabled', group: 'cobalt_ui' },
     { id: 'dialog_redesign_v2', name: 'Redesign Pop-ups', desc: 'Try the new updated interface of popup dialogs', group: 'cobalt_ui' },
@@ -5696,7 +5607,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
   setFeatureFlags: (f: any) => void,
   forcedInfo?: { title: string, subtitle: string }
 }) => {
-  const [phase, setPhase] = useState<"initial_loading" | "wizard" | "experiments" | "music" | "final_loading_1" | "final_loading_2" | "almost_there" | "forced_info">(forcedInfo ? "forced_info" : "wizard");
+  const [phase, setPhase] = useState<"initial_loading" | "wizard" | "experiments" | "music" | "final_loading_1" | "final_loading_2" | "almost_there" | "forced_info">(forcedInfo ? "forced_info" : "experiments");
   const [selectedMusicUrl, setSelectedMusicUrl] = useState<string>("");
   const [currentExpIndex, setCurrentExpIndex] = useState(0);
 
@@ -5747,7 +5658,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
 
   useEffect(() => {
     if (phase === "initial_loading") {
-      setPhase("wizard");
+      setPhase("experiments");
       return;
     } else if (phase === "final_loading_1") {
       setPhase("final_loading_2");
@@ -5931,141 +5842,11 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
                  />
               </div>
               <p className="text-3xl md:text-4xl font-light tracking-tight text-white/60 animate-pulse">Getting your experience ready...</p>
-              <div className="absolute bottom-12 left-0 right-0 flex justify-center px-6">
-              </div>
-           </motion.div>
-          ) : phase === "almost_there" ? (
-            <motion.div 
-              key="almost_there"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="fixed inset-0 z-[100001] bg-black flex items-center justify-center font-sans"
-            >
-              <div className="text-center">
-                 <p className="text-3xl md:text-5xl font-light tracking-tight text-white/90">Almost there.</p>
-              </div>
-            </motion.div>
-          ) : phase === "forced_info" ? (
-            <motion.div 
-              key="forced_info"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 text-center"
-            >
-              <div className="max-w-3xl space-y-8">
-                <div className="w-24 h-24 mx-auto mb-8 bg-white/10 rounded-full flex items-center justify-center animate-pulse">
-                  <span className="text-4xl text-white">i</span>
-                </div>
-                <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic">
-                  {forcedInfo?.title || "Cảm ơn bạn đã trải nghiệm!"}
-                </h2>
-                <p className="text-lg md:text-xl text-white/70 font-medium leading-relaxed">
-                  {forcedInfo?.subtitle || "VplayOS là một dự án cực lớn..."}
-                </p>
-                <button 
-                  onClick={onContinue}
-                  className={featureFlags.xaml_experience 
-                    ? "vplay-retro-btn vplay-retro-btn-primary scale-125" 
-                    : "px-12 py-5 bg-white text-blue-900 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 active:scale-95 transition-all shadow-2xl"}
-                >
-                  Tiếp tục
-                </button>
-              </div>
             </motion.div>
           ) : (
-            <motion.div 
-              key="content"
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             className="flex-1 flex flex-col overflow-hidden"
-           >
-              {/* Top Bar */}
-              <div className="h-24 w-full flex items-center justify-between px-12 bg-[#212121] border-b border-white/10 shrink-0">
-                 <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                       <Sparkles size={18} />
-                    </div>
-                    <span className="text-xs font-normal">Vplay Canary Setup Wizard</span>
-                 </div>
-                 <div className="flex items-center gap-6">
-                    <button className="text-[10px] font-bold opacity-60 hover:opacity-100 transition-opacity uppercase tracking-widest">Privacy</button>
-                    <button className="text-[10px] font-bold opacity-60 hover:opacity-100 transition-opacity uppercase tracking-widest">Help</button>
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                       <Settings size={14} />
-                    </div>
-                 </div>
-              </div>
+            <div className="hidden" />
+          )}
 
-              {/* Sub Header (Static) */}
-              <div className="bg-gradient-to-b from-white/5 to-transparent pt-12 pb-6 px-8 text-center shrink-0">
-                 <motion.div
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ delay: 0.2 }}
-                   className="space-y-4"
-                 >
-                   <h1 className="text-4xl md:text-5xl font-light tracking-tight leading-tight">Vplay Canary is ready for you</h1>
-                 </motion.div>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto px-8 pb-12 custom-scrollbar flex flex-col items-center">
-                 <div className="max-w-6xl mx-auto w-full space-y-16 py-8 text-center">
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="text-center"
-                    >
-                      <p className="text-lg text-white/70 max-w-4xl mx-auto font-light leading-relaxed">
-                         Vplay Canary là một phiên bản trải nghiệm sớm, thử nghiệm các tính năng lặt vặt và test giao diện là chính. 
-                         Trong quá trình sử dụng, bạn sẽ gặp phải rất nhiều lỗi và các tính năng đều chưa hoàn thiện. 
-                         Các bản build Canary sẽ cao hơn và không được cập nhật hoặc vá lỗi thường xuyên.
-                      </p>
-                    </motion.div>
-
-
-                 </div>
-              </div>
-
-              {/* Bottom Bar */}
-              <div className="h-24 w-full flex items-center justify-end px-12 bg-[#212121] border-t border-white/10 shrink-0">
-                 <div className="flex flex-wrap items-center gap-4">
-                    <button 
-                       onClick={onContinue}
-                       className="px-6 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 transition-all font-normal rounded-lg text-xs active:scale-95 text-white/60"
-                    >
-                       Skip OOBE
-                    </button>
-                    <a 
-                       href="https://vplay-dev.vercel.app"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className="px-6 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 transition-all font-normal rounded-lg text-xs active:scale-95 text-white/60"
-                    >
-                       Chuyển sang Vplay Dev
-                    </a>
-                    <a 
-                       href="https://vplaybyota.vercel.app"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className="px-6 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 transition-all font-normal rounded-lg text-xs active:scale-95 text-white/60"
-                    >
-                       Chuyển sang Vplay Release
-                    </a>
-                    <button 
-                       onClick={handleStartExperiments}
-                       className="px-10 py-4 bg-[#0078d4] hover:bg-[#1a85d9] transition-all font-normal rounded-lg text-xs shadow-2xl active:scale-95"
-                    >
-                       Tiếp tục với Vplay Canary
-                    </button>
-                 </div>
-              </div>
-           </motion.div>
-         )}
        </AnimatePresence>
     </motion.div>
     </div>
@@ -7386,6 +7167,8 @@ function AppWindowContainer({
 function WidgetsDashboard({ 
   showWidgets, 
   setShowWidgets, 
+  pinnedWidgets,
+  setPinnedWidgets,
   isWidgetsFullScreen, 
   setIsWidgetsFullScreen, 
   isMobile, 
@@ -7394,267 +7177,458 @@ function WidgetsDashboard({
   searchQuery,
   setSearchQuery,
   setIsSearchOpen,
-  isDark,
-  user
+  isDark: _isDark,
+  user,
+  history,
+  notifications,
+  addNotification,
+  onAction,
+  onNavigate,
+  channels
 }: any) {
-  const [pinnedWidgets, setPinnedWidgets] = useState<any[]>(() => [
-    { id: 'weather', type: 'weather', size: 'medium' },
-    { id: 'stocks', type: 'stocks', size: 'small' },
-    { id: 'sports', type: 'sports', size: 'small' }
-  ]);
+  const isDark = false; // Always light mode per request
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
-  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed'>('widgets');
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings'>('widgets');
+  const [widgetSettings, setWidgetSettings] = useState({
+    openFeedOnHover: false,
+    showFeedBadges: true,
+    allowWebSearches: true
+  });
+  const [time, setTime] = useState(new Date());
+  const [isTabTransitioning, setIsTabTransitioning] = useState(false);
+  const [selectedGalleryWidget, setSelectedGalleryWidget] = useState<any>({
+    type: 'weather', name: 'Weather', icon: Cloud, desc: 'Theo dõi thời tiết tại địa phương của bạn với độ chính xác cao.'
+  });
+
+  useEffect(() => {
+    setIsTabTransitioning(true);
+    const timer = setTimeout(() => setIsTabTransitioning(false), 3000);
+    return () => clearTimeout(timer);
+  }, [activeBoardTab]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const getBoardGreeting = () => {
-    const hour = new Date().getHours();
-    // 5am - 9am: Sáng
+    const hour = time.getHours();
     if (hour >= 5 && hour <= 9) return "Chào buổi sáng";
-    // 10am - 12pm: Trưa
     if (hour >= 10 && hour <= 12) return "Chào buổi trưa";
-    // 1pm - 5pm: Chiều (13h - 17h)
     if (hour >= 13 && hour <= 17) return "Chào buổi chiều";
-    // 6pm - 11pm: Tối (18h - 23h)
     if (hour >= 18 && hour <= 23) return "Chào buổi tối";
-    // 12am - 4am: Đêm (0h - 4h)
     return "Chào buổi đêm";
   };
 
   const addWidget = (type: string, size: string) => {
+    if (pinnedWidgets.some((w: any) => w.type === type)) return;
     const newWidget = { id: Date.now().toString(), type, size };
     setPinnedWidgets([...pinnedWidgets, newWidget]);
     setShowWidgetGallery(false);
-  };
-
-  const getWidgetSpan = (size: string) => {
-    if (size === 'large') return "col-span-3";
-    if (size === 'medium') return "col-span-2";
-    return "col-span-1";
+    addNotification("Widgets", `Đã thêm tiện ích ${type} vào bảng`);
   };
 
   return (
     <AnimatePresence>
       {showWidgets && (
         <motion.div
-          initial={{ opacity: 0, x: "-100%" }}
-          animate={{ 
-            opacity: 1, 
-            x: 0, 
-            width: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "840px"),
-            height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
-            top: isWidgetsFullScreen ? 0 : 16,
-            left: isWidgetsFullScreen ? 0 : 16,
-            borderRadius: isWidgetsFullScreen ? 0 : 16
-          }}
-          exit={{ opacity: 0, x: "-100%" }}
-          transition={{ type: "spring", damping: 40, stiffness: 400 }}
-          className={`fixed z-[10002] flex shadow-2xl border overflow-hidden backdrop-blur-[50px] ${
-            isDark ? "bg-[#1c1c1c]/75 border-white/10 text-white shadow-black/80" : "bg-[#f3f3f3]/75 border-black/10 text-black shadow-2xl shadow-black/20"
-          }`}
-          onClick={(e) => e.stopPropagation()}
+  initial={{ opacity: 0, x: "-100%" }}
+  animate={{ 
+    opacity: 1, 
+    x: 0, 
+    width: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "840px"),
+    height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
+    top: isWidgetsFullScreen ? 0 : 16,
+    left: isWidgetsFullScreen ? 0 : 16,
+    borderRadius: isWidgetsFullScreen ? 0 : 12,
+    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+  }}
+  exit={{ opacity: 0, x: "-100%" }}
+  transition={{ type: "spring", damping: 40, stiffness: 400 }}
+  className={`fixed z-[10002] flex shadow-2xl border overflow-hidden backdrop-blur-3xl ${
+    isDark ? "bg-[#1c1c1c] border-white/10 text-white shadow-black/80" : "bg-[#f3f6f9] border-black/10 text-slate-900 shadow-2xl shadow-black/20"
+  }`}
+  onClick={(e) => e.stopPropagation()}
+>
+  {/* Windows 11 Style Sidebar */}
+  <div className={`w-14 h-full flex flex-col items-center py-6 gap-6 border-r ${isDark ? "bg-black/20 border-white/5" : "bg-black/5 border-black/5"}`}>
+     <button 
+        onClick={() => setActiveBoardTab('widgets')}
+        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+     >
+        <LayoutDashboard size={22} />
+     </button>
+     <button 
+        onClick={() => setActiveBoardTab('feed')}
+        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+     >
+        <Newspaper size={22} />
+     </button>
+     <div className="mt-auto flex flex-col items-center gap-6 pb-2">
+        <button 
+          onClick={() => setActiveBoardTab('settings')}
+          className={`p-2 rounded-xl transition-all ${activeBoardTab === 'settings' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
         >
-          {/* Windows 11 Style Sidebar */}
-          <div className={`w-14 h-full flex flex-col items-center py-6 gap-6 border-r ${isDark ? "bg-black/20 border-white/5" : "bg-black/5 border-black/5"}`}>
-             <button 
-                onClick={() => setActiveBoardTab('widgets')}
-                className={`p-2 rounded-xl transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
-             >
-                <LayoutDashboard size={22} />
-             </button>
-             <button 
-                onClick={() => setActiveBoardTab('feed')}
-                className={`p-2 rounded-xl transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
-             >
-                <Newspaper size={22} />
-             </button>
-             <div className="mt-auto flex flex-col items-center gap-6 pb-2">
-                <button className="opacity-40 hover:opacity-100 p-2"><Settings size={22} /></button>
-                <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-[11px] font-black overflow-hidden ring-1 ring-white/20">
-                   {user?.photoURL ? <img src={user.photoURL} alt="User" /> : "V"}
-                </div>
-             </div>
-          </div>
+          <Settings size={22} />
+        </button>
+        <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-[11px] font-bold overflow-hidden ring-1 ring-white/20">
+           {user?.photoURL ? <img src={user.photoURL} alt="User" /> : "V"}
+        </div>
+     </div>
+  </div>
 
-          <div className="flex-1 flex flex-col p-8 min-w-0">
-             <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-black italic tracking-tighter text-current leading-none">{getBoardGreeting()}</h2>
-                <div className="flex items-center gap-2">
-                   <button 
-                     onClick={() => setShowWidgetGallery(true)}
-                     className={`p-2.5 rounded-xl transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-white" : "bg-white hover:bg-slate-50 shadow-sm border border-black/5 text-slate-900"}`}
-                   >
-                     <Plus size={20} />
-                   </button>
-                   <button 
-                     onClick={() => setIsWidgetsFullScreen(!isWidgetsFullScreen)}
-                     className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-white/5 text-white/70" : "hover:bg-black/5 text-slate-600"}`}
-                   >
-                     {isWidgetsFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-                   </button>
-                   <button 
-                     onClick={() => setShowWidgets(false)}
-                     className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-red-500/20 hover:text-red-500" : "hover:bg-red-500/20 hover:text-red-500"}`}
-                   >
-                     <X size={20} />
-                   </button>
-                </div>
-             </div>
+  <div className="flex-1 flex flex-col p-8 min-w-0">
+     <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold tracking-tight text-current leading-none">{getBoardGreeting()}</h2>
+        <div className="flex items-center gap-2">
+           <button 
+             onClick={() => setShowWidgetGallery(true)}
+             className={`flex items-center gap-2 px-6 py-2.5 bg-[#0078d4] hover:bg-[#0078d4]/90 text-white rounded-2xl transition-all shadow-lg active:scale-95`}
+           >
+             <Pin size={18} fill="currentColor" />
+             <span className="text-sm font-bold tracking-tight">Pin widgets</span>
+           </button>
+           <button 
+             onClick={() => setIsWidgetsFullScreen(!isWidgetsFullScreen)}
+             className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-white/5 text-white/70" : "hover:bg-black/5 text-slate-600"}`}
+           >
+             {isWidgetsFullScreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+           </button>
+           <button 
+             onClick={() => setShowWidgets(false)}
+             className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-red-500/20 hover:text-red-500" : "hover:bg-red-500/20 hover:text-red-500"}`}
+           >
+             <X size={20} />
+           </button>
+        </div>
+     </div>
 
-             <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar">
-                {activeBoardTab === 'widgets' ? (
-                   <div className="space-y-6">
-                      {/* Search Bar inside panel */}
-                      <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
-                         <Search size={18} className="text-blue-500" />
-                         <input 
-                           type="text" 
-                           placeholder="Search the web" 
-                           className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:opacity-30 text-current"
-                           value={searchQuery}
-                           onChange={(e) => setSearchQuery(e.target.value)}
-                         />
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-4 auto-rows-max">
-                        {pinnedWidgets.map((widget) => {
-                          const spanClass = getWidgetSpan(widget.size);
-
-                          if (widget.type === 'weather') {
-                            return (
-                              <div key={widget.id} className={`${spanClass} p-6 rounded-2xl border relative group transition-all hover:scale-[1.02] active:scale-[0.98] ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
-                                 <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                       <Cloud className="text-blue-400" size={18} />
-                                       <span className="text-[11px] font-black uppercase tracking-widest opacity-40">Weather</span>
-                                    </div>
-                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                       <button className="p-1 px-2 text-[8px] font-black bg-white/5 rounded-lg hover:bg-white/10 uppercase tracking-tighter" onClick={() => {
-                                          setPinnedWidgets(prev => prev.map(w => w.id === widget.id ? { ...w, size: w.size === 'small' ? 'medium' : (w.size === 'medium' ? 'large' : 'small') } : w));
-                                       }}>Resize</button>
-                                       <button className="p-1 px-2 text-[8px] font-black bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white uppercase tracking-tighter" onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))}>Del</button>
-                                    </div>
-                                 </div>
-                                 <div className="flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                       <span className={`${widget.size === 'small' ? 'text-2xl' : 'text-5xl'} font-black tracking-tighter`}>{weatherData.temp}°C</span>
-                                       <span className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Hà Nội: Nhiều mây</span>
-                                    </div>
-                                    {widget.size !== 'small' && (
-                                      <div className="text-right">
-                                         <span className="text-[12px] block font-black">24° / 32°</span>
-                                         <span className="text-[10px] block opacity-40 font-black uppercase tracking-widest leading-none mt-1">Độ ẩm: 65%</span>
-                                      </div>
-                                    )}
-                                 </div>
-                              </div>
-                            );
-                          }
-                          if (widget.type === 'stocks') {
-                             return (
-                               <div key={widget.id} className={`${spanClass} p-6 rounded-2xl border relative group transition-all hover:scale-[1.02] active:scale-[0.98] ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
-                                 <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                       <TrendingUp className="text-emerald-500" size={18} />
-                                       <span className="text-[11px] font-black uppercase tracking-widest opacity-40 text-emerald-500/70">Tài chính</span>
-                                    </div>
-                                    <button className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-lg" onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))}><X size={14} /></button>
-                                 </div>
-                                 <div className="flex items-center justify-between">
-                                    <div>
-                                       <p className="text-base font-black tracking-tight">VN-Index</p>
-                                       <p className="text-[10px] opacity-40 font-black uppercase tracking-widest">Sàn HOSE</p>
-                                    </div>
-                                    <div className="text-right">
-                                       <p className="text-base font-black text-emerald-500">1,284.5</p>
-                                       <p className="text-[10px] text-emerald-500 font-black">+1.24%</p>
-                                    </div>
-                                 </div>
-                               </div>
-                             );
-                          }
-                          return (
-                            <div key={widget.id} className={`${spanClass} p-6 rounded-2xl border relative group transition-all hover:scale-[1.02] active:scale-[0.98] ${isDark ? "bg-white/5 border-white/5 hover:bg-white/[0.08]" : "bg-white border-black/5 shadow-sm"}`}>
-                               <div className="flex items-center justify-between mb-4">
-                                  <div className="flex items-center gap-2">
-                                     <Sparkles className="text-amber-500" size={18} />
-                                     <span className="text-[11px] font-black uppercase tracking-widest opacity-40 text-amber-500/70">{widget.type === 'sports' ? 'Thể thao' : 'Giải trí'}</span>
-                                  </div>
-                                  <button className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-lg" onClick={() => setPinnedWidgets(prev => prev.filter(w => w.id !== widget.id))}><X size={14} /></button>
-                               </div>
-                               <p className="text-sm font-black italic tracking-tight leading-tight line-clamp-2">Những thông tin và nội dung mới nhất dành riêng cho bạn trên môi trường Vplay Media Player Canary.</p>
-                               {widget.size === 'large' && <div className="mt-4 p-4 rounded-xl bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-widest text-center">Khám phá ngay</div>}
-                            </div>
-                          );
-                        })}
-                      </div>
-                   </div>
-                ) : (
-                   <div className="flex flex-col gap-6">
-                      {[
-                        { title: "Vplay OS Canary SMR26 - Công nghệ tăng tốc phần cứng mới", time: "2 giờ", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
-                        { title: "Bảng tiện ích Windows Style chính thức được cập nhật", time: "5 giờ", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
-                        { title: "Top 5 bộ phim đang thịnh hành trên Vplay trong tuần này", time: "8 giờ", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
-                      ].map((item, i) => (
-                         <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-5 p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
-                            <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/5">
-                               <img src={item.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
-                            </div>
-                            <div className="flex flex-col justify-between py-1">
-                               <div>
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 block">{item.cat}</span>
-                                  <p className="text-base font-black italic tracking-tighter leading-tight line-clamp-2 group-hover:text-blue-500 transition-colors">{item.title}</p>
-                               </div>
-                               <div className="flex items-center gap-2">
-                                  <Clock size={10} className="opacity-40" />
-                                  <span className="text-[11px] opacity-40 font-black uppercase tracking-widest">{item.time} trước</span>
-                               </div>
-                            </div>
-                         </div>
-                      ))}
-                      <button className="w-full py-4 rounded-2xl border border-dashed border-current opacity-10 hover:opacity-100 transition-opacity text-[11px] font-black uppercase tracking-[0.4em] mt-6">Khám phá thêm nội dung</button>
-                   </div>
-                )}
-             </div>
-          </div>
-
-          <AnimatePresence>
-            {showWidgetGallery && (
-              <motion.div
-                initial={{ opacity: 0, x: "100%" }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: "100%" }}
-                className={`absolute inset-0 z-[10003] p-8 flex flex-col gap-6 ${isDark ? "bg-[#1c1c1c] text-white" : "bg-[#f3f3f3] text-black"}`}
+     <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar relative">
+        <AnimatePresence>
+          {isTabTransitioning && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 flex items-center justify-center bg-transparent"
               >
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold tracking-tight">Add widgets</h2>
-                  <button onClick={() => setShowWidgetGallery(false)} className={`p-2 rounded-lg ${isDark ? "hover:bg-white/10" : "hover:bg-black/5"}`}><X size={20} /></button>
+              <motion.div 
+                className="w-12 h-12 border-[6px] border-transparent border-t-blue-500 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {activeBoardTab === 'widgets' ? (
+           <div className="space-y-6">
+              {widgetSettings.allowWebSearches && (
+                <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
+                   <Search size={18} className="text-blue-500" />
+                   <input 
+                     type="text" 
+                     placeholder="Search the web" 
+                     className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:opacity-30 text-current"
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                   />
                 </div>
-                <div className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar">
-                  {[
-                    { type: 'weather', name: 'Weather', icon: Cloud },
-                    { type: 'stocks', name: 'Watchlist', icon: TrendingUp },
-                    { type: 'sports', name: 'Sports', icon: Star },
-                    { type: 'entertainment', name: 'Entertainment', icon: PlayCircle }
-                  ].map(item => (
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 auto-rows-max">
+                <Reorder.Group axis="y" values={pinnedWidgets} onReorder={setPinnedWidgets} className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {pinnedWidgets.map((widget: any) => (
+                  <Reorder.Item key={widget.id} value={widget} className="relative">
+                  <WidgetWrapper
+                    key={widget.id}
+                    w={widget}
+                    isDark={isDark}
+                    location={weatherCity}
+                    time={time}
+                    onRemove={() => setPinnedWidgets((prev: any[]) => prev.filter(w => w.id !== widget.id))}
+                    onResize={() => {
+                      setPinnedWidgets((prev: any[]) => prev.map(w => {
+                        if (w.id === widget.id) {
+                          const nextSize = w.size === 'small' ? 'medium' : (w.size === 'medium' ? 'large' : 'small');
+                          return { ...w, size: nextSize };
+                        }
+                        return w;
+                      }));
+                    }}
+                    addNotification={addNotification}
+                    notifications={notifications}
+                    history={history}
+                    onAction={onAction}
+                    onNavigate={onNavigate}
+                    channels={channels}
+                  />
+                  </Reorder.Item>
+                ))}
+                </Reorder.Group>
+              </div>
+           </div>
+        ) : activeBoardTab === 'feed' ? (
+           <div className="flex flex-col gap-6">
+              {[
+                { title: "Vplay OS Canary SMR26 - Công nghệ tăng tốc phần cứng mới", time: "2 giờ", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
+                { title: "Bảng tiện ích Windows Style chính thức được cập nhật", time: "5 giờ", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
+                { title: "Top 5 bộ phim đang thịnh hành trên Vplay trong tuần này", time: "8 giờ", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
+              ].map((item, i) => (
+                 <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-5 p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
+                    <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/5">
+                       <img src={item.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                    </div>
+                    <div className="flex flex-col justify-between py-1">
+                       <div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-2 block">{item.cat}</span>
+                          <p className="text-base font-bold tracking-tighter leading-tight line-clamp-2 group-hover:text-blue-500 transition-colors">{item.title}</p>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <Clock size={10} className="opacity-40" />
+                          <span className="text-[11px] opacity-40 font-bold uppercase tracking-widest">{item.time} trước</span>
+                       </div>
+                    </div>
+                 </div>
+              ))}
+              <button className="w-full py-4 rounded-2xl border border-dashed border-current opacity-10 hover:opacity-100 transition-opacity text-[11px] font-bold uppercase tracking-[0.4em] mt-6">Khám phá thêm nội dung</button>
+           </div>
+        ) : (
+          <div className="flex-1 flex flex-col overflow-hidden -mx-8 -mb-10 bg-[#f3f6f9]">
+            {/* Main scrollable area */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-10 space-y-10">
+               <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                     <h2 className="text-2xl font-bold tracking-tight text-slate-900">Settings</h2>
+                     <button onClick={() => setShowWidgetGallery(true)} className="p-2 hover:bg-black/5 rounded-lg"><Plus size={20} /></button>
+                  </div>
+                  
+                  {/* Dashboards Section */}
+                  <div className="space-y-1">
+                     <div className="p-5 bg-white border border-slate-200 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                           <Layout size={20} className="opacity-60" />
+                           <h3 className="text-sm font-semibold text-slate-700">Dashboards</h3>
+                        </div>
+                        <ChevronDown size={18} className="opacity-40" />
+                     </div>
+                     
+                     <div className="bg-white border border-slate-200 divide-y divide-slate-100">
+                        <div className="p-5 flex items-center justify-between group">
+                           <div className="flex items-center gap-4">
+                              <div className="flex gap-1.5 opacity-20">
+                                 {[1,2].map(i => <div key={i} className="w-1.5 h-1.5 bg-black rounded-full" />)}
+                              </div>
+                              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center transition-transform group-hover:scale-110">
+                                 <Layout size={20} className="text-blue-500" />
+                              </div>
+                              <div className="flex flex-col">
+                                 <span className="text-sm font-bold text-slate-800">Discover</span>
+                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Start Experiences app</span>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-6">
+                              <span className="text-sm font-medium text-slate-400">On</span>
+                              <div className="w-12 h-6 rounded-full bg-blue-600 relative p-1 shadow-inner">
+                                 <div className="absolute right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                              </div>
+                              <MoreHorizontal size={18} className="opacity-20" />
+                           </div>
+                        </div>
+
+                        <div className="p-5 flex items-center justify-between group">
+                           <div className="flex items-center gap-4">
+                              <div className="flex gap-1.5 opacity-20">
+                                 {[1,2].map(i => <div key={i} className="w-1.5 h-1.5 bg-black rounded-full" />)}
+                              </div>
+                              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center transition-transform group-hover:scale-110">
+                                 <Grid size={20} className="text-blue-500" />
+                              </div>
+                              <div className="flex flex-col">
+                                 <span className="text-sm font-bold text-slate-800">Widgets</span>
+                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Windows 11</span>
+                              </div>
+                           </div>
+                           <MoreHorizontal size={18} className="opacity-20" />
+                        </div>
+                     </div>
+
+                     <div className="p-5 bg-white border border-slate-200 flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-600">Get more dashboards from the Microsoft Store</span>
+                        <button className="px-6 py-2 bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 hover:bg-slate-100 transition-colors">Browse dashboards</button>
+                     </div>
+                  </div>
+               </div>
+
+               {/* More settings Section */}
+               <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-500">More settings</h3>
+                  <div className="space-y-2">
+                     <div className="p-6 bg-white border border-slate-200 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center gap-6">
+                           <Bell size={20} className="opacity-60" />
+                           <div className="flex flex-col">
+                              <span className="text-sm font-bold text-slate-800">Notifications</span>
+                              <span className="text-[11px] text-slate-400 font-medium">Manage notifications from your dashboards and widgets</span>
+                           </div>
+                        </div>
+                        <ChevronRight size={18} className="opacity-40" />
+                     </div>
+
+                     <div className="p-6 bg-white border border-slate-200 flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                           <Layout size={20} className="opacity-60" />
+                           <div className="flex flex-col">
+                              <span className="text-sm font-bold text-slate-800">Open on hover</span>
+                              <span className="text-[11px] text-slate-400 font-medium">Opens when hovering on the taskbar icon</span>
+                           </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                           <span className="text-sm font-medium text-slate-400">On</span>
+                           <div className="w-12 h-6 rounded-full bg-blue-600 relative p-1 shadow-inner">
+                              <div className="absolute right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="p-6 bg-white border border-slate-200 flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                           <Wifi size={20} className="opacity-60" />
+                           <div className="flex flex-col">
+                              <span className="text-sm font-bold text-slate-800">Metered connection</span>
+                              <span className="text-[11px] text-slate-400 font-medium">Use metered connection for Widgets</span>
+                           </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                           <span className="text-sm font-medium text-slate-400">On</span>
+                           <div className="w-12 h-6 rounded-full bg-blue-600 relative p-1 shadow-inner">
+                              <div className="absolute right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* About Section */}
+               <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-500">About</h3>
+                  <div className="bg-white border border-slate-200 divide-y divide-slate-100">
+                     <div className="p-6 flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                           <Info size={20} className="opacity-60" />
+                           <div className="flex flex-col">
+                              <span className="text-sm font-bold text-slate-800">Widgets</span>
+                              <span className="text-[11px] text-slate-400 font-medium">Version 3.0.6 (Powered by Vplay Cobalt UI 3)</span>
+                           </div>
+                        </div>
+                        <ChevronUp size={18} className="opacity-40" />
+                     </div>
+                     <div className="divide-y divide-slate-50">
+                        {['Learn more', 'Give feedback', 'Terms of use', 'Privacy statement'].map(text => (
+                           <div key={text} className="p-4 px-16 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer group">
+                              <span className="text-sm font-medium text-slate-600 group-hover:text-blue-600">{text}</span>
+                              <ExternalLink size={14} className="opacity-20 group-hover:opacity-100" />
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+     </div>
+  </div>
+
+  <AnimatePresence>
+    {showWidgetGallery && (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        className={`absolute inset-0 z-[10003] flex flex-col ${isDark ? "bg-[#1c1c1c] text-white" : "bg-white text-slate-900 shadow-2xl"}`}
+      >
+        <div className="h-16 px-8 flex items-center justify-between border-b border-black/5 bg-white/80 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+             <Pin size={18} className="text-blue-500" />
+             <h2 className="text-sm font-bold tracking-tight text-slate-500">Thêm tiện ích vào bảng</h2>
+          </div>
+          <button onClick={() => setShowWidgetGallery(false)} className={`p-2 rounded-xl hover:bg-black/5 transition-all active:scale-90`}><X size={20} /></button>
+        </div>
+
+        <div className="flex-1 flex min-h-0">
+          <div className="w-[320px] h-full border-r border-black/5 overflow-y-auto custom-scrollbar p-6 bg-slate-50/30">
+             <div className="space-y-1">
+                {[
+                  { type: 'weather', name: 'Thời tiết', icon: Cloud, desc: 'Theo dõi thời tiết tại địa phương của bạn với độ chính xác cao.' },
+                  { type: 'stocks', name: 'Chứng khoán', icon: TrendingUp, desc: 'Cập nhật giá cổ phiếu và thị trường tài chính mới nhất.' },
+                  { type: 'sports', name: 'Thể thao', icon: Star, desc: 'Tỷ số trực tiếp và tin tức thể thao từ các giải đấu hàng đầu.' },
+                  { type: 'entertainment', name: 'Giải trí', icon: PlayCircle, desc: 'Xu hướng phim ảnh, âm nhạc và tin tức giải trí.' },
+                  { type: 'clock_date', name: 'Thời gian', icon: Clock, desc: 'Đồng hồ và lịch hiển thị rõ nét với hiệu ứng đổ bóng.' },
+                  { type: 'vtv6_countdown', name: 'Đếm ngược', icon: Tv, desc: 'Đếm ngược đến giờ phát sóng các chương trình đặc sắc.' },
+                  { type: 'notify', name: 'Thông báo', icon: Bell, desc: 'Hệ thống thông báo thông minh từ Vplay OS.' },
+                  { type: 'history', name: 'Lịch sử', icon: History, desc: 'Xem lại lịch sử truy cập và các nội dung đã xem.' }
+                ].map(item => {
+                  const isPinned = pinnedWidgets.some((w: any) => w.type === item.type);
+                  const isSelected = selectedGalleryWidget?.type === item.type;
+                  return (
                     <button
                       key={item.type}
-                      onClick={() => addWidget(item.type, 'medium')}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-black/5 hover:shadow-md"}`}
+                      onMouseEnter={() => setSelectedGalleryWidget(item)}
+                      onClick={() => !isPinned && addWidget(item.type, 'medium')}
+                      className={`w-full flex items-center gap-4 p-4 transition-all text-left rounded-2xl ${
+                        isSelected ? "bg-white shadow-xl transform scale-[1.02] z-10" : "bg-transparent hover:bg-black/5"
+                      } ${isPinned ? "opacity-40 grayscale" : "cursor-pointer"}`}
                     >
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${isSelected ? "bg-blue-600 text-white" : "bg-blue-500/10 text-blue-500"}`}>
                         <item.icon size={20} />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold">{item.name}</p>
-                        <p className="text-[10px] opacity-40 font-bold">Vplay Experience</p>
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-sm font-semibold tracking-tight truncate">{item.name}</span>
+                        {isPinned && <span className="text-[9px] font-bold text-blue-600 tracking-wider">Đã ghim</span>}
                       </div>
-                      <div className="p-1.5 rounded-full bg-blue-500 text-white"><Plus size={14} /></div>
                     </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+                  );
+                })}
+             </div>
+          </div>
+
+          <div className="flex-1 h-full flex flex-col items-center justify-center p-12 bg-slate-50 relative overflow-hidden">
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
+             
+             {selectedGalleryWidget && (
+               <motion.div 
+                 key={selectedGalleryWidget.type}
+                 initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                 className="w-full max-w-sm flex flex-col items-center text-center relative z-10"
+               >
+                  <div className="w-28 h-28 rounded-[32px] bg-white shadow-2xl flex items-center justify-center mb-8 ring-1 ring-black/5">
+                    <selectedGalleryWidget.icon size={48} className="text-blue-600" />
+                  </div>
+                  <h3 className="text-3xl font-bold tracking-tighter mb-4">{selectedGalleryWidget.name}</h3>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed mb-10">
+                    {selectedGalleryWidget.desc}
+                  </p>
+                  
+                  <button 
+                    disabled={pinnedWidgets.some((w: any) => w.type === selectedGalleryWidget.type)}
+                    onClick={() => addWidget(selectedGalleryWidget.type, 'medium')}
+                    className={`px-10 py-3.5 font-bold text-xs rounded-2xl transition-all shadow-xl active:scale-95 ${
+                      pinnedWidgets.some((w: any) => w.type === selectedGalleryWidget.type) 
+                        ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
+                        : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-blue-500/40"
+                    }`}
+                  >
+                    {pinnedWidgets.some((w: any) => w.type === selectedGalleryWidget.type) ? "Đã đính kèm" : "Đính kèm vào bảng"}
+                  </button>
+               </motion.div>
+             )}
+          </div>
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</motion.div>
       )}
     </AnimatePresence>
   );
@@ -9851,6 +9825,15 @@ export default function App() {
     const saved = localStorage.getItem("vplay_favorites");
     return saved ? JSON.parse(saved) : [];
   });
+  const [pinnedWidgets, setPinnedWidgets] = useState<any[]>(() => {
+    const saved = localStorage.getItem("vplay_widget_board_pins");
+    return saved ? JSON.parse(saved) : [
+      { id: 'weather', type: 'weather', size: 'medium' },
+      { id: 'stocks', type: 'stocks', size: 'small' },
+      { id: 'clock_date', type: 'clock_date', size: 'medium' },
+      { id: 'vtv6_countdown', type: 'vtv6_countdown', size: 'medium' }
+    ];
+  });
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [customAlert, setCustomAlert] = useState<{ title: string, message: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -9918,8 +9901,24 @@ export default function App() {
   }, [isDark]);
 
   useEffect(() => {
-    localStorage.setItem("vplay_desktop_wallpaper", desktopWallpaper);
-  }, [desktopWallpaper]);
+    localStorage.setItem("vplay_widget_board_pins", JSON.stringify(pinnedWidgets));
+  }, [pinnedWidgets]);
+
+  const togglePinChannelToWidgets = (ch: Channel) => {
+    setPinnedWidgets(prev => {
+      const isPinned = prev.some(w => w.type === 'channel' && w.channelId === ch.name);
+      if (isPinned) {
+        return prev.filter(w => !(w.type === 'channel' && w.channelId === ch.name));
+      } else {
+        return [...prev, { id: `channel-${ch.name}-${Date.now()}`, type: 'channel', size: 'small', channelId: ch.name }];
+      }
+    });
+    addNotification("Widget Board", `${isPinnedWidget(ch.name) ? "Đã gỡ" : "Đã ghim"} kênh ${ch.name} vào bảng tiện ích`);
+  };
+
+  const isPinnedWidget = (channelName: string) => {
+    return pinnedWidgets.some(w => w.type === 'channel' && w.channelId === channelName);
+  };
 
   useEffect(() => {
     localStorage.setItem("vplay_pinned_channels", JSON.stringify(pinnedChannelNames));
@@ -10195,6 +10194,15 @@ export default function App() {
     setShowOOBE(false);
     sessionStorage.setItem("vplay_oobe_seen", "true");
   };
+
+  const onAction = useCallback((action: string) => {
+    console.log("Widget Action:", action);
+  }, []);
+
+  const onNavigate = useCallback((tab: string) => {
+    setActiveTab(tab);
+    setShowWidgets(false);
+  }, []);
 
   return (
     <div className={`flex flex-col h-screen overflow-hidden ${featureFlags.scambidi_ui ? "scambidi-mode" : ""}`}>
@@ -10615,6 +10623,8 @@ export default function App() {
                                 onLogin={handleLogin}
                                 onLogout={handleLogout}
                                 setSortOrder={setSortOrder}
+                                togglePin={togglePinChannelToWidgets}
+                                isPinned={isPinnedWidget}
                                 position="top"
                                 channels={scambidifiedChannels}
                               />
@@ -10902,6 +10912,8 @@ export default function App() {
                       onLogin={handleLogin}
                       onLogout={handleLogout}
                       setSortOrder={setSortOrder}
+                      togglePin={togglePinChannelToWidgets}
+                      isPinned={isPinnedWidget}
                       position="top"
                       channels={scambidifiedChannels}
                     />
@@ -11159,10 +11171,10 @@ export default function App() {
                 <SpeakForMeContent isDark={isDark} onBack={() => setActiveTab("Home")} />
               )}
               {displayTab === "Search" && (
-                <div className={`flex-1 flex flex-col h-full overflow-hidden rounded-[32px] ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <div className={`p-8 border-b ${isDark ? (featureFlags.xaml_experience ? "bg-transparent" : "bg-black") + " border-white/5" : (featureFlags.xaml_experience ? "bg-transparent" : "bg-white") + " border-black/5"}`}>
+                <div className={`flex-1 flex flex-col h-full overflow-hidden rounded-[32px] ${featureFlags.xaml_experience ? ("bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <div className={`p-8 border-b ${featureFlags.xaml_experience ? "bg-transparent" : "bg-white"} border-black/5`}>
                     <SearchBar 
-                      isDark={isDark} 
+                      isDark={false} 
                       query={searchQuery} 
                       setQuery={setSearchQuery} 
                       onClose={() => setSearchQuery("")} 
@@ -11185,11 +11197,7 @@ export default function App() {
 
                           {isSearchLoading ? (
                             <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                              <img 
-                                src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-                                alt="Loading" 
-                                className={`w-12 h-12 ${isDark ? "filter brightness-200" : ""}`}
-                              />
+                              <LoadingAnimation featureFlags={featureFlags} isDark={false} className="w-12 h-12" />
                               <span className="text-sm font-bold uppercase tracking-widest opacity-40">Đang tìm kiếm trong kho ứng dụng...</span>
                             </div>
                           ) : searchResults.length > 0 ? (
@@ -11198,18 +11206,20 @@ export default function App() {
                                 <ChannelCard 
                                   key={`${ch.name}-${idx}`}
                                   ch={ch}
-                                  isDark={isDark}
+                                  isDark={false}
                                   isActive={activeChannel.name === ch.name}
                                   onClick={() => handleChannelSelect(ch)}
                                   favorites={favorites}
                                   toggleFavorite={toggleFavorite}
+                                  togglePin={togglePinChannelToWidgets}
+                                  isPinned={isPinnedWidget(ch.name)}
                                   liquidGlass={liquidGlass}
                                   featureFlags={featureFlags}
                                 />
                               ))}
                             </div>
                           ) : (
-                            <div className="flex flex-col items-center justify-center py-32 text-center">
+                            <div className="flex flex-col items-center justify-center py-32 text-center text-slate-900">
                               <div className="w-24 h-24 bg-slate-500/10 rounded-full flex items-center justify-center mb-6">
                                 <Search size={40} className="text-slate-400" />
                               </div>
@@ -11270,6 +11280,8 @@ export default function App() {
                     isDark={isDark} 
                     favorites={favorites} 
                     toggleFavorite={toggleFavorite} 
+                    togglePin={togglePinChannelToWidgets}
+                    isPinned={isPinnedWidget}
                     user={user}
                     onLogin={handleLogin}
                     isDev={isDev}
@@ -11612,20 +11624,14 @@ export default function App() {
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className={`absolute top-full left-6 right-6 mt-2 z-[60] overflow-hidden border shadow-2xl ${
-                            isDark ? "bg-slate-900/95 border-white/5" : "bg-white border-slate-200"
-                          } rounded-2xl backdrop-blur-3xl`}
+                          className="absolute top-full left-6 right-6 mt-2 z-[60] overflow-hidden border shadow-2xl bg-white border-slate-200 rounded-2xl backdrop-blur-3xl"
                         >
                           <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                             {isSearchLoading ? (
                               <div className="p-8 flex flex-col items-center justify-center space-y-4">
-                                <img 
-                                  src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-                                  alt="Loading" 
-                                  className={`w-10 h-10 ${isDark ? "filter brightness-0 invert" : ""}`}
-                                />
+                                <LoadingAnimation featureFlags={featureFlags} isDark={false} className="w-10 h-10" />
                                 {!featureFlags.xaml_search && (
-                                  <span className={`text-[10px] font-semibold uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-400"}`}>Đang tìm kiếm...</span>
+                                  <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Đang tìm kiếm...</span>
                                 )}
                               </div>
                             ) : searchResults.length > 0 ? (
@@ -11637,15 +11643,13 @@ export default function App() {
                                       handleChannelSelect(ch);
                                       setSearchQuery("");
                                     }}
-                                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-                                      isDark ? "hover:bg-white/5" : "hover:bg-slate-50"
-                                    }`}
+                                    className="w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-slate-50"
                                   >
-                                    <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${isDark ? "bg-white/5" : "bg-white shadow-sm"}`}>
+                                    <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm">
                                       <img src={ch.logo} alt={ch.name} className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
                                     </div>
                                     <div className="flex flex-col items-start min-w-0">
-                                      <span className={`text-sm font-normal truncate w-full ${isDark ? "text-white" : "text-slate-900"}`}>{ch.name}</span>
+                                      <span className="text-sm font-normal truncate w-full text-slate-900">{ch.name}</span>
                                       <span className="text-[10px] font-normal text-slate-500 uppercase">{ch.category}</span>
                                     </div>
                                   </button>
@@ -12098,6 +12102,8 @@ export default function App() {
                   onLogin={handleLogin}
                   onLogout={handleLogout}
                   setSortOrder={setSortOrder}
+                  togglePin={togglePinChannelToWidgets}
+                  isPinned={isPinnedWidget}
                   channels={scambidifiedChannels}
                 />
                 {searchBoxPosition === "sidebar" && (
@@ -12917,6 +12923,8 @@ export default function App() {
           <WidgetsDashboard 
             showWidgets={showWidgets} 
             setShowWidgets={setShowWidgets} 
+            pinnedWidgets={pinnedWidgets}
+            setPinnedWidgets={setPinnedWidgets}
             isWidgetsFullScreen={isWidgetsFullScreen} 
             setIsWidgetsFullScreen={setIsWidgetsFullScreen} 
             isMobile={isMobile}
@@ -12926,6 +12934,13 @@ export default function App() {
             setSearchQuery={setSearchQuery}
             setIsSearchOpen={setIsSearchOpen}
             isDark={isDark}
+            user={user}
+            history={history}
+            notifications={notifications}
+            addNotification={addNotification}
+            onAction={onAction}
+            onNavigate={onNavigate}
+            channels={channels}
           />
         )}
       </AnimatePresence>
