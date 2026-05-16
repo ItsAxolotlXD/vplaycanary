@@ -61,9 +61,23 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
     <div className={`flex flex-col items-center justify-center ${className}`}>
       <motion.div
         animate={{ rotate: 360 }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-        className="w-12 h-12 border-[12px] border-blue-600 border-t-transparent border-r-transparent border-l-transparent rounded-full"
-      />
+        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        className="relative w-12 h-12"
+      >
+        <svg className="w-full h-full" viewBox="0 0 50 50">
+          <circle
+            cx="25"
+            cy="25"
+            r="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray="90, 150"
+            className="text-blue-600"
+          />
+        </svg>
+      </motion.div>
     </div>
   );
 };
@@ -340,10 +354,9 @@ const backgroundTracks = [
 ];
 
 const baseTabs = [
-  { name: "Trang chủ", icon: Home, id: "Trang chủ" },
-  { name: "Phát sóng", icon: Tv, id: "Phát sóng" },
+  { name: "Home", icon: Home, id: "Trang chủ" },
+  { name: "Live", icon: Tv, id: "Phát sóng" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
-  { name: "Pizza", icon: Pizza, id: "Pizza", className: "-scale-x-100", tooltip: "Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary" },
 ];
 
 // Channel type is imported from channels.ts
@@ -1269,15 +1282,31 @@ function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags
   );
 }
 
-function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotification, notifications, history, onAction, onNavigate, setShowVTV6Popup, channels }: any) {
+function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, onLock, addNotification, notifications, history, onAction, onNavigate, setShowVTV6Popup, channels }: any) {
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
+
   const getBgClass = () => {
-    if (w.type === 'weather') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
+    if (w.type === 'weather') return 'bg-sky-400 text-white border-none shadow-lg';
     if (w.type === 'stocks') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
     if (w.type === 'clock_date') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
     if (w.type === 'vtv6_countdown') return 'bg-[#ed1c24] text-white border-none shadow-[0_12px_40px_rgba(237,28,36,0.25)]';
     if (w.type === 'channel') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
+    if (w.type === 'thirdparty') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
     return isDark ? "bg-[#2c2c2c] border-[#3c3c3c] text-white" : "bg-white border-slate-100 text-slate-900 shadow-sm";
   };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+    setShowContextMenu(true);
+  };
+
+  useEffect(() => {
+    const handleGlobalClick = () => setShowContextMenu(false);
+    if (showContextMenu) window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, [showContextMenu]);
 
   const formatTime = (seconds: number) => {
     const min = Math.floor(seconds / 60);
@@ -1291,45 +1320,66 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
     return () => clearInterval(timer);
   }, []);
 
+  const getSizeClass = () => {
+    switch (w.size) {
+      case '2x2': return 'col-span-4 row-span-2 h-[200px]';
+      case '4x4': return 'col-span-8 row-span-4 h-[416px]';
+      case '6x6': return 'col-span-12 row-span-6 h-[632px]';
+      case '1x2': return 'col-span-4 row-span-1 h-[90px]';
+      default: return 'col-span-4 row-span-2 h-[200px]';
+    }
+  };
+
   return (
-    <motion.div
-      layout
-      drag
-      dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-      dragElastic={0.05}
-      whileDrag={{ scale: 1.02, zIndex: 100 }}
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      className={`group relative rounded-[24px] border p-6 flex flex-col justify-between overflow-hidden transition-all ${getBgClass()} ${
-        w.size === "small" ? "col-span-1 row-span-1 h-[200px]" :
-        w.size === "medium" ? "col-span-1 sm:col-span-2 row-span-1 h-[200px]" :
-        "col-span-1 sm:col-span-2 md:col-span-3 row-span-1 h-[200px]"
-      }`}
-    >
-        <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 p-1.5 bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl pointer-events-auto">
-          <button onClick={onResize} className="p-2 hover:bg-black/5 rounded-xl transition-colors"><Maximize2 size={12} /></button>
-          <button onClick={onRemove} className="p-2 hover:bg-red-500/10 text-red-500 rounded-xl transition-colors"><X size={12} /></button>
-        </div>
+    <>
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        onContextMenu={handleContextMenu}
+        className={`group relative rounded-[24px] border p-6 flex flex-col justify-between overflow-hidden transition-all ${getBgClass()} ${getSizeClass()} ${w.locked ? 'ring-2 ring-blue-500/50' : ''}`}
+      >
+        {!w.locked && (
+          <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 p-1.5 bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl pointer-events-auto">
+            <div className="flex gap-0.5 mr-2">
+              <button onClick={() => onMove('left')} className="p-1 hover:bg-black/5 rounded-md transition-colors"><ChevronLeft size={12} /></button>
+              <div className="flex flex-col gap-0.5">
+                 <button onClick={() => onMove('up')} className="p-1 hover:bg-black/5 rounded-md transition-colors"><ChevronUp size={12} /></button>
+                 <button onClick={() => onMove('down')} className="p-1 hover:bg-black/5 rounded-md transition-colors"><ChevronDown size={12} /></button>
+              </div>
+              <button onClick={() => onMove('right')} className="p-1 hover:bg-black/5 rounded-md transition-colors"><ChevronRight size={12} /></button>
+            </div>
+            <div className="w-px h-4 bg-black/10 mx-1" />
+            <button onClick={onResize} className="p-2 hover:bg-black/5 rounded-xl transition-colors"><Maximize2 size={12} /></button>
+            <button onClick={onRemove} className="p-2 hover:bg-red-500/10 text-red-500 rounded-xl transition-colors"><X size={12} /></button>
+          </div>
+        )}
+
+        {w.locked && (
+          <div className="absolute top-4 right-4 z-20 p-1.5 bg-blue-500/10 backdrop-blur-xl rounded-full text-blue-500">
+             <Lock size={12} />
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col h-full pointer-events-none select-none">
           {w.type === "weather" && (
             <div className="flex flex-col h-full justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-500/10 rounded-[18px]">
-                  <Cloud size={20} className="text-blue-500" />
+                <div className="p-2.5 bg-white/20 rounded-[18px]">
+                  <Cloud size={20} className="text-white" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[12px] font-semibold text-slate-400">Thời tiết</span>
-                  <span className="text-sm font-bold text-slate-800 tracking-tight">{location}</span>
+                  <span className="text-[12px] font-semibold text-white/60">Weather</span>
+                  <span className="text-sm font-bold text-white tracking-tight">{location}</span>
                 </div>
               </div>
               <div className="flex items-end justify-between">
                   <div className="flex flex-col">
-                    <span className="text-5xl font-bold text-slate-900 tracking-tighter leading-none">29°C</span>
-                    <span className="text-[12px] font-medium text-slate-400 mt-1">Đẹp trời • 32° / 24°</span>
+                    <span className="text-5xl font-bold text-white tracking-tighter leading-none">29°C</span>
+                    <span className="text-[12px] font-medium text-white/70 mt-1">Clear Sky • 32° / 24°</span>
                   </div>
-                  <CloudLightning size={48} className="text-blue-500/10 -mb-2" />
+                  <CloudLightning size={48} className="text-white/20 -mb-2" />
               </div>
             </div>
           )}
@@ -1341,13 +1391,13 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
                   <Clock size={20} className="text-blue-500" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[12px] font-semibold text-slate-400">Hệ thống</span>
-                  <span className="text-sm font-bold text-slate-800 tracking-tight">{time.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                  <span className="text-[12px] font-semibold text-slate-400">System</span>
+                  <span className="text-sm font-bold text-slate-800 tracking-tight">{time.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                 </div>
               </div>
               <div className="flex flex-col text-center translate-y-1">
                   <span className="text-5xl font-black text-slate-900 tracking-tighter tabular-nums leading-none">
-                    {time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                    {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
                   </span>
                   <span className="text-[11px] font-bold text-blue-500 tracking-[0.25em] mt-3 opacity-30">CORE KERNEL ACTIVATED</span>
               </div>
@@ -1361,7 +1411,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
                   <Tv size={20} className="text-white" />
                 </div>
                 <div className="flex flex-col text-white">
-                  <span className="text-[12px] font-semibold opacity-60">Sắp phát sóng</span>
+                  <span className="text-[12px] font-semibold opacity-60">Upcoming</span>
                   <span className="text-sm font-bold tracking-tight">VTV6 Live Event</span>
                 </div>
               </div>
@@ -1382,8 +1432,8 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
                   <TrendingUp size={20} className="text-emerald-500" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[12px] font-semibold text-slate-400">Tham chiếu</span>
-                  <span className="text-sm font-bold text-slate-800 tracking-tight">Thị trường nội địa</span>
+                  <span className="text-[12px] font-semibold text-slate-400">Reference</span>
+                  <span className="text-sm font-bold text-slate-800 tracking-tight">Local Market</span>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1428,6 +1478,25 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
             </div>
           )}
 
+          {w.type === "thirdparty" && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 bg-slate-100 rounded-[18px]">
+                  <Globe size={20} className="text-blue-500" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-semibold text-slate-400">App</span>
+                  <span className="text-sm font-bold text-slate-800 tracking-tight">{w.appName}</span>
+                </div>
+              </div>
+              <div className="flex-1 rounded-[20px] bg-slate-50 border border-slate-100 flex items-center justify-center p-4">
+                 <div className="text-center">
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Web Content</p>
+                   <p className="text-sm font-medium text-slate-900">Embedded App Preview</p>
+                 </div>
+              </div>
+            </div>
+          )}
           {w.type === "notify" && (
             <div className="flex flex-col h-full overflow-hidden">
                <div className="flex items-center gap-3 mb-4">
@@ -1435,8 +1504,8 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
                     <Bell size={20} className="text-orange-500" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[12px] font-semibold text-slate-400">Tin mới</span>
-                    <span className="text-sm font-bold text-slate-800 tracking-tight">Hệ thống Vplay</span>
+                    <span className="text-[12px] font-semibold text-slate-400">Latest</span>
+                    <span className="text-sm font-bold text-slate-800 tracking-tight">Vplay System</span>
                   </div>
                </div>
                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 pointer-events-auto">
@@ -1449,7 +1518,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
                     ))
                   ) : (
                     <div className="h-full flex items-center justify-center">
-                       <span className="text-[11px] text-slate-300 italic">Không có thông báo</span>
+                       <span className="text-[11px] text-slate-300 italic">No notifications</span>
                     </div>
                   )}
                </div>
@@ -1466,7 +1535,31 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, addNotif
             </div>
           )}
         </div>
-    </motion.div>
+      </motion.div>
+
+      <AnimatePresence>
+        {showContextMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            style={{ position: 'fixed', top: contextMenuPos.y, left: contextMenuPos.x, zIndex: 10010 }}
+            className="w-48 bg-white/80 backdrop-blur-2xl border border-black/5 rounded-2xl shadow-2xl overflow-hidden p-1.5"
+          >
+             <div className="space-y-0.5">
+               <button onClick={() => onMove('up')} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 transition-colors text-sm font-medium"><ChevronUp size={14} className="opacity-40" /> Move up</button>
+               <button onClick={() => onMove('down')} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 transition-colors text-sm font-medium"><ChevronDown size={14} className="opacity-40" /> Move down</button>
+               <button onClick={() => onMove('left')} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 transition-colors text-sm font-medium"><ChevronLeft size={14} className="opacity-40" /> Move left</button>
+               <button onClick={() => onMove('right')} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 transition-colors text-sm font-medium"><ChevronRight size={14} className="opacity-40" /> Move right</button>
+               <div className="h-px bg-black/5 my-1 mx-2" />
+               <button onClick={onResize} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 transition-colors text-sm font-medium"><Maximize2 size={14} className="opacity-40" /> Resize</button>
+               <button onClick={onLock} className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 transition-colors text-sm font-medium ${w.locked ? 'text-blue-600' : ''}`}><Lock size={14} className="opacity-40" /> {w.locked ? 'Unlock' : 'Lock'}</button>
+               <button onClick={onRemove} className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-500/10 text-red-500 transition-colors text-sm font-medium"><Trash2 size={14} className="opacity-40" /> Remove</button>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -4866,7 +4959,7 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
   );
 }
 
-function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, activeSearchPlaceholder }: { featureFlags: any, setFeatureFlags: (f: any, id: string, name: string, val: boolean) => void, isDark: boolean, activeSearchPlaceholder?: string }) {
+function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, activeSearchPlaceholder, className }: { featureFlags: any, setFeatureFlags: (f: any, id: string, name: string, val: boolean) => void, isDark: boolean, activeSearchPlaceholder?: string, className?: string }) {
   const [flagSearch, setFlagSearch] = useState("");
 
   const experiments = [
@@ -7184,14 +7277,17 @@ function WidgetsDashboard({
   addNotification,
   onAction,
   onNavigate,
-  channels
+  channels,
+  featureFlags,
+  setFeatureFlags
 }: any) {
   const isDark = false; // Always light mode per request
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
-  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings'>('widgets');
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza'>('widgets');
   const [widgetSettings, setWidgetSettings] = useState({
     openFeedOnHover: false,
     showFeedBadges: true,
+    showFeed: true,
     allowWebSearches: true
   });
   const [time, setTime] = useState(new Date());
@@ -7220,12 +7316,22 @@ function WidgetsDashboard({
     return "Chào buổi đêm";
   };
 
-  const addWidget = (type: string, size: string) => {
-    if (pinnedWidgets.some((w: any) => w.type === type)) return;
-    const newWidget = { id: Date.now().toString(), type, size };
+  const addWidget = (itemOrType: any, sizeParam?: string) => {
+    // Legacy support for (type, size) calls
+    const item = typeof itemOrType === 'string' ? { type: itemOrType, name: itemOrType, size: sizeParam } : itemOrType;
+    
+    if (pinnedWidgets.some((w: any) => w.type === item.type && (item.channelId ? w.channelId === item.channelId : true))) return;
+    const newWidget = { 
+      id: Date.now().toString(), 
+      type: item.type, 
+      size: item.size || '2x2',
+      channelId: item.channelId,
+      appName: item.appName,
+      locked: false
+    };
     setPinnedWidgets([...pinnedWidgets, newWidget]);
     setShowWidgetGallery(false);
-    addNotification("Widgets", `Đã thêm tiện ích ${type} vào bảng`);
+    addNotification("Widgets", `Đã thêm tiện ích ${item.name || item.type} vào bảng`);
   };
 
   return (
@@ -7255,19 +7361,34 @@ function WidgetsDashboard({
      <button 
         onClick={() => setActiveBoardTab('widgets')}
         className={`p-2 rounded-xl transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+        title="Widgets"
      >
         <LayoutDashboard size={22} />
      </button>
+     
+     {widgetSettings.showFeed && (
+       <button 
+          onClick={() => setActiveBoardTab('feed')}
+          className={`p-2 rounded-xl transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+          title="Feed"
+       >
+          <Newspaper size={22} />
+       </button>
+     )}
+
      <button 
-        onClick={() => setActiveBoardTab('feed')}
-        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+        onClick={() => setActiveBoardTab('pizza')}
+        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'pizza' ? (isDark ? "bg-white/10 text-purple-400" : "bg-white text-purple-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+        title="Pizza Experiments"
      >
-        <Newspaper size={22} />
+        <Pizza size={22} />
      </button>
+
      <div className="mt-auto flex flex-col items-center gap-6 pb-2">
         <button 
           onClick={() => setActiveBoardTab('settings')}
           className={`p-2 rounded-xl transition-all ${activeBoardTab === 'settings' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+          title="Settings"
         >
           <Settings size={22} />
         </button>
@@ -7312,16 +7433,36 @@ function WidgetsDashboard({
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 z-50 flex items-center justify-center bg-transparent"
               >
-              <motion.div 
-                className="w-12 h-12 border-[6px] border-transparent border-t-blue-500 rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-              />
+              <svg 
+                className="w-12 h-12 animate-spin text-blue-500" 
+                viewBox="0 0 50 50"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  fill="none"
+                />
+                <circle
+                  className="opacity-75"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="5"
+                  fill="none"
+                  strokeDasharray="90, 150"
+                  strokeLinecap="round"
+                />
+              </svg>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {activeBoardTab === 'widgets' ? (
+        {!isTabTransitioning && activeBoardTab === 'widgets' ? (
            <div className="space-y-6">
               {widgetSettings.allowWebSearches && (
                 <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
@@ -7336,10 +7477,8 @@ function WidgetsDashboard({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 auto-rows-max">
-                <Reorder.Group axis="y" values={pinnedWidgets} onReorder={setPinnedWidgets} className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {pinnedWidgets.map((widget: any) => (
-                  <Reorder.Item key={widget.id} value={widget} className="relative">
+              <div className="grid grid-cols-12 gap-6 auto-rows-max">
+                {!isTabTransitioning && pinnedWidgets.map((widget: any, index: number) => (
                   <WidgetWrapper
                     key={widget.id}
                     w={widget}
@@ -7347,10 +7486,37 @@ function WidgetsDashboard({
                     location={weatherCity}
                     time={time}
                     onRemove={() => setPinnedWidgets((prev: any[]) => prev.filter(w => w.id !== widget.id))}
+                    onLock={() => {
+                      setPinnedWidgets((prev: any[]) => prev.map(w => {
+                        if (w.id === widget.id) return { ...w, locked: !w.locked };
+                        return w;
+                      }));
+                    }}
+                    onMove={(dir: 'up' | 'down' | 'left' | 'right') => {
+                      if (widget.locked) return;
+                      setPinnedWidgets((prev: any[]) => {
+                        const newArray = [...prev];
+                        const idx = newArray.findIndex(w => w.id === widget.id);
+                        if (idx === -1) return prev;
+                        
+                        let targetIdx = idx;
+                        if (dir === 'left' || dir === 'up') targetIdx = Math.max(0, idx - 1);
+                        if (dir === 'right' || dir === 'down') targetIdx = Math.min(newArray.length - 1, idx + 1);
+                        
+                        if (targetIdx !== idx) {
+                          const [moved] = newArray.splice(idx, 1);
+                          newArray.splice(targetIdx, 0, moved);
+                        }
+                        return newArray;
+                      });
+                    }}
                     onResize={() => {
+                      if (widget.locked) return;
                       setPinnedWidgets((prev: any[]) => prev.map(w => {
                         if (w.id === widget.id) {
-                          const nextSize = w.size === 'small' ? 'medium' : (w.size === 'medium' ? 'large' : 'small');
+                          const sizes = ['2x2', '4x4', '6x6'];
+                          const currentIdx = sizes.indexOf(w.size || '2x2');
+                          const nextSize = sizes[(currentIdx + 1) % sizes.length];
                           return { ...w, size: nextSize };
                         }
                         return w;
@@ -7363,17 +7529,15 @@ function WidgetsDashboard({
                     onNavigate={onNavigate}
                     channels={channels}
                   />
-                  </Reorder.Item>
                 ))}
-                </Reorder.Group>
               </div>
            </div>
-        ) : activeBoardTab === 'feed' ? (
+        ) : !isTabTransitioning && activeBoardTab === 'feed' ? (
            <div className="flex flex-col gap-6">
               {[
-                { title: "Vplay OS Canary SMR26 - Công nghệ tăng tốc phần cứng mới", time: "2 giờ", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
-                { title: "Bảng tiện ích Windows Style chính thức được cập nhật", time: "5 giờ", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
-                { title: "Top 5 bộ phim đang thịnh hành trên Vplay trong tuần này", time: "8 giờ", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
+                { title: "Vplay OS Canary SMR26 - New Hardware Acceleration Tech", time: "2h", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
+                { title: "Windows Style Widgets Board updated today", time: "5h", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
+                { title: "Top 5 trending movies on Vplay this week", time: "8h", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
               ].map((item, i) => (
                  <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-5 p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
                     <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/5">
@@ -7386,14 +7550,25 @@ function WidgetsDashboard({
                        </div>
                        <div className="flex items-center gap-2">
                           <Clock size={10} className="opacity-40" />
-                          <span className="text-[11px] opacity-40 font-bold uppercase tracking-widest">{item.time} trước</span>
+                          <span className="text-[11px] opacity-40 font-bold uppercase tracking-widest">{item.time} ago</span>
                        </div>
                     </div>
                  </div>
               ))}
-              <button className="w-full py-4 rounded-2xl border border-dashed border-current opacity-10 hover:opacity-100 transition-opacity text-[11px] font-bold uppercase tracking-[0.4em] mt-6">Khám phá thêm nội dung</button>
+              <button className="w-full py-4 rounded-2xl border border-dashed border-current opacity-10 hover:opacity-100 transition-opacity text-[11px] font-bold uppercase tracking-[0.4em] mt-6">Explore more content</button>
            </div>
-        ) : (
+        ) : !isTabTransitioning && activeBoardTab === 'pizza' ? (
+           <div className="flex-1 h-full min-h-0 overflow-y-auto custom-scrollbar rounded-[32px] bg-white/5">
+              <ExperimentalContent 
+                isDark={isDark} 
+                featureFlags={featureFlags} 
+                setFeatureFlags={(f: any) => {
+                  setFeatureFlags(f);
+                  localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
+                }}
+              />
+           </div>
+        ) : !isTabTransitioning ? (
           <div className="flex-1 flex flex-col overflow-hidden -mx-8 -mb-10 bg-[#f3f6f9]">
             {/* Main scrollable area */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-10 space-y-10">
@@ -7423,14 +7598,21 @@ function WidgetsDashboard({
                                  <Layout size={20} className="text-blue-500" />
                               </div>
                               <div className="flex flex-col">
-                                 <span className="text-sm font-bold text-slate-800">Discover</span>
-                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Start Experiences app</span>
+                                 <span className="text-sm font-bold text-slate-800">Feed</span>
+                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Start Experiences app pack</span>
                               </div>
                            </div>
                            <div className="flex items-center gap-6">
-                              <span className="text-sm font-medium text-slate-400">On</span>
-                              <div className="w-12 h-6 rounded-full bg-blue-600 relative p-1 shadow-inner">
-                                 <div className="absolute right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                              <span className="text-sm font-medium text-slate-400">{widgetSettings.showFeed ? "On" : "Off"}</span>
+                              <div 
+                                 onClick={() => setWidgetSettings(prev => ({ ...prev, showFeed: !prev.showFeed }))}
+                                 className={`w-12 h-6 rounded-full transition-colors relative p-1 shadow-inner cursor-pointer ${widgetSettings.showFeed ? "bg-blue-600" : "bg-slate-300"}`}
+                              >
+                                 <motion.div 
+                                   className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                   animate={{ x: widgetSettings.showFeed ? 24 : 0 }}
+                                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                 />
                               </div>
                               <MoreHorizontal size={18} className="opacity-20" />
                            </div>
@@ -7446,7 +7628,7 @@ function WidgetsDashboard({
                               </div>
                               <div className="flex flex-col">
                                  <span className="text-sm font-bold text-slate-800">Widgets</span>
-                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Windows 11</span>
+                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Windows style widgets</span>
                               </div>
                            </div>
                            <MoreHorizontal size={18} className="opacity-20" />
@@ -7454,8 +7636,13 @@ function WidgetsDashboard({
                      </div>
 
                      <div className="p-5 bg-white border border-slate-200 flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-600">Get more dashboards from the Microsoft Store</span>
-                        <button className="px-6 py-2 bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 hover:bg-slate-100 transition-colors">Browse dashboards</button>
+                        <span className="text-sm font-medium text-slate-600">Pin more widgets to the feed from the widgets picker</span>
+                        <button 
+                          onClick={() => setShowWidgetGallery(true)}
+                          className="px-6 py-2 bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 hover:bg-slate-100 transition-colors"
+                        >
+                          Browse widgets
+                        </button>
                      </div>
                   </div>
                </div>
@@ -7468,7 +7655,7 @@ function WidgetsDashboard({
                         <div className="flex items-center gap-6">
                            <Bell size={20} className="opacity-60" />
                            <div className="flex flex-col">
-                              <span className="text-sm font-bold text-slate-800">Notifications</span>
+                              <span className="text-sm font-bold text-slate-800">Show notifications and badges</span>
                               <span className="text-[11px] text-slate-400 font-medium">Manage notifications from your dashboards and widgets</span>
                            </div>
                         </div>
@@ -7535,7 +7722,7 @@ function WidgetsDashboard({
                </div>
             </div>
           </div>
-        )}
+        ) : null}
      </div>
   </div>
 
@@ -7566,15 +7753,25 @@ function WidgetsDashboard({
                   { type: 'clock_date', name: 'Thời gian', icon: Clock, desc: 'Đồng hồ và lịch hiển thị rõ nét với hiệu ứng đổ bóng.' },
                   { type: 'vtv6_countdown', name: 'Đếm ngược', icon: Tv, desc: 'Đếm ngược đến giờ phát sóng các chương trình đặc sắc.' },
                   { type: 'notify', name: 'Thông báo', icon: Bell, desc: 'Hệ thống thông báo thông minh từ Vplay OS.' },
-                  { type: 'history', name: 'Lịch sử', icon: History, desc: 'Xem lại lịch sử truy cập và các nội dung đã xem.' }
+                  { type: 'history', name: 'Lịch sử', icon: History, desc: 'Xem lại lịch sử truy cập và các nội dung đã xem.' },
+                   ...channels.slice(0, 5).map((c: any) => ({
+                      type: 'channel',
+                      name: c.name,
+                      icon: Tv,
+                      desc: `Ghim kênh ${c.name} trực tiếp vào bảng tiện ích.`,
+                      channelId: c.name,
+                      size: '1x2'
+                   })),
+                   { type: 'thirdparty', name: 'Spotify', icon: Globe, desc: 'Embedded music player widget.', appName: 'Spotify' },
+                   { type: 'thirdparty', name: 'Figma', icon: Layout, desc: 'Design preview widget.', appName: 'Figma' }
                 ].map(item => {
-                  const isPinned = pinnedWidgets.some((w: any) => w.type === item.type);
-                  const isSelected = selectedGalleryWidget?.type === item.type;
+                  const isPinned = pinnedWidgets.some((w: any) => w.type === item.type && (item.channelId ? w.channelId === item.channelId : true));
+                  const isSelected = selectedGalleryWidget?.type === item.type && (item.channelId ? selectedGalleryWidget?.channelId === item.channelId : true);
                   return (
                     <button
-                      key={item.type}
+                      key={item.type + (item.channelId || '')}
                       onMouseEnter={() => setSelectedGalleryWidget(item)}
-                      onClick={() => !isPinned && addWidget(item.type, 'medium')}
+                      onClick={() => !isPinned && addWidget(item)}
                       className={`w-full flex items-center gap-4 p-4 transition-all text-left rounded-2xl ${
                         isSelected ? "bg-white shadow-xl transform scale-[1.02] z-10" : "bg-transparent hover:bg-black/5"
                       } ${isPinned ? "opacity-40 grayscale" : "cursor-pointer"}`}
@@ -11673,8 +11870,8 @@ export default function App() {
                 <AnimatePresence initial={false}>
                 {/* Notification Bell moved to header */}
 
-                {tabs.map((tab, idx) => {
-                  const Icon = tab.icon;
+                {tabs.map((tab: any, idx) => {
+                  const Icon = tab.icon as any;
                   const isActive = (tab.id === "Do For Me" || tab.id === "V-pilot") && featureFlags.ai_sidebar ? isAISidebarOpen : activeTab === (tab.id || tab.name);
                   const isAIToolsTab = (tab.id === "Do For Me" || tab.id === "V-pilot") && featureFlags.ai_tools;
 
@@ -11892,7 +12089,7 @@ export default function App() {
                     </button>
                   )}
 
-                  {currentNavItems.map((item, idx) => {
+                  {currentNavItems.map((item: any, idx) => {
                     const isSearchItem = item.isSearch;
                     
                     if (isSearchItem) {
@@ -11925,7 +12122,7 @@ export default function App() {
                     }
 
                     const tab = item;
-                    const Icon = tab.icon;
+                    const Icon = tab.icon as any;
                     const isActive = (tab.id === "V-pilot" && featureFlags.ai_sidebar) ? isAISidebarOpen : activeTab === (tab.id || tab.name);
                     const userAvatar = ((tab.id === "Cài đặt" || tab.name === "Cài đặt") && user) ? (userData?.photoURL || user.photoURL) : null;
                     const isGlassy = liquidGlass === "glassy";
@@ -12941,6 +13138,8 @@ export default function App() {
             onAction={onAction}
             onNavigate={onNavigate}
             channels={channels}
+            featureFlags={featureFlags}
+            setFeatureFlags={setFeatureFlags}
           />
         )}
       </AnimatePresence>
