@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, ChangeEvent, FormEvent, MouseEvent, ReactNode, Fragment, Dispatch, SetStateAction } from "react";
-import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown, CloudLightning, Grid } from "lucide-react";
+import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown, CloudLightning, Grid, ShoppingBag, Bitcoin, StickyNote } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig, Reorder } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
@@ -356,6 +356,7 @@ const backgroundTracks = [
 const baseTabs = [
   { name: "Home", icon: Home, id: "Trang chủ" },
   { name: "Widgets", icon: LayoutDashboard, id: "Widgets" },
+  { name: "Vstore", icon: ShoppingBag, id: "Vstore", isExtra: true },
   { name: "Live", icon: Tv, id: "Phát sóng" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
 ];
@@ -1294,6 +1295,14 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
     if (w.type === 'vtv6_countdown') return 'bg-[#ed1c24] text-white border-none shadow-[0_12px_40px_rgba(237,28,36,0.25)]';
     if (w.type === 'channel') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
     if (w.type === 'thirdparty') return 'bg-white text-slate-900 border-slate-100 shadow-sm';
+    if (w.type === 'music_player') return 'bg-[#1c1c1c] text-white border-none shadow-2xl';
+    if (w.type === 'sys_mon') return 'bg-indigo-600 text-white border-none shadow-xl';
+    if (w.type === 'notes') return 'bg-amber-50 text-slate-900 border-amber-200';
+    if (w.type === 'crypto') return 'bg-slate-900 text-white border-none shadow-2xl';
+    if (w.type === 'world_clock') return 'bg-white text-slate-900 border-slate-200 shadow-sm';
+    if (w.type === 'calendar_alt') return 'bg-white text-slate-900 border-slate-200 shadow-sm';
+    if (w.type.startsWith('game_')) return 'bg-gradient-to-br from-pink-500 to-rose-600 text-white border-none shadow-xl';
+    if (w.type === 'ai_for_me') return 'bg-gradient-to-br from-purple-600 to-indigo-700 text-white border-none shadow-xl';
     return isDark ? "bg-[#2c2c2c] border-[#3c3c3c] text-white" : "bg-white border-slate-100 text-slate-900 shadow-sm";
   };
 
@@ -1447,32 +1456,204 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
           )}
 
           {w.type === "channel" && (
-            <div className="flex flex-col h-full">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 bg-slate-100 rounded-[18px]">
-                  <Tv size={20} className="text-slate-400" />
+            <div className="flex flex-col h-full justify-between">
+               <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center p-2 border border-black/5">
+                     <Tv className="text-blue-500" size={20} />
+                  </div>
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Channel</span>
+                     <span className="text-sm font-bold text-slate-800 tracking-tight">{w.channelId}</span>
+                  </div>
+               </div>
+               <div className="flex items-center justify-center py-4">
+                  <Play size={40} className="text-blue-500 animate-pulse" fill="currentColor" />
+               </div>
+               <button 
+                 onClick={() => onNavigate("Phát sóng")}
+                 className="w-full py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-colors"
+               >
+                 Go to Channel
+               </button>
+            </div>
+          )}
+
+          {w.type === "music_player" && (
+            <div className="flex flex-col h-full justify-between text-white">
+               <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                        <Music size={20} />
+                     </div>
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Vplay Music</span>
+                        <span className="text-sm font-bold truncate">Starboy - The Weeknd</span>
+                     </div>
+                  </div>
+                  <Sparkles size={16} className="text-blue-400" />
+               </div>
+               <div className="flex items-center gap-4 px-2">
+                  <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                     <motion.div animate={{ width: '40%' }} className="h-full bg-blue-500" />
+                  </div>
+                  <span className="text-[9px] font-mono opacity-40">01:42 / 03:50</span>
+               </div>
+               <div className="flex items-center justify-center gap-8">
+                  <SkipBack size={20} className="opacity-40 hover:opacity-100 cursor-pointer" />
+                  <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center shadow-xl shadow-blue-500/40 hover:scale-110 transition-transform cursor-pointer">
+                     <Play size={20} fill="currentColor" />
+                  </div>
+                  <SkipForward size={20} className="opacity-40 hover:opacity-100 cursor-pointer" />
+               </div>
+            </div>
+          )}
+
+          {w.type === "sys_mon" && (
+            <div className="flex flex-col h-full justify-between text-white">
+               <div className="flex items-center gap-3">
+                  <Activity size={20} className="text-green-400" />
+                  <span className="text-sm font-bold tracking-tight">System Monitor</span>
+               </div>
+               <div className="space-y-4">
+                  {[
+                    { label: 'CPU', val: '12%', color: 'bg-blue-500' },
+                    { label: 'RAM', val: '4.2GB', color: 'bg-purple-500' },
+                    { label: 'GPU', val: '0%', color: 'bg-green-500' }
+                  ].map(stat => (
+                    <div key={stat.label} className="space-y-1.5">
+                       <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                          <span className="opacity-40">{stat.label}</span>
+                          <span>{stat.val}</span>
+                       </div>
+                       <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                          <motion.div animate={{ width: stat.val }} className={`h-full ${stat.color}`} />
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          )}
+
+          {w.type === "notes" && (
+             <div className="flex flex-col h-full justify-between text-slate-800">
+                <div className="flex items-center gap-3 pb-4 border-b border-amber-200/50">
+                   <div className="p-2 bg-amber-400/20 rounded-lg">
+                      <StickyNote size={16} className="text-amber-600" />
+                   </div>
+                   <span className="text-sm font-bold tracking-tight">Vplay Notes</span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[12px] font-semibold text-slate-400">TV Channel</span>
-                  <span className="text-sm font-bold text-slate-800 tracking-tight truncate max-w-[120px]">{w.channelId}</span>
+                <div className="flex-1 py-4 text-xs font-medium leading-relaxed opacity-60 italic">
+                   "Remember to check the new Vplay Canary SMR26 update for hardware acceleration..."
                 </div>
-              </div>
-              <div 
-                className="flex-1 rounded-[20px] bg-slate-50 border border-slate-100 flex items-center justify-center p-4 relative group/player cursor-pointer pointer-events-auto"
-                onClick={() => onNavigate("Phát sóng")}
-              >
-                <img 
-                  src={channels.find((c: any) => c.name === w.channelId)?.logo} 
-                  alt="Logo" 
-                  className="w-full h-full object-contain opacity-40 group-hover/player:opacity-100 transition-opacity" 
-                />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/player:opacity-100 transition-all backdrop-blur-[2px]">
-                   <div className="p-3 bg-white shadow-2xl rounded-full text-blue-600">
-                      <Play size={16} fill="currentColor" />
+                <div className="text-[9px] font-bold text-amber-600 uppercase tracking-widest text-right">Updated 2m ago</div>
+             </div>
+          )}
+
+          {w.type === "crypto" && (
+            <div className="flex flex-col h-full justify-between text-white">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
+                        <Bitcoin size={24} />
+                     </div>
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Bitcoin</span>
+                        <span className="text-sm font-black">$64,281</span>
+                     </div>
+                  </div>
+                  <div className="px-2 py-1 bg-green-500/20 text-green-400 rounded-lg text-[10px] font-bold">+2.4%</div>
+               </div>
+               <div className="flex-1 flex items-end gap-1 px-2 h-16">
+                  {[40, 60, 45, 80, 55, 90, 75].map((h, i) => (
+                    <motion.div 
+                      key={i}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${h}%` }}
+                      className="flex-1 bg-green-500/40 rounded-t-sm"
+                    />
+                  ))}
+               </div>
+            </div>
+          )}
+
+          {w.type === "world_clock" && (
+             <div className="flex flex-col h-full justify-between text-slate-800">
+                <div className="flex items-center gap-3">
+                   <Globe size={20} className="text-blue-500" />
+                   <span className="text-sm font-bold tracking-tight">World Clock</span>
+                </div>
+                <div className="space-y-4">
+                   {[
+                     { city: 'London', time: '09:42', zone: 'GMT+1' },
+                     { city: 'Tokyo', time: '17:42', zone: 'GMT+9' }
+                   ].map(c => (
+                     <div key={c.city} className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                           <span className="text-[11px] font-bold tracking-tight">{c.city}</span>
+                           <span className="text-[9px] opacity-40 uppercase font-bold tracking-widest">{c.zone}</span>
+                        </div>
+                        <span className="text-lg font-black tabular-nums">{c.time}</span>
+                     </div>
+                   ))}
+                </div>
+             </div>
+          )}
+
+          {w.type === "calendar_alt" && (
+             <div className="flex flex-col h-full justify-between text-slate-800">
+                <div className="flex items-center gap-3">
+                   <Calendar size={20} className="text-red-500" />
+                   <span className="text-sm font-bold tracking-tight">Events</span>
+                </div>
+                <div className="space-y-3">
+                   {[
+                     { name: 'Vplay Canary SMR26 Launch', time: 'Tomorrow, 10:00' },
+                     { name: 'Developer Sync', time: 'Wed, 14:30' }
+                   ].map(ev => (
+                     <div key={ev.name} className="p-3 bg-slate-50 rounded-2xl border border-black/5">
+                        <p className="text-[11px] font-bold leading-tight">{ev.name}</p>
+                        <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest mt-1">{ev.time}</p>
+                     </div>
+                   ))}
+                </div>
+             </div>
+          )}
+
+          {w.type.startsWith("game_") && (
+             <div className="flex flex-col h-full justify-between text-white">
+                <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <Gamepad size={20} className="opacity-60" />
+                      <span className="text-[11px] font-black uppercase tracking-widest opacity-60">Vplay Gaming</span>
+                   </div>
+                   <Trophy size={16} className="text-amber-300" />
+                </div>
+                <div className="flex flex-col items-center text-center py-4">
+                   <h4 className="text-xl font-black italic uppercase tracking-tighter mb-2">{w.type.replace('game_', '').split('_').join(' ')}</h4>
+                   <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">New High Score: 1,240</p>
+                </div>
+                <button className="w-full py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all">Play Now</button>
+             </div>
+          )}
+
+          {w.type === "ai_for_me" && (
+             <div className="flex flex-col h-full justify-between text-white">
+                <div className="flex items-center gap-3">
+                   <Sparkles size={20} className="text-amber-300" />
+                   <span className="text-sm font-bold tracking-tight">AI Assistant Pro</span>
+                </div>
+                <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+                   <p className="text-xs italic opacity-80">"Analyzing your usage patterns... You should watch VTV3 Live for the upcoming sports event at 20:00."</p>
+                </div>
+                <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest opacity-40">
+                   <span>Powered by Gemini 1.5</span>
+                   <div className="flex gap-1">
+                      <div className="w-1 h-1 bg-white rounded-full animate-pulse" />
+                      <div className="w-1 h-1 bg-white rounded-full animate-pulse [animation-delay:0.2s]" />
+                      <div className="w-1 h-1 bg-white rounded-full animate-pulse [animation-delay:0.4s]" />
                    </div>
                 </div>
-              </div>
-            </div>
+             </div>
           )}
 
           {w.type === "thirdparty" && (
@@ -1494,6 +1675,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
               </div>
             </div>
           )}
+
           {w.type === "notify" && (
             <div className="flex flex-col h-full overflow-hidden">
                <div className="flex items-center gap-3 mb-4">
@@ -1522,7 +1704,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
             </div>
           )}
 
-          {!["weather", "clock_date", "vtv6_countdown", "stocks", "ports", "entertainment", "notify", "history", "record", "channel"].includes(w.type) && (
+          {!["weather", "clock_date", "vtv6_countdown", "stocks", "ports", "entertainment", "notify", "history", "record", "channel", "music_player", "sys_mon", "notes", "crypto", "world_clock", "calendar_alt", "thirdparty"].includes(w.type) && (
             <div className="flex flex-col h-full items-center justify-center text-center">
                <div className="p-4 bg-blue-500/5 rounded-[28px] mb-3">
                    <Flask size={32} className="text-blue-500/20" />
@@ -4969,7 +5151,8 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: any) {
     { id: "smooth_scroll", name: "Smooth Scrolling", desc: "Native-like scrolling animations." },
     { id: "auto_dark_mode", name: "Automatic Dark Mode", desc: "Sync with system time." },
     { id: "xaml_experience", name: "XAML Experience", desc: "Legacy Windows UI renderer." },
-    { id: "system_animations", name: "Advanced Animations", desc: "Complex transitions for open/close apps." }
+    { id: "system_animations", name: "Advanced Animations", desc: "Complex transitions for open/close apps." },
+    { id: "dynamic_dashboard_blur", name: "Dynamic Dashboard Blur", desc: "Gives your widgets board a nice strong backdrop blur" }
   ];
 
   return (
@@ -7149,13 +7332,24 @@ function WidgetsDashboard({
   onNavigate,
   channels,
   featureFlags,
-  setFeatureFlags
+  setFeatureFlags,
+  vpoints,
+  setVpoints,
+  purchasedWidgets,
+  setPurchasedWidgets,
+  isVstorePinned,
+  setIsVstorePinned,
+  hasReceivedBonus,
+  setHasReceivedBonus,
+  activeBoardTab,
+  setActiveBoardTab
 }: any) {
   const isDark = false; // Always light mode per request
   const [gallerySearch, setGallerySearch] = useState("");
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
+  const [showStore, setShowStore] = useState(false);
+  const [showBonusPopup, setShowBonusPopup] = useState(false);
   const [boardSearch, setBoardSearch] = useState("");
-  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme'>('widgets');
   const [widgetSettings, setWidgetSettings] = useState({
     openFeedOnHover: false,
     showFeedBadges: true,
@@ -7167,6 +7361,15 @@ function WidgetsDashboard({
   const [selectedGalleryWidget, setSelectedGalleryWidget] = useState<any>({
     type: 'weather', name: 'Weather', icon: Cloud, desc: 'Theo dõi thời tiết tại địa phương của bạn với độ chính xác cao.'
   });
+
+  useEffect(() => {
+    if (activeBoardTab === 'vstore' && !hasReceivedBonus) {
+       setVpoints((v: number) => v + 50);
+       setHasReceivedBonus(true);
+       localStorage.setItem("vplay_vpoints_bonus", "true");
+       addNotification("VStore", "Chào mừng bạn mới! +50 Vpoints đã được cộng vào tài khoản.", "success");
+    }
+  }, [activeBoardTab, hasReceivedBonus, setVpoints, setHasReceivedBonus]);
 
   useEffect(() => {
     setIsTabTransitioning(true);
@@ -7206,23 +7409,72 @@ function WidgetsDashboard({
     addNotification("Widgets", `Đã thêm tiện ích ${item.name || item.type} vào bảng`);
   };
 
+  const [vstoreSearch, setVstoreSearch] = useState("");
+  const [operatorCommand, setOperatorCommand] = useState("");
+  const [operatorLogs, setOperatorLogs] = useState<string[]>(["Vplay OS [Version 1.0.1]", "Kernel: Cobalt-S 2026.05", "Type /help for command list"]);
+
+  const handleOperatorCommand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!operatorCommand.trim()) return;
+    
+    const cmd = operatorCommand.trim();
+    setOperatorLogs(prev => [...prev, `> ${cmd}`]);
+    
+    const parts = cmd.toLowerCase().split(' ');
+    const base = parts[0];
+
+    if (base === '/help') {
+       setOperatorLogs(prev => [...prev, "Available commands:", "/reset store - Reset vpoints & purchases", "/reset widgets - Reset pinned widgets", "/add points <num> - Add Vpoints (max 999999)", "/cls - Clear logs"]);
+    } else if (base === '/cls') {
+       setOperatorLogs(["Vplay Operator Console Cleared"]);
+    } else if (base === '/reset' && parts[1] === 'store') {
+       setVpoints(100);
+       setPurchasedWidgets([]);
+       localStorage.removeItem("vplay_vpoints");
+       localStorage.removeItem("vplay_purchased_widgets");
+       setOperatorLogs(prev => [...prev, "Store reset successfully. 100 VP granted."]);
+       addNotification("Operator", "Store data has been reset.", 'warning');
+    } else if (base === '/reset' && parts[1] === 'widgets') {
+       setPinnedWidgets([
+         { id: '1', type: 'weather', size: '2x2' },
+         { id: '2', type: 'clock_date', size: '2x2' }
+       ]);
+       setOperatorLogs(prev => [...prev, "Widget configuration reset to default."]);
+       addNotification("Operator", "Widgets reset to default.", 'warning');
+    } else if (base === '/add' && parts[1] === 'points') {
+       const val = parseInt(parts[2]);
+       if (!isNaN(val)) {
+          setVpoints((prev: number) => Math.min(999999, prev + val));
+          setOperatorLogs(prev => [...prev, `Successfully added ${val} vpoints.`]);
+          addNotification("Operator", `Added ${val} Vpoints via console.`, 'success');
+       } else {
+          setOperatorLogs(prev => [...prev, "Error: Invalid number."]);
+       }
+    } else {
+       setOperatorLogs(prev => [...prev, `Command '${base}' not found. Type /help for assistance.`]);
+    }
+    
+    setOperatorCommand("");
+  };
+
   return (
     <AnimatePresence>
       {showWidgets && (
         <motion.div
-  initial={{ opacity: 0, x: "-100%" }}
+  initial={{ opacity: 0, x: -100 }}
   animate={{ 
     opacity: 1, 
-    x: 0, 
+    x: 0,
     width: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "840px"),
     height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
     top: isWidgetsFullScreen ? 0 : 16,
     left: isWidgetsFullScreen ? 0 : 16,
     borderRadius: isWidgetsFullScreen ? 0 : 12,
-    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+    backdropFilter: featureFlags?.dynamic_dashboard_blur ? "blur(40px) saturate(200%)" : "blur(24px) saturate(150%)"
   }}
-  exit={{ opacity: 0, x: "-100%" }}
-  transition={{ type: "spring", damping: 40, stiffness: 400 }}
+  exit={{ opacity: 0, x: -100 }}
+  transition={{ duration: 0.1 }}
   className={`fixed z-[10002] flex shadow-2xl border overflow-hidden backdrop-blur-3xl ${
     isDark ? "bg-[#1c1c1c] border-white/10 text-white shadow-black/80" : "bg-[#f3f6f9] border-black/10 text-slate-900 shadow-2xl shadow-black/20"
   }`}
@@ -7262,6 +7514,22 @@ function WidgetsDashboard({
         title="Do For Me"
      >
         <Sparkles size={22} />
+     </button>
+
+     <button 
+        onClick={() => setActiveBoardTab('vstore')}
+        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'vstore' ? (isDark ? "bg-white/10 text-amber-400" : "bg-white text-amber-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+        title="Vplay Store"
+     >
+        <ShoppingBag size={22} />
+     </button>
+
+     <button 
+        onClick={() => setActiveBoardTab('operator')}
+        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'operator' ? (isDark ? "bg-white/10 text-emerald-400" : "bg-white text-emerald-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+        title="Operator Console"
+     >
+        <Terminal size={22} />
      </button>
 
      <div className="mt-auto flex flex-col items-center gap-6 pb-2">
@@ -7490,6 +7758,144 @@ function WidgetsDashboard({
              </motion.div>
           )}
 
+           {!isTabTransitioning && activeBoardTab === 'vstore' && (
+             <motion.div 
+               key="vstore_tab"
+               initial={{ opacity: 0, scale: 0.98 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="flex-1 flex flex-col min-h-0 bg-white rounded-[32px] overflow-hidden border border-black/5"
+             >
+               <div className="p-8 bg-slate-50 border-b border-black/5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/30">
+                        <ShoppingBag size={24} />
+                     </div>
+                     <div>
+                        <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-none">Vplay Widgets Store</h2>
+                        <p className="text-xs font-medium text-slate-500 mt-2 uppercase tracking-widest leading-none opacity-60">Sáp nhập V-Store & Widget Market</p>
+                     </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
+                        <div className="w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase">V</div>
+                        <span className="text-sm font-black text-amber-700">{vpoints} <span className="opacity-40 text-[10px] ml-1">VP</span></span>
+                     </div>
+                  </div>
+               </div>
+               
+               <div className="px-8 py-4 border-b border-black/5 flex items-center gap-4">
+                  <div className="relative flex-1 group">
+                     <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                     <input 
+                       type="text" 
+                       placeholder="Tìm kiếm tiện ích trong kho..." 
+                       className="w-full pl-12 pr-6 py-2.5 bg-slate-100 border-none rounded-xl text-xs font-bold outline-none"
+                       value={vstoreSearch}
+                       onChange={(e) => setVstoreSearch(e.target.value)}
+                     />
+                  </div>
+                  <div className="flex gap-2">
+                     <button 
+                       onClick={() => {
+                         setIsVstorePinned(true);
+                         localStorage.setItem("vplay_vstore_pinned", "true");
+                         addNotification("Vstore", "Đã ghim Vstore vào thanh bên hệ thống!");
+                       }}
+                       disabled={isVstorePinned}
+                       className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isVstorePinned ? "bg-slate-50 text-slate-300" : "bg-blue-50 text-blue-600 shadow-sm"}`}
+                     >
+                        {isVstorePinned ? "Pinned" : "Pin to Sidebar"}
+                     </button>
+                  </div>
+               </div>
+
+               <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50/30">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                     {[
+                        { id: 'music_player', name: 'Music Pro', icon: Music, price: 50, desc: 'Music widget with material design.', cat: 'Utility' },
+                        { id: 'game_tictactoe', name: 'Tic Tac Toe', icon: Gamepad, price: 80, desc: 'Chơi cờ caro vs Bot hoặc 2 người cực giải trí.', cat: 'Games' },
+                        { id: 'game_wordle', name: 'Wordle Quest', icon: Hash, price: 90, desc: 'Thử thách đoán từ tiếng Anh/Việt mỗi ngày.', cat: 'Games' },
+                        { id: 'game_fishing', name: 'Fishing Mini', icon: CloudLightning, price: 120, desc: 'Game câu cá thư giãn ngay trên Board.', cat: 'Games' },
+                        { id: 'game_word_scramble', name: 'Word Scramble', icon: Type, price: 70, desc: 'Sắp xếp lại từ tiếng Anh/Việt bị xáo trộn.', cat: 'Games' },
+                        { id: 'ai_for_me', name: 'Do For Me Pro', icon: Sparkles, price: 150, desc: 'Gói tiện ích AI nâng cao với Gemini API.', cat: 'AI' },
+                        { id: 'channel_pack_vtvcab', name: 'VTVCab Pack', icon: Tv, price: 200, desc: 'Mở khóa toàn bộ hệ thống kênh thể thao VTVCab.', cat: 'Channels' },
+                        { id: 'channel_pack_htv', name: 'HTV Full Pack', icon: Radio, price: 100, desc: 'Mở khóa toàn bộ kênh HTV7, HTV9 HD.', cat: 'Channels' },
+                        { id: 'game_noitu', name: 'Nối Từ (EN/VN)', icon: RefreshCw, price: 85, desc: 'Game nối từ 1v1 hoặc vs Bot thông minh.', cat: 'Games' },
+                        { id: 'sys_mon', name: 'Performance Monitor', icon: Activity, price: 50, desc: 'Theo dõi tài nguyên hệ thống chuyên sâu.', cat: 'Utility' },
+                        { id: 'crypto', name: 'Crypto Pro', icon: Bitcoin, price: 75, desc: 'Theo dõi tiền điện tử thời gian thực.', cat: 'Finance' },
+                        { id: 'notes', name: 'Quick Notes', icon: StickyNote, price: 30, desc: 'Ghi chú nhanh đồng bộ đám mây.', cat: 'Utility' }
+                     ].filter(item => item.name.toLowerCase().includes(vstoreSearch.toLowerCase())).map(item => {
+                        const isPurchased = purchasedWidgets.includes(item.id);
+                        return (
+                          <div key={item.id} className={`p-6 rounded-[32px] border transition-all flex flex-col h-full bg-white border-black/5 hover:shadow-xl hover:-translate-y-1`}>
+                             <div className="flex items-start justify-between mb-6">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${item.cat === 'Games' ? 'bg-pink-500' : item.cat === 'AI' ? 'bg-purple-600' : 'bg-blue-600'}`}>
+                                   <item.icon size={24} />
+                                </div>
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30">{item.cat}</span>
+                             </div>
+                             <h4 className="text-sm font-bold tracking-tight mb-2">{item.name}</h4>
+                             <p className="text-[11px] text-slate-500 line-clamp-2 mb-6 flex-1">{item.desc}</p>
+                             
+                             <button
+                               disabled={isPurchased || vpoints < item.price}
+                               onClick={() => {
+                                  setVpoints((prev: number) => prev - item.price);
+                                  setPurchasedWidgets((prevArr: string[]) => [...prevArr, item.id]);
+                                  addNotification("Vplay Store", `Bạn đã mua thành công ${item.name}!`, 'success');
+                               }}
+                               className={`w-full py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all ${isPurchased ? "bg-green-50 text-green-600 opacity-100" : (vpoints >= item.price ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400 opacity-50 cursor-not-allowed")}`}
+                             >
+                                {isPurchased ? "Đã sở hữu" : `${item.price} Vpoints`}
+                             </button>
+                          </div>
+                        )
+                     })}
+                  </div>
+               </div>
+             </motion.div>
+          )}
+
+          {!isTabTransitioning && activeBoardTab === 'operator' && (
+             <motion.div 
+               key="operator"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex-1 flex flex-col min-h-0 bg-[#0c0c0c] rounded-[32px] overflow-hidden border border-white/5 font-mono shadow-2xl"
+             >
+                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
+                   <div className="flex items-center gap-3">
+                      <Terminal size={14} className="text-emerald-500" />
+                      <span className="text-[10px] font-bold text-white uppercase tracking-widest">Operator Console v1.0.1</span>
+                   </div>
+                   <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20" />
+                   </div>
+                </div>
+                <div className="flex-1 p-6 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col gap-1.5 scroll-smooth">
+                   {operatorLogs.map((log, i) => (
+                      <div key={`log-${i}`} className={`text-[11px] ${log.startsWith('>') ? 'text-blue-400' : log.includes('Error') ? 'text-red-400' : 'text-emerald-500/80'}`}>
+                         {log}
+                      </div>
+                   ))}
+                   <div id="operator-scroll-anchor" />
+                </div>
+                <form onSubmit={handleOperatorCommand} className="p-4 bg-white/5 border-t border-white/5 flex items-center gap-3">
+                   <ChevronRight size={14} className="text-emerald-500 shrink-0" />
+                   <input 
+                     autoFocus
+                     type="text" 
+                     placeholder="Enter command..." 
+                     className="bg-transparent border-none outline-none text-[11px] text-white w-full font-mono placeholder:opacity-20"
+                     value={operatorCommand}
+                     onChange={(e) => setOperatorCommand(e.target.value)}
+                   />
+                </form>
+             </motion.div>
+          )}
+
           {!isTabTransitioning && activeBoardTab === 'pizza' && (
              <motion.div 
                key="pizza"
@@ -7534,6 +7940,13 @@ function WidgetsDashboard({
                <h2 className="text-sm font-bold tracking-tight text-slate-500 uppercase tracking-widest leading-none">Pin widgets to Board</h2>
             </div>
             <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setActiveBoardTab('vstore')}
+                className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:scale-105 active:scale-95 transition-all"
+              >
+                <ShoppingBag size={14} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Find more from Store</span>
+              </button>
               <div className="relative group flex items-center gap-2 px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-xl focus-within:ring-2 ring-blue-500/20 transition-all">
                 <Search size={14} className="text-slate-400" />
                 <input 
@@ -7573,10 +7986,40 @@ function WidgetsDashboard({
                     </div>
                   </div>
 
+                  {purchasedWidgets.length > 0 && (
+                    <div className="pb-4 border-b border-black/5 mb-4">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Purchased via Store</p>
+                      <div className="space-y-1">
+                        {[
+                          { id: 'music_player', name: 'Vplay Music Pro', icon: Music, desc: 'Trình phát nhạc tích hợp với giao diện Cobalt Material Design cực đỉnh.', cat: 'Entertainment' },
+                          { id: 'sys_mon', name: 'System Performance', icon: Activity, desc: 'Theo dõi tài nguyên hệ thống, CPU, RAM theo thời gian thực.', cat: 'System' },
+                          { id: 'world_clock', name: 'World Clock Grid', icon: Globe, desc: 'Hiển thị giờ tại nhiều thành phố trên thế giới với giao diện hiện đại.', cat: 'Utility' },
+                          { id: 'notes', name: 'Quick Notes', icon: StickyNote, desc: 'Ghi chú nhanh đồng bộ hóa với tài khoản Vplay của bạn.', cat: 'Utility' },
+                          { id: 'crypto', name: 'Crypto Tracker', icon: Bitcoin, desc: 'Theo dõi giá Bitcoin và các đồng tiền ảo hàng đầu.', cat: 'Finance' },
+                          { id: 'calendar_alt', name: 'Event Calendar', icon: Calendar, desc: 'Lịch sự kiện tích hợp với Google Calendar và Outlook.', cat: 'Utility' },
+                          { id: 'game_tictactoe', name: 'Tic Tac Toe', icon: Gamepad, desc: 'Game cờ caro kinh điển vs Bot hoặc Bạn bè.', cat: 'Games' },
+                          { id: 'game_wordle', name: 'Wordle Quest', icon: Hash, desc: 'Thử thách đoán từ hàng ngày.', cat: 'Games' },
+                          { id: 'game_fishing', name: 'Fishing Mini', icon: CloudLightning, desc: 'Câu cá thư giãn ngay trên Board.', cat: 'Games' },
+                          { id: 'game_noitu', name: 'Nối Từ (EN/VN)', icon: RefreshCw, desc: 'Nối từ thông minh.', cat: 'Games' },
+                          { id: 'ai_for_me', name: 'Do For Me Pro', icon: Sparkles, desc: 'AI Assistant Pro.', cat: 'AI' }
+                        ].filter(item => purchasedWidgets.includes(item.id)).map((item) => (
+                          <button 
+                            key={item.id}
+                            onClick={() => setSelectedGalleryWidget({ ...item, type: item.id })}
+                            className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${selectedGalleryWidget.id === item.id ? "bg-blue-600 text-white shadow-lg" : "hover:bg-black/5 text-slate-600"}`}
+                          >
+                             <item.icon size={18} />
+                             <span className="text-sm font-bold truncate">{item.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">TV Channels</p>
                     <div className="grid grid-cols-1 gap-1">
-                       {channels.filter((c: any) => c.name.toLowerCase().includes(gallerySearch.toLowerCase())).map((ch: any) => (
+                       {channels.filter((c: any) => c.name.toLowerCase().includes(gallerySearch.toLowerCase())).slice(0, 8).map((ch: any) => (
                          <button 
                             key={ch.id}
                             onClick={() => setSelectedGalleryWidget({ type: 'channel', name: ch.name, channelId: ch.name, icon: Tv, desc: `Tiện ích phát sóng trực tiếp kênh ${ch.name}` })}
@@ -7587,6 +8030,27 @@ function WidgetsDashboard({
                          </button>
                        ))}
                     </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-black/5 mt-4">
+                     <button 
+                       onClick={() => setActiveBoardTab('vstore')}
+                       className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white shadow-xl shadow-blue-500/30 active:scale-95 transition-all group overflow-hidden relative"
+                     >
+                        <div className="relative z-10">
+                           <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Vplay Store</p>
+                           <p className="text-sm font-bold">Find more widgets</p>
+                        </div>
+                        <ShoppingBag size={20} className="relative z-10 group-hover:scale-110 transition-transform" />
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl translate-x-12 -translate-y-8" />
+                     </button>
+                     <div className="mt-4 p-4 bg-slate-100 rounded-2xl flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                           <div className="w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center text-[10px] font-bold text-white">V</div>
+                           <span className="text-xs font-bold text-slate-600">Vpoints</span>
+                        </div>
+                        <span className="text-sm font-black text-blue-600">{vpoints}</span>
+                     </div>
                   </div>
                </div>
             </div>
@@ -9824,6 +10288,23 @@ export default function App() {
     const saved = localStorage.getItem("vplay_favorites");
     return saved ? JSON.parse(saved) : [];
   });
+  const [vpoints, setVpoints] = useState<number>(() => {
+    const saved = localStorage.getItem("vplay_vpoints");
+    return saved ? parseInt(saved, 10) : 100;
+  });
+  const [hasReceivedBonus, setHasReceivedBonus] = useState<boolean>(() => {
+    const saved = localStorage.getItem("vplay_vpoints_bonus");
+    return saved === "true";
+  });
+  const [isVstorePinned, setIsVstorePinned] = useState<boolean>(() => {
+    const saved = localStorage.getItem("vplay_vstore_pinned");
+    return saved === "true";
+  });
+  const [purchasedWidgets, setPurchasedWidgets] = useState<string[]>(() => {
+    const saved = localStorage.getItem("vplay_purchased_widgets");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme' | 'vstore'>('widgets');
   const [pinnedWidgets, setPinnedWidgets] = useState<any[]>(() => {
     const saved = localStorage.getItem("vplay_widget_board_pins");
     return saved ? JSON.parse(saved) : [
@@ -9848,6 +10329,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("vplay_sidebar_right", isSidebarRight.toString());
   }, [isSidebarRight]);
+
+  useEffect(() => {
+    localStorage.setItem("vplay_vpoints", vpoints.toString());
+  }, [vpoints]);
+
+  useEffect(() => {
+    localStorage.setItem("vplay_purchased_widgets", JSON.stringify(purchasedWidgets));
+  }, [purchasedWidgets]);
 
   useEffect(() => {
     localStorage.setItem("vplay_pinning", isPinningEnabled.toString());
@@ -10064,6 +10553,8 @@ export default function App() {
     }
     setActiveChannel(ch);
     setActiveTab("Phát sóng");
+    setVpoints(prev => prev + 10);
+    addNotification("+10 Vpoints", `Bạn vừa nhận được 10 Vpoints khi xem kênh ${ch.name}!`, 'info');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     logHistory('channel', `Đã xem kênh: ${ch.name}`);
     incrementStat('channelsWatched');
@@ -10636,6 +11127,10 @@ export default function App() {
 
                {/* Right Section (Stats) */}
                <div className="flex items-center gap-6 px-6 select-none shrink-0">
+                  <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 bg-amber-400 rounded-full text-white shadow-lg shadow-amber-400/20 active:scale-95 transition-all cursor-pointer" onClick={() => { setShowWidgets(true); setActiveBoardTab('vstore'); }}>
+                     <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-black italic">V</div>
+                     <span className="text-xs font-black tracking-tight">{vpoints} <span className="opacity-60 font-medium">VP</span></span>
+                  </div>
                   <div 
                     onClick={() => setShowWidgets(true)}
                     className="hidden sm:flex items-center gap-3 pr-6 border-r border-white/5 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-all"
@@ -11689,6 +12184,11 @@ export default function App() {
                         onClick={() => {
                           if (isAIToolsTab) {
                             setShowAIToolsMenuSidebar(!showAIToolsMenuSidebar);
+                            return;
+                          }
+                          if (tab.id === "Vstore") {
+                            setShowWidgets(true);
+                            setActiveBoardTab('vstore'); // Need to handle this in WidgetsDashboard
                             return;
                           }
                           if (tab.id === "Widgets") {
@@ -12946,6 +13446,16 @@ export default function App() {
             channels={channels}
             featureFlags={featureFlags}
             setFeatureFlags={setFeatureFlags}
+            vpoints={vpoints}
+            setVpoints={setVpoints}
+            purchasedWidgets={purchasedWidgets}
+            setPurchasedWidgets={setPurchasedWidgets}
+            isVstorePinned={isVstorePinned}
+            setIsVstorePinned={setIsVstorePinned}
+            hasReceivedBonus={hasReceivedBonus}
+            setHasReceivedBonus={setHasReceivedBonus}
+            activeBoardTab={activeBoardTab}
+            setActiveBoardTab={setActiveBoardTab}
           />
         )}
       </AnimatePresence>
