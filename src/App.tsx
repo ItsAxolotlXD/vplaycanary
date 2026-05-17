@@ -61,7 +61,7 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
     <div className={`flex flex-col items-center justify-center ${className}`}>
       <motion.div
         animate={{ rotate: 360 }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         className="relative w-12 h-12"
       >
         <svg className="w-full h-full" viewBox="0 0 50 50">
@@ -71,7 +71,7 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
             r="20"
             fill="none"
             stroke="currentColor"
-            strokeWidth="5"
+            strokeWidth="4"
             strokeLinecap="round"
             strokeDasharray="90, 150"
             className="text-blue-600"
@@ -355,6 +355,7 @@ const backgroundTracks = [
 
 const baseTabs = [
   { name: "Home", icon: Home, id: "Trang chủ" },
+  { name: "Widgets", icon: LayoutDashboard, id: "Widgets" },
   { name: "Live", icon: Tv, id: "Phát sóng" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
 ];
@@ -1332,11 +1333,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
 
   return (
     <>
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.98 }}
+      <div
         onContextMenu={handleContextMenu}
         className={`group relative rounded-[24px] border p-6 flex flex-col justify-between overflow-hidden transition-all ${getBgClass()} ${getSizeClass()} ${w.locked ? 'ring-2 ring-blue-500/50' : ''}`}
       >
@@ -1535,14 +1532,15 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
 
       <AnimatePresence>
         {showContextMenu && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
             style={{ position: 'fixed', top: contextMenuPos.y, left: contextMenuPos.x, zIndex: 10010 }}
             className="w-48 bg-white/80 backdrop-blur-2xl border border-black/5 rounded-2xl shadow-2xl overflow-hidden p-1.5"
           >
@@ -4959,187 +4957,59 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
   );
 }
 
-function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, activeSearchPlaceholder, className }: { featureFlags: any, setFeatureFlags: (f: any, id: string, name: string, val: boolean) => void, isDark: boolean, activeSearchPlaceholder?: string, className?: string }) {
+function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: any) {
   const [flagSearch, setFlagSearch] = useState("");
 
-  const experiments = [
-    { id: 'cobalt_ui', name: 'Cobalt UI 3', desc: 'Cobalt UI phiên bản 3 - đẹp hơn phiên bản 2! ... ừ nó chỉ là thế đó :)' },
-    { id: 'xaml_experience', name: 'Switch to the new UI', desc: 'Use the brand-new rebuilt Vplay app based on XAML system', group: 'cobalt_ui' },
-    { id: 'top_bar', name: 'Top bar', desc: 'Adds a nice top bar with "Desktop Interface" enabled', group: 'cobalt_ui' },
-    { id: 'dialog_redesign_v2', name: 'Redesign Pop-ups', desc: 'Try the new updated interface of popup dialogs', group: 'cobalt_ui' },
-    { id: 'xaml_home', name: 'XAML Home Page', desc: 'Giao diện Home mới mượt mà hơn.', group: 'cobalt_ui' },
-    { id: 'search_merge', name: 'Merge Search', desc: 'Gộp nút tìm kiếm vào thanh điều hướng', group: 'cobalt_ui' },
-    { id: 'scrollable_bar', name: 'Scrollable Bar', desc: 'Thanh điều hướng có thể cuộn', group: 'cobalt_ui' },
-    { id: 'sidebar_resizable', name: 'Resizable sidebar', desc: 'Cho phép điều chỉnh độ rộng của sidebar bằng cách kéo thả', group: 'cobalt_ui' },
-    { id: 'scambidi_ui', name: 'Scambidi Mode', desc: 'Makes the web UI looks like some kind of ripoff horrible scambidi streaming platform' },
-    { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
-    { id: 'settings_vertical', name: 'Vertical Settings', desc: 'Bố cục cài đặt danh sách đứng.' },
-    { id: 'revamp_process_animation', name: 'Revamped Process', desc: 'Sử dụng vòng xoay tải tiến trình mới' },
-    { id: 'ai_tools_preview', name: 'Do For Me (preview)', desc: 'Trải nghiệm Microslop Do For Me (TM)' },
-    { id: 'copilot_action_v2', name: 'Advanced Do For Me Actions', desc: 'Sử dụng menu tác vụ Do For Me nâng cao (Ẩn sidebar/taskbar)' },
-    { id: 'multiview_experimental', name: 'Multiview', desc: 'Xem nhiều kênh truyền hình cùng một lúc' },
-    { id: 'disable_animation', name: 'Reduce Animation', desc: 'Giảm hiệu ứng chuyển động trên trang web. Thích hợp cho các thiết bị yếu' },
-    { id: 'ai_tools', name: 'Do For Me', desc: 'Enable native Gemini-powered Do For Me and applications' },
-    { id: 'ai_sidebar', name: 'AI Sidebar', desc: 'Open Do For Me as sidebar' },
-    { id: 'sidebar_v3', name: 'Collaspe sidebar', desc: 'Sidebar, but cleaner' },
-    { id: 'taskbar_experimental', name: 'Use Taskbar Mode', desc: 'Turns sidebar into taskbar' },
-    { id: 'search_placeholder_treatment', name: 'Search Placeholder Treatment', desc: 'Enable experimental placeholder treatments for the search box' },
-    { id: 'debug_mode', name: 'Debug Mode', desc: 'Enable debug information and tools' },
-    { id: 'sort_newest', name: 'Sorting: Newest to oldest', desc: 'Sort channels from newest to oldest added' },
-    { id: 'sort_oldest', name: 'Sorting: Oldest to newest', desc: 'Sort channels from oldest to newest added' },
-  ].filter(exp => exp.name.toLowerCase().includes(flagSearch.toLowerCase()) || exp.desc.toLowerCase().includes(flagSearch.toLowerCase()));
-
-  const groupedExps = {
-    ungrouped: experiments.filter(e => !e.group && e.id !== 'cobalt_ui'),
-    cobalt: experiments.filter(e => e.group === 'cobalt_ui')
-  };
-
-  const cobaltMain = experiments.find(e => e.id === 'cobalt_ui');
-
-  const useXAML = featureFlags?.xaml_experience;
+  const experiences = [
+    { id: "cobalt_ui", name: "Cobalt UI v3", desc: "Enable the latest generation of Cobalt Design System." },
+    { id: "glass_morphism", name: "Glass Morphism", desc: "System-wide glass effect for all interfaces." },
+    { id: "acrylic_blur", name: "Acrylic Blur", desc: "Fluent design-inspired background materials." },
+    { id: "mica_effect", name: "Mica Effect", desc: "Dynamic desktop surface material." },
+    { id: "rounded_corners", name: "Enhanced Rounded Corners", desc: "Update window corner radius to 12px." },
+    { id: "smooth_scroll", name: "Smooth Scrolling", desc: "Native-like scrolling animations." },
+    { id: "auto_dark_mode", name: "Automatic Dark Mode", desc: "Sync with system time." },
+    { id: "xaml_experience", name: "XAML Experience", desc: "Legacy Windows UI renderer." },
+    { id: "system_animations", name: "Advanced Animations", desc: "Complex transitions for open/close apps." }
+  ];
 
   return (
-    <div className={`p-8 max-w-6xl mx-auto space-y-8 rounded-[32px] ${useXAML ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-      <div className={`p-6 rounded-[32px] ${isDark ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50 border border-blue-100"} flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-700`}>
-        <div className={`p-3 rounded-2xl ${isDark ? "bg-blue-500/20" : "bg-white"}`}>
-          <Pizza className="text-blue-500" size={24} />
-        </div>
-        <p className={`text-sm font-medium ${isDark ? "text-blue-200" : "text-blue-900"}`}>
-          Pizza is our special system to experiment some new, early, unreleased features of Vplay Canary
-        </p>
-      </div>
-
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div className="flex items-center gap-4">
-          <div className={`p-4 rounded-3xl ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
-            <Pizza size={32} className="text-purple-500" />
-          </div>
-          <div>
-            <h2 className={`text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Pizza</h2>
-            <p className={isDark ? "text-slate-400" : "text-slate-500"}>Kích hoạt các tính năng mới nhất đang được phát triển</p>
-          </div>
-        </div>
-
-        <div className={`relative group min-w-[300px] rounded-full overflow-hidden ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
-            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? "text-white/20" : "text-slate-400"} group-focus-within:text-purple-500 transition-colors`} size={16} />
+    <div className={`flex flex-col h-full ${isDark ? "bg-[#1c1c1c] text-white" : "bg-white text-slate-900"}`}>
+       <div className="p-8 border-b border-black/5 bg-slate-50/50">
+          <h2 className="text-xl font-bold tracking-tight mb-1">Pizza Experiments</h2>
+          <p className="text-xs font-medium text-slate-500 opacity-60">Thử nghiệm các tính năng mới nhất tại Vplay.</p>
+          
+          <div className="mt-6 relative group">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
+              type="text"
+              placeholder="Tìm kiếm tính năng..."
+              className={`w-full pl-12 pr-6 py-3 border border-black/5 rounded-2xl text-sm font-medium outline-none transition-all ${isDark ? "bg-white/5 text-white" : "bg-white text-slate-900"}`}
               value={flagSearch}
-              onChange={e => setFlagSearch(e.target.value)}
-              placeholder={activeSearchPlaceholder || "Tìm kiếm tính năng thử nghiệm..."}
-              className={`w-full pl-12 pr-6 py-3 text-sm bg-transparent focus:outline-none transition-all ${
-                isDark ? "text-white placeholder-white/20" : "text-slate-900 placeholder-slate-400"
-              }`}
+              onChange={(e) => setFlagSearch(e.target.value)}
             />
           </div>
-      </div>
+       </div>
 
-      {cobaltMain && (
-        <div className="mb-12">
-          <button 
-            onClick={() => {
-              const newVal = !featureFlags.cobalt_ui;
-              const newFlags = { ...featureFlags, cobalt_ui: newVal };
-              setFeatureFlags(newFlags, 'cobalt_ui', cobaltMain.name, newVal);
-            }}
-            className={`w-full p-10 rounded-[48px] border-2 transition-all text-left flex flex-col md:flex-row items-center gap-10 relative overflow-hidden group ${
-              featureFlags.cobalt_ui 
-                ? "bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 border-blue-400 shadow-[0_40px_100px_-20px_rgba(37,99,235,0.4)]" 
-                : (isDark ? "bg-[#1c1c1e] border-white/5 hover:bg-[#252527]" : "bg-white border-slate-100 hover:shadow-2xl")
-            }`}
-          >
-            {featureFlags.cobalt_ui && (
-              <motion.div 
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 90, 180, 270, 360],
-                  opacity: [0.1, 0.2, 0.1]
-                }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute -top-1/4 -right-1/4 w-full h-full bg-gradient-to-br from-white/20 to-transparent rounded-full blur-3xl pointer-events-none"
-              />
-            )}
-            <div className={`p-8 rounded-[40px] relative z-10 ${featureFlags.cobalt_ui ? "bg-white/10 backdrop-blur-xl" : (isDark ? "bg-white/5" : "bg-blue-50")}`}>
-               <Layers size={64} className={featureFlags.cobalt_ui ? "text-white" : "text-blue-500"} />
+       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1">
+          {experiences.filter(exp => exp.name.toLowerCase().includes(flagSearch.toLowerCase())).map(exp => (
+            <div key={exp.id} className={`flex items-center justify-between p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+               <div className="flex flex-col">
+                  <span className="text-sm font-bold">{exp.name}</span>
+                  <span className="text-[11px] opacity-50">{exp.desc}</span>
+               </div>
+               <div 
+                  onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
+                  className={`w-11 h-6 rounded-full transition-colors relative p-1 cursor-pointer ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-300"}`}
+               >
+                  <motion.div 
+                    className="w-4 h-4 bg-white rounded-full shadow-sm"
+                    animate={{ x: featureFlags[exp.id] ? 20 : 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+               </div>
             </div>
-            <div className="flex-1 space-y-4 relative z-10">
-              <div className="flex items-center gap-3">
-                <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${featureFlags.cobalt_ui ? "bg-blue-400 text-white shadow-lg" : "bg-blue-500 text-white"}`}>Pizza Project</span>
-                {featureFlags.cobalt_ui && <div className="vplay-retro-toggle active"><motion.div className="vplay-retro-toggle-thumb" layout /></div>}
-              </div>
-              <h3 className={`text-5xl font-black italic uppercase tracking-tighter ${featureFlags.cobalt_ui ? "text-white drop-shadow-2xl" : (isDark ? "text-white" : "text-slate-900")}`}>{cobaltMain.name}</h3>
-              <p className={`text-lg font-medium leading-relaxed max-w-2xl ${featureFlags.cobalt_ui ? "text-white/90" : "opacity-50"}`}>{cobaltMain.desc}</p>
-            </div>
-            {featureFlags.cobalt_ui && (
-              <div className="absolute top-10 right-10 z-10">
-                <Sparkles size={32} className="text-white/40 animate-pulse" />
-              </div>
-            )}
-          </button>
-          
-          {featureFlags.cobalt_ui && groupedExps.cobalt.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-            >
-              {groupedExps.cobalt.map(exp => (
-                <button 
-                  key={exp.id}
-                  onClick={() => {
-                    const newVal = !featureFlags[exp.id];
-                    setFeatureFlags({ ...featureFlags, [exp.id]: newVal }, exp.id, exp.name, newVal);
-                  }}
-                  className={`p-6 rounded-[32px] border transition-all text-left flex items-start gap-4 ${
-                    featureFlags[exp.id] 
-                      ? "bg-blue-500/10 border-blue-500/20" 
-                      : (isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50")
-                  }`}
-                >
-                  <div className={`mt-1 vplay-retro-toggle scale-75 ${featureFlags[exp.id] ? 'active' : ''}`}>
-                    <motion.div className="vplay-retro-toggle-thumb" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className={`text-sm font-bold tracking-tight mb-1 ${isDark ? "text-white" : "text-slate-900"}`}>{exp.name}</h4>
-                    <p className="text-[10px] opacity-40 leading-tight">{exp.desc}</p>
-                  </div>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {groupedExps.ungrouped.map(exp => (
-          <button 
-            key={exp.id}
-            onClick={() => {
-              const newVal = !featureFlags[exp.id];
-              const newFlags = { ...featureFlags, [exp.id]: newVal };
-              setFeatureFlags(newFlags, exp.id, exp.name, newVal);
-            }}
-            className={featureFlags.xaml_experience 
-              ? `p-6 rounded-[32px] border transition-all text-left flex flex-col gap-3 h-full ${featureFlags[exp.id] ? "bg-blue-500/10 border-blue-500/20" : "bg-white/5 border-white/5"}`
-              : `p-6 rounded-[32px] border transition-all text-left flex flex-col gap-3 h-full ${
-              featureFlags[exp.id] 
-                ? "bg-purple-600 border-purple-500 shadow-lg shadow-purple-600/20" 
-                : (isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50")
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className={`text-[10px] font-black uppercase tracking-widest ${featureFlags[exp.id] ? "text-white/60" : "opacity-40"}`}>Experimental</span>
-              <div className={featureFlags.xaml_experience ? `vplay-retro-toggle ${featureFlags[exp.id] ? 'active' : ''}` : `w-10 h-5 rounded-full relative transition-colors ${featureFlags[exp.id] ? "bg-white/20" : (isDark ? "bg-white/10" : "bg-slate-200")}`}>
-                <motion.div 
-                  animate={{ x: featureFlags.xaml_experience ? (featureFlags[exp.id] ? 32 : 0) : (featureFlags[exp.id] ? 20 : 4) }}
-                  className={featureFlags.xaml_experience ? "vplay-retro-toggle-thumb" : "absolute top-1 w-3 h-3 rounded-full bg-white shadow-lg"}
-                />
-              </div>
-            </div>
-            <h4 className={`text-lg font-bold tracking-tight ${featureFlags[exp.id] ? "text-white" : (isDark ? "text-white" : "text-slate-900")}`}>{exp.name}</h4>
-            <p className={`text-xs ${featureFlags[exp.id] ? "text-white/80" : (isDark ? "text-white/40" : "text-slate-500")}`}>{exp.desc}</p>
-          </button>
-        ))}
-      </div>
+          ))}
+       </div>
     </div>
   );
 }
@@ -7282,8 +7152,10 @@ function WidgetsDashboard({
   setFeatureFlags
 }: any) {
   const isDark = false; // Always light mode per request
+  const [gallerySearch, setGallerySearch] = useState("");
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
-  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza'>('widgets');
+  const [boardSearch, setBoardSearch] = useState("");
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme'>('widgets');
   const [widgetSettings, setWidgetSettings] = useState({
     openFeedOnHover: false,
     showFeedBadges: true,
@@ -7384,6 +7256,14 @@ function WidgetsDashboard({
         <Pizza size={22} />
      </button>
 
+     <button 
+        onClick={() => setActiveBoardTab('doforme')}
+        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'doforme' ? (isDark ? "bg-white/10 text-purple-400" : "bg-white text-purple-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+        title="Do For Me"
+     >
+        <Sparkles size={22} />
+     </button>
+
      <div className="mt-auto flex flex-col items-center gap-6 pb-2">
         <button 
           onClick={() => setActiveBoardTab('settings')}
@@ -7425,304 +7305,209 @@ function WidgetsDashboard({
      </div>
 
      <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar relative">
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {isTabTransitioning && (
               <motion.div 
+                key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 z-50 flex items-center justify-center bg-transparent"
               >
-              <svg 
-                className="w-12 h-12 animate-spin text-blue-500" 
-                viewBox="0 0 50 50"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="25"
-                  cy="25"
-                  r="20"
-                  stroke="currentColor"
-                  strokeWidth="5"
-                  fill="none"
-                />
-                <circle
-                  className="opacity-75"
-                  cx="25"
-                  cy="25"
-                  r="20"
-                  stroke="currentColor"
-                  strokeWidth="5"
-                  fill="none"
-                  strokeDasharray="90, 150"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <div className="flex flex-col items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="relative w-12 h-12"
+                >
+                  <svg className="w-full h-full" viewBox="0 0 50 50">
+                    <circle
+                      cx="25"
+                      cy="25"
+                      r="20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      strokeDasharray="90, 150"
+                      className="text-blue-600"
+                    />
+                  </svg>
+                </motion.div>
+              </div>
             </motion.div>
           )}
-        </AnimatePresence>
 
-        {!isTabTransitioning && activeBoardTab === 'widgets' ? (
-           <div className="space-y-6">
-              {widgetSettings.allowWebSearches && (
-                <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
-                   <Search size={18} className="text-blue-500" />
-                   <input 
-                     type="text" 
-                     placeholder="Search the web" 
-                     className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:opacity-30 text-current"
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                   />
+          {!isTabTransitioning && activeBoardTab === 'widgets' && (
+             <motion.div 
+               key="widgets"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="space-y-6"
+             >
+                {widgetSettings.allowWebSearches && (
+                  <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
+                     <Search size={18} className="text-blue-500" />
+                     <input 
+                       type="text" 
+                       placeholder="Search the web" 
+                       className="bg-transparent border-none outline-none text-sm w-full font-bold placeholder:opacity-30 text-current"
+                       value={searchQuery}
+                       onChange={(e) => setSearchQuery(e.target.value)}
+                     />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-12 gap-6 auto-rows-max">
+                  {pinnedWidgets.length === 0 ? (
+                    <div className="col-span-12 flex flex-col items-center justify-center py-20 text-center">
+                      <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center mb-6">
+                        <LayoutDashboard size={48} className="text-blue-500 opacity-20" />
+                      </div>
+                      <h3 className="text-2xl font-bold tracking-tight text-slate-800">Whoops! Chưa có tiện ích nào ở đây :(</h3>
+                      <p className="text-slate-500 mt-2 max-w-sm font-medium">Bấm chọn "Pin widgets" để bắt đầu thêm các tiện ích vào bảng tiện ích</p>
+                      <button 
+                        onClick={() => setShowWidgetGallery(true)}
+                        className="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold tracking-tight shadow-xl shadow-blue-500/20 active:scale-95 transition-all"
+                      >
+                        Pin widgets
+                      </button>
+                    </div>
+                  ) : (
+                    pinnedWidgets.map((widget: any) => (
+                      <WidgetWrapper
+                        key={widget.id}
+                        w={widget}
+                        isDark={isDark}
+                        location={weatherCity}
+                        time={time}
+                        onRemove={() => setPinnedWidgets((prev: any[]) => prev.filter(w => w.id !== widget.id))}
+                        onLock={() => {
+                          setPinnedWidgets((prev: any[]) => prev.map(w => {
+                            if (w.id === widget.id) return { ...w, locked: !w.locked };
+                            return w;
+                          }));
+                        }}
+                        onMove={(dir: 'up' | 'down' | 'left' | 'right') => {
+                          if (widget.locked) return;
+                          setPinnedWidgets((prev: any[]) => {
+                            const newArray = [...prev];
+                            const idx = newArray.findIndex(w => w.id === widget.id);
+                            if (idx === -1) return prev;
+                            
+                            let targetIdx = idx;
+                            if (dir === 'left' || dir === 'up') targetIdx = Math.max(0, idx - 1);
+                            if (dir === 'right' || dir === 'down') targetIdx = Math.min(newArray.length - 1, idx + 1);
+                            
+                            if (targetIdx !== idx) {
+                              const [moved] = newArray.splice(idx, 1);
+                              newArray.splice(targetIdx, 0, moved);
+                            }
+                            return newArray;
+                          });
+                        }}
+                        onResize={() => {
+                          if (widget.locked) return;
+                          setPinnedWidgets((prev: any[]) => prev.map(w => {
+                            if (w.id === widget.id) {
+                              const sizes = ['2x2', '4x4', '6x6'];
+                              const currentIdx = sizes.indexOf(w.size || '2x2');
+                              const nextSize = sizes[(currentIdx + 1) % sizes.length];
+                              return { ...w, size: nextSize };
+                            }
+                            return w;
+                          }));
+                        }}
+                        addNotification={addNotification}
+                        notifications={notifications}
+                        history={history}
+                        onAction={onAction}
+                        onNavigate={onNavigate}
+                        channels={channels}
+                      />
+                    ))
+                  )}
                 </div>
-              )}
+             </motion.div>
+          )}
 
-              <div className="grid grid-cols-12 gap-6 auto-rows-max">
-                {!isTabTransitioning && pinnedWidgets.map((widget: any, index: number) => (
-                  <WidgetWrapper
-                    key={widget.id}
-                    w={widget}
-                    isDark={isDark}
-                    location={weatherCity}
-                    time={time}
-                    onRemove={() => setPinnedWidgets((prev: any[]) => prev.filter(w => w.id !== widget.id))}
-                    onLock={() => {
-                      setPinnedWidgets((prev: any[]) => prev.map(w => {
-                        if (w.id === widget.id) return { ...w, locked: !w.locked };
-                        return w;
-                      }));
-                    }}
-                    onMove={(dir: 'up' | 'down' | 'left' | 'right') => {
-                      if (widget.locked) return;
-                      setPinnedWidgets((prev: any[]) => {
-                        const newArray = [...prev];
-                        const idx = newArray.findIndex(w => w.id === widget.id);
-                        if (idx === -1) return prev;
-                        
-                        let targetIdx = idx;
-                        if (dir === 'left' || dir === 'up') targetIdx = Math.max(0, idx - 1);
-                        if (dir === 'right' || dir === 'down') targetIdx = Math.min(newArray.length - 1, idx + 1);
-                        
-                        if (targetIdx !== idx) {
-                          const [moved] = newArray.splice(idx, 1);
-                          newArray.splice(targetIdx, 0, moved);
-                        }
-                        return newArray;
-                      });
-                    }}
-                    onResize={() => {
-                      if (widget.locked) return;
-                      setPinnedWidgets((prev: any[]) => prev.map(w => {
-                        if (w.id === widget.id) {
-                          const sizes = ['2x2', '4x4', '6x6'];
-                          const currentIdx = sizes.indexOf(w.size || '2x2');
-                          const nextSize = sizes[(currentIdx + 1) % sizes.length];
-                          return { ...w, size: nextSize };
-                        }
-                        return w;
-                      }));
-                    }}
-                    addNotification={addNotification}
-                    notifications={notifications}
-                    history={history}
-                    onAction={onAction}
-                    onNavigate={onNavigate}
-                    channels={channels}
-                  />
+          {!isTabTransitioning && activeBoardTab === 'feed' && (
+             <motion.div 
+               key="feed"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex flex-col gap-6"
+             >
+                {[
+                  { title: "Vplay OS Canary SMR26 - New Hardware Acceleration Tech", time: "2h", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
+                  { title: "Windows Style Widgets Board updated today", time: "5h", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
+                  { title: "Top 5 trending movies on Vplay this week", time: "8h", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
+                ].map((item, i) => (
+                   <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-5 p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
+                      <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/5">
+                         <img src={item.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                      </div>
+                      <div className="flex flex-col justify-between py-1">
+                         <div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-2 block">{item.cat}</span>
+                            <p className="text-base font-bold tracking-tighter leading-tight line-clamp-2 group-hover:text-blue-500 transition-colors">{item.title}</p>
+                         </div>
+                         <div className="flex items-center gap-2">
+                            <Clock size={10} className="opacity-40" />
+                            <span className="text-[11px] opacity-40 font-bold uppercase tracking-widest">{item.time} ago</span>
+                         </div>
+                      </div>
+                   </div>
                 ))}
-              </div>
-           </div>
-        ) : !isTabTransitioning && activeBoardTab === 'feed' ? (
-           <div className="flex flex-col gap-6">
-              {[
-                { title: "Vplay OS Canary SMR26 - New Hardware Acceleration Tech", time: "2h", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
-                { title: "Windows Style Widgets Board updated today", time: "5h", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
-                { title: "Top 5 trending movies on Vplay this week", time: "8h", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
-              ].map((item, i) => (
-                 <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-5 p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
-                    <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/5">
-                       <img src={item.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
-                    </div>
-                    <div className="flex flex-col justify-between py-1">
-                       <div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-2 block">{item.cat}</span>
-                          <p className="text-base font-bold tracking-tighter leading-tight line-clamp-2 group-hover:text-blue-500 transition-colors">{item.title}</p>
-                       </div>
-                       <div className="flex items-center gap-2">
-                          <Clock size={10} className="opacity-40" />
-                          <span className="text-[11px] opacity-40 font-bold uppercase tracking-widest">{item.time} ago</span>
-                       </div>
-                    </div>
-                 </div>
-              ))}
-              <button className="w-full py-4 rounded-2xl border border-dashed border-current opacity-10 hover:opacity-100 transition-opacity text-[11px] font-bold uppercase tracking-[0.4em] mt-6">Explore more content</button>
-           </div>
-        ) : !isTabTransitioning && activeBoardTab === 'pizza' ? (
-           <div className="flex-1 h-full min-h-0 overflow-y-auto custom-scrollbar rounded-[32px] bg-white/5">
-              <ExperimentalContent 
-                isDark={isDark} 
-                featureFlags={featureFlags} 
-                setFeatureFlags={(f: any) => {
-                  setFeatureFlags(f);
-                  localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
-                }}
-              />
-           </div>
-        ) : !isTabTransitioning ? (
-          <div className="flex-1 flex flex-col overflow-hidden -mx-8 -mb-10 bg-[#f3f6f9]">
-            {/* Main scrollable area */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-10 space-y-10">
-               <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                     <h2 className="text-2xl font-bold tracking-tight text-slate-900">Settings</h2>
-                     <button onClick={() => setShowWidgetGallery(true)} className="p-2 hover:bg-black/5 rounded-lg"><Plus size={20} /></button>
-                  </div>
-                  
-                  {/* Dashboards Section */}
-                  <div className="space-y-1">
-                     <div className="p-5 bg-white border border-slate-200 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                           <Layout size={20} className="opacity-60" />
-                           <h3 className="text-sm font-semibold text-slate-700">Dashboards</h3>
-                        </div>
-                        <ChevronDown size={18} className="opacity-40" />
-                     </div>
-                     
-                     <div className="bg-white border border-slate-200 divide-y divide-slate-100">
-                        <div className="p-5 flex items-center justify-between group">
-                           <div className="flex items-center gap-4">
-                              <div className="flex gap-1.5 opacity-20">
-                                 {[1,2].map(i => <div key={i} className="w-1.5 h-1.5 bg-black rounded-full" />)}
-                              </div>
-                              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center transition-transform group-hover:scale-110">
-                                 <Layout size={20} className="text-blue-500" />
-                              </div>
-                              <div className="flex flex-col">
-                                 <span className="text-sm font-bold text-slate-800">Feed</span>
-                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Start Experiences app pack</span>
-                              </div>
-                           </div>
-                           <div className="flex items-center gap-6">
-                              <span className="text-sm font-medium text-slate-400">{widgetSettings.showFeed ? "On" : "Off"}</span>
-                              <div 
-                                 onClick={() => setWidgetSettings(prev => ({ ...prev, showFeed: !prev.showFeed }))}
-                                 className={`w-12 h-6 rounded-full transition-colors relative p-1 shadow-inner cursor-pointer ${widgetSettings.showFeed ? "bg-blue-600" : "bg-slate-300"}`}
-                              >
-                                 <motion.div 
-                                   className="w-4 h-4 bg-white rounded-full shadow-sm"
-                                   animate={{ x: widgetSettings.showFeed ? 24 : 0 }}
-                                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                 />
-                              </div>
-                              <MoreHorizontal size={18} className="opacity-20" />
-                           </div>
-                        </div>
+                <button className="w-full py-4 rounded-2xl border border-dashed border-current opacity-10 hover:opacity-100 transition-opacity text-[11px] font-bold uppercase tracking-[0.4em] mt-6">Explore more content</button>
+             </motion.div>
+          )}
 
-                        <div className="p-5 flex items-center justify-between group">
-                           <div className="flex items-center gap-4">
-                              <div className="flex gap-1.5 opacity-20">
-                                 {[1,2].map(i => <div key={i} className="w-1.5 h-1.5 bg-black rounded-full" />)}
-                              </div>
-                              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center transition-transform group-hover:scale-110">
-                                 <Grid size={20} className="text-blue-500" />
-                              </div>
-                              <div className="flex flex-col">
-                                 <span className="text-sm font-bold text-slate-800">Widgets</span>
-                                 <span className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Windows style widgets</span>
-                              </div>
-                           </div>
-                           <MoreHorizontal size={18} className="opacity-20" />
-                        </div>
-                     </div>
+          {!isTabTransitioning && activeBoardTab === 'doforme' && (
+             <motion.div 
+               key="doforme"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex flex-col gap-6"
+             >
+                <div className="p-8 rounded-[32px] bg-white border border-black/5 shadow-sm flex flex-col gap-6">
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                            <Sparkles size={20} className="text-purple-500" />
+                         </div>
+                         <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">Do For Me AI</span>
+                      </div>
+                   </div>
+                   <p className="text-2xl font-bold tracking-tight">Hãy để trợ lý ảo Do For Me giúp bạn tìm kiếm nội dung yêu thích.</p>
+                   <button 
+                     onClick={() => onNavigate("Do For Me")}
+                     className="mt-4 py-3 px-6 rounded-2xl bg-purple-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-purple-500 transition-all self-start shadow-xl active:scale-95"
+                   >
+                     Trò chuyện ngay
+                   </button>
+                </div>
+             </motion.div>
+          )}
 
-                     <div className="p-5 bg-white border border-slate-200 flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-600">Pin more widgets to the feed from the widgets picker</span>
-                        <button 
-                          onClick={() => setShowWidgetGallery(true)}
-                          className="px-6 py-2 bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-800 hover:bg-slate-100 transition-colors"
-                        >
-                          Browse widgets
-                        </button>
-                     </div>
-                  </div>
-               </div>
-
-               {/* More settings Section */}
-               <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-slate-500">More settings</h3>
-                  <div className="space-y-2">
-                     <div className="p-6 bg-white border border-slate-200 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center gap-6">
-                           <Bell size={20} className="opacity-60" />
-                           <div className="flex flex-col">
-                              <span className="text-sm font-bold text-slate-800">Show notifications and badges</span>
-                              <span className="text-[11px] text-slate-400 font-medium">Manage notifications from your dashboards and widgets</span>
-                           </div>
-                        </div>
-                        <ChevronRight size={18} className="opacity-40" />
-                     </div>
-
-                     <div className="p-6 bg-white border border-slate-200 flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                           <Layout size={20} className="opacity-60" />
-                           <div className="flex flex-col">
-                              <span className="text-sm font-bold text-slate-800">Open on hover</span>
-                              <span className="text-[11px] text-slate-400 font-medium">Opens when hovering on the taskbar icon</span>
-                           </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                           <span className="text-sm font-medium text-slate-400">On</span>
-                           <div className="w-12 h-6 rounded-full bg-blue-600 relative p-1 shadow-inner">
-                              <div className="absolute right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                           </div>
-                        </div>
-                     </div>
-
-                     <div className="p-6 bg-white border border-slate-200 flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                           <Wifi size={20} className="opacity-60" />
-                           <div className="flex flex-col">
-                              <span className="text-sm font-bold text-slate-800">Metered connection</span>
-                              <span className="text-[11px] text-slate-400 font-medium">Use metered connection for Widgets</span>
-                           </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                           <span className="text-sm font-medium text-slate-400">On</span>
-                           <div className="w-12 h-6 rounded-full bg-blue-600 relative p-1 shadow-inner">
-                              <div className="absolute right-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-
-               {/* About Section */}
-               <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-slate-500">About</h3>
-                  <div className="bg-white border border-slate-200 divide-y divide-slate-100">
-                     <div className="p-6 flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                           <Info size={20} className="opacity-60" />
-                           <div className="flex flex-col">
-                              <span className="text-sm font-bold text-slate-800">Widgets</span>
-                              <span className="text-[11px] text-slate-400 font-medium">Version 3.0.6 (Powered by Vplay Cobalt UI 3)</span>
-                           </div>
-                        </div>
-                        <ChevronUp size={18} className="opacity-40" />
-                     </div>
-                     <div className="divide-y divide-slate-50">
-                        {['Learn more', 'Give feedback', 'Terms of use', 'Privacy statement'].map(text => (
-                           <div key={text} className="p-4 px-16 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer group">
-                              <span className="text-sm font-medium text-slate-600 group-hover:text-blue-600">{text}</span>
-                              <ExternalLink size={14} className="opacity-20 group-hover:opacity-100" />
-                           </div>
-                        ))}
-                     </div>
-                  </div>
-               </div>
-            </div>
-          </div>
-        ) : null}
+          {!isTabTransitioning && activeBoardTab === 'pizza' && (
+             <motion.div 
+               key="pizza"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex-1 h-full min-h-0 overflow-y-auto custom-scrollbar rounded-[32px]"
+             >
+                <ExperimentalContent 
+                  isDark={isDark} 
+                  featureFlags={featureFlags} 
+                  setFeatureFlags={(f: any) => {
+                    setFeatureFlags(f);
+                    localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
+                  }}
+                />
+             </motion.div>
+          )}
+        </AnimatePresence>
      </div>
   </div>
 
@@ -7732,96 +7517,113 @@ function WidgetsDashboard({
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className={`absolute inset-0 z-[10003] flex flex-col ${isDark ? "bg-[#1c1c1c] text-white" : "bg-white text-slate-900 shadow-2xl"}`}
+        className={`fixed inset-0 z-[10003] flex flex-col p-4 md:p-8 overflow-hidden`}
       >
-        <div className="h-16 px-8 flex items-center justify-between border-b border-black/5 bg-white/80 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-             <Pin size={18} className="text-blue-500" />
-             <h2 className="text-sm font-bold tracking-tight text-slate-500">Thêm tiện ích vào bảng</h2>
-          </div>
-          <button onClick={() => setShowWidgetGallery(false)} className={`p-2 rounded-xl hover:bg-black/5 transition-all active:scale-90`}><X size={20} /></button>
-        </div>
-
-        <div className="flex-1 flex min-h-0">
-          <div className="w-[320px] h-full border-r border-black/5 overflow-y-auto custom-scrollbar p-6 bg-slate-50/30">
-             <div className="space-y-1">
-                {[
-                  { type: 'weather', name: 'Thời tiết', icon: Cloud, desc: 'Theo dõi thời tiết tại địa phương của bạn với độ chính xác cao.' },
-                  { type: 'stocks', name: 'Chứng khoán', icon: TrendingUp, desc: 'Cập nhật giá cổ phiếu và thị trường tài chính mới nhất.' },
-                  { type: 'sports', name: 'Thể thao', icon: Star, desc: 'Tỷ số trực tiếp và tin tức thể thao từ các giải đấu hàng đầu.' },
-                  { type: 'entertainment', name: 'Giải trí', icon: PlayCircle, desc: 'Xu hướng phim ảnh, âm nhạc và tin tức giải trí.' },
-                  { type: 'clock_date', name: 'Thời gian', icon: Clock, desc: 'Đồng hồ và lịch hiển thị rõ nét với hiệu ứng đổ bóng.' },
-                  { type: 'vtv6_countdown', name: 'Đếm ngược', icon: Tv, desc: 'Đếm ngược đến giờ phát sóng các chương trình đặc sắc.' },
-                  { type: 'notify', name: 'Thông báo', icon: Bell, desc: 'Hệ thống thông báo thông minh từ Vplay OS.' },
-                  { type: 'history', name: 'Lịch sử', icon: History, desc: 'Xem lại lịch sử truy cập và các nội dung đã xem.' },
-                   ...channels.slice(0, 5).map((c: any) => ({
-                      type: 'channel',
-                      name: c.name,
-                      icon: Tv,
-                      desc: `Ghim kênh ${c.name} trực tiếp vào bảng tiện ích.`,
-                      channelId: c.name,
-                      size: '1x2'
-                   })),
-                   { type: 'thirdparty', name: 'Spotify', icon: Globe, desc: 'Embedded music player widget.', appName: 'Spotify' },
-                   { type: 'thirdparty', name: 'Figma', icon: Layout, desc: 'Design preview widget.', appName: 'Figma' }
-                ].map(item => {
-                  const isPinned = pinnedWidgets.some((w: any) => w.type === item.type && (item.channelId ? w.channelId === item.channelId : true));
-                  const isSelected = selectedGalleryWidget?.type === item.type && (item.channelId ? selectedGalleryWidget?.channelId === item.channelId : true);
-                  return (
-                    <button
-                      key={item.type + (item.channelId || '')}
-                      onMouseEnter={() => setSelectedGalleryWidget(item)}
-                      onClick={() => !isPinned && addWidget(item)}
-                      className={`w-full flex items-center gap-4 p-4 transition-all text-left rounded-2xl ${
-                        isSelected ? "bg-white shadow-xl transform scale-[1.02] z-10" : "bg-transparent hover:bg-black/5"
-                      } ${isPinned ? "opacity-40 grayscale" : "cursor-pointer"}`}
-                    >
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${isSelected ? "bg-blue-600 text-white" : "bg-blue-500/10 text-blue-500"}`}>
-                        <item.icon size={20} />
-                      </div>
-                      <div className="flex flex-col overflow-hidden">
-                        <span className="text-sm font-semibold tracking-tight truncate">{item.name}</span>
-                        {isPinned && <span className="text-[9px] font-bold text-blue-600 tracking-wider">Đã ghim</span>}
-                      </div>
-                    </button>
-                  );
-                })}
-             </div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={() => setShowWidgetGallery(false)}
+          className="absolute inset-0 bg-black/60 backdrop-blur-xl"
+        />
+        <motion.div 
+           className={`relative h-full flex flex-col ${isDark ? "bg-[#1c1c1c] text-white" : "bg-white text-slate-900 shadow-2xl"} rounded-[32px] overflow-hidden`}
+        >
+          <div className="h-16 px-8 flex items-center justify-between border-b border-black/5 bg-white/80 backdrop-blur-md">
+            <div className="flex items-center gap-3">
+               <Pin size={18} className="text-blue-500" />
+               <h2 className="text-sm font-bold tracking-tight text-slate-500 uppercase tracking-widest leading-none">Pin widgets to Board</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="relative group flex items-center gap-2 px-4 py-1.5 bg-slate-50 border border-slate-100 rounded-xl focus-within:ring-2 ring-blue-500/20 transition-all">
+                <Search size={14} className="text-slate-400" />
+                <input 
+                  type="text" 
+                  placeholder="Tiện ích TV, thời tiết..." 
+                  className="bg-transparent border-none outline-none text-xs font-bold w-48"
+                  value={gallerySearch}
+                  onChange={(e) => setGallerySearch(e.target.value)}
+                />
+              </div>
+              <button onClick={() => setShowWidgetGallery(false)} className={`p-2 rounded-xl hover:bg-black/5 transition-all active:scale-90`}><X size={20} /></button>
+            </div>
           </div>
 
-          <div className="flex-1 h-full flex flex-col items-center justify-center p-12 bg-slate-50 relative overflow-hidden">
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
-             
-             {selectedGalleryWidget && (
-               <motion.div 
-                 key={selectedGalleryWidget.type}
-                 initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                 className="w-full max-w-sm flex flex-col items-center text-center relative z-10"
-               >
-                  <div className="w-28 h-28 rounded-[32px] bg-white shadow-2xl flex items-center justify-center mb-8 ring-1 ring-black/5">
-                    <selectedGalleryWidget.icon size={48} className="text-blue-600" />
+          <div className="flex-1 flex min-h-0">
+            <div className="w-[320px] h-full border-r border-black/5 overflow-y-auto custom-scrollbar p-6 bg-slate-50/10">
+               <div className="space-y-4">
+                  <div className="pb-4 border-b border-black/5 mb-4">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Core Utilities</p>
+                    <div className="space-y-1">
+                      {[
+                        { type: 'weather', name: 'Thời tiết', icon: Cloud, desc: 'Theo dõi thời tiết tại địa phương của bạn với độ chính xác cao.' },
+                        { type: 'stocks', name: 'Chứng khoán', icon: TrendingUp, desc: 'Cập nhật giá cổ phiếu và thị trường tài chính mới nhất.' },
+                        { type: 'clock_date', name: 'Ngày & Giờ', icon: Clock, desc: 'Hiển thị thời gian và ngày tháng hiện tại của hệ thống.' },
+                        { type: 'vtv6_countdown', name: 'VTV6 Live', icon: Tv, desc: 'Countdown đến sự kiện trực tiếp tiếp theo trên VTV6.' },
+                        { type: 'notify', name: 'Thông báo', icon: Bell, desc: 'Xem nhanh các thông báo hệ thống và tin tức mới nhất.' }
+                      ].filter(w => w.name.toLowerCase().includes(gallerySearch.toLowerCase())).map((item) => (
+                        <button 
+                          key={item.type}
+                          onClick={() => setSelectedGalleryWidget(item)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${selectedGalleryWidget.type === item.type ? "bg-blue-600 text-white shadow-lg" : "hover:bg-black/5 text-slate-600"}`}
+                        >
+                           <item.icon size={18} />
+                           <span className="text-sm font-bold truncate">{item.name}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="text-3xl font-bold tracking-tighter mb-4">{selectedGalleryWidget.name}</h3>
-                  <p className="text-slate-500 text-sm font-medium leading-relaxed mb-10">
-                    {selectedGalleryWidget.desc}
-                  </p>
+
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">TV Channels</p>
+                    <div className="grid grid-cols-1 gap-1">
+                       {channels.filter((c: any) => c.name.toLowerCase().includes(gallerySearch.toLowerCase())).map((ch: any) => (
+                         <button 
+                            key={ch.id}
+                            onClick={() => setSelectedGalleryWidget({ type: 'channel', name: ch.name, channelId: ch.name, icon: Tv, desc: `Tiện ích phát sóng trực tiếp kênh ${ch.name}` })}
+                            className={`flex items-center gap-3 p-3 rounded-2xl transition-all ${selectedGalleryWidget.channelId === ch.name ? "bg-blue-600 text-white shadow-lg" : "hover:bg-black/5 text-slate-600"}`}
+                         >
+                            <img src={ch.logo} className="w-5 h-5 object-contain rounded-md" alt="" />
+                            <span className="text-sm font-bold truncate">{ch.name}</span>
+                         </button>
+                       ))}
+                    </div>
+                  </div>
+               </div>
+            </div>
+
+            <div className="flex-1 h-full overflow-y-auto custom-scrollbar p-12 bg-slate-50/30">
+               <div className="max-w-md mx-auto flex flex-col items-center text-center">
+                  <div className={`w-24 h-24 rounded-[32px] flex items-center justify-center mb-8 shadow-2xl ${selectedGalleryWidget.type === 'weather' ? 'bg-sky-400 text-white' : 'bg-white text-slate-400'}`}>
+                     <selectedGalleryWidget.icon size={48} />
+                  </div>
+                  <h3 className="text-3xl font-bold tracking-tight mb-4">{selectedGalleryWidget.name}</h3>
+                  <p className="text-slate-500 mb-10 leading-relaxed font-medium">{selectedGalleryWidget.desc}</p>
                   
-                  <button 
-                    disabled={pinnedWidgets.some((w: any) => w.type === selectedGalleryWidget.type)}
-                    onClick={() => addWidget(selectedGalleryWidget.type, 'medium')}
-                    className={`px-10 py-3.5 font-bold text-xs rounded-2xl transition-all shadow-xl active:scale-95 ${
-                      pinnedWidgets.some((w: any) => w.type === selectedGalleryWidget.type) 
-                        ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
-                        : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-blue-500/40"
-                    }`}
-                  >
-                    {pinnedWidgets.some((w: any) => w.type === selectedGalleryWidget.type) ? "Đã đính kèm" : "Đính kèm vào bảng"}
-                  </button>
-               </motion.div>
-             )}
+                  <div className="grid grid-cols-2 gap-4 w-full">
+                     <button 
+                       onClick={() => addWidget(selectedGalleryWidget, '2x2')}
+                       className="p-8 bg-white border border-black/5 rounded-[32px] hover:border-blue-500 transition-all flex flex-col items-center gap-4 group shadow-sm hover:shadow-xl"
+                     >
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform"><Maximize2 size={16} className="text-slate-400" /></div>
+                        <span className="text-xs font-bold uppercase tracking-widest opacity-40">Small (2x2)</span>
+                     </button>
+                     <button 
+                       onClick={() => addWidget(selectedGalleryWidget, '4x4')}
+                       className="p-8 bg-white border border-black/5 rounded-[32px] hover:border-blue-500 transition-all flex flex-col items-center gap-4 group shadow-sm hover:shadow-xl"
+                     >
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform"><Maximize2 size={24} className="text-slate-400" /></div>
+                        <span className="text-xs font-bold uppercase tracking-widest opacity-40">Medium (4x4)</span>
+                     </button>
+                  </div>
+
+                  <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center gap-4 text-left">
+                     <Info size={20} className="text-amber-500 shrink-0" />
+                     <p className="text-[11px] font-medium text-amber-700">Tiện ích này có thể được ghim vào bảng bất cứ lúc nào. Bạn cũng có thể kéo thả để sắp xếp vị trí.</p>
+                  </div>
+               </div>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     )}
   </AnimatePresence>
@@ -11887,6 +11689,10 @@ export default function App() {
                         onClick={() => {
                           if (isAIToolsTab) {
                             setShowAIToolsMenuSidebar(!showAIToolsMenuSidebar);
+                            return;
+                          }
+                          if (tab.id === "Widgets") {
+                            setShowWidgets(true);
                             return;
                           }
                           if (tab.id === "Search") {
