@@ -5143,16 +5143,15 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: any) {
   const [flagSearch, setFlagSearch] = useState("");
 
   const experiences = [
-    { id: "cobalt_ui", name: "Cobalt UI v3", desc: "Enable the latest generation of Cobalt Design System." },
-    { id: "glass_morphism", name: "Glass Morphism", desc: "System-wide glass effect for all interfaces." },
-    { id: "acrylic_blur", name: "Acrylic Blur", desc: "Fluent design-inspired background materials." },
-    { id: "mica_effect", name: "Mica Effect", desc: "Dynamic desktop surface material." },
-    { id: "rounded_corners", name: "Enhanced Rounded Corners", desc: "Update window corner radius to 12px." },
-    { id: "smooth_scroll", name: "Smooth Scrolling", desc: "Native-like scrolling animations." },
-    { id: "auto_dark_mode", name: "Automatic Dark Mode", desc: "Sync with system time." },
-    { id: "xaml_experience", name: "XAML Experience", desc: "Legacy Windows UI renderer." },
-    { id: "system_animations", name: "Advanced Animations", desc: "Complex transitions for open/close apps." },
-    { id: "dynamic_dashboard_blur", name: "Dynamic Dashboard Blur", desc: "Gives your widgets board a nice strong backdrop blur" }
+    { id: "cobalt_ui", name: "Cobalt UI v3", desc: "Kích hoạt ngôn ngữ thiết kế Cobalt Thế hệ 3 mới nhất." },
+    { id: "liquid_glass", name: "Liquid Glass", desc: "Engine hiển thị kính lỏng cho độ mờ siêu mịn." },
+    { id: "acrylic_blur", name: "Acrylic Blur", desc: "Hiệu ứng Acrylic mờ đục lấy cảm hứng từ Fluent Design." },
+    { id: "mica_effect", name: "Mica Effect", desc: "Vật liệu Mica tự động thay đổi theo hình nền máy tính." },
+    { id: "rounded_corners", name: "Modern Corners", desc: "Bo tròn 16px cho tất cả cửa sổ và thành phần UI." },
+    { id: "xaml_home", name: "XAML Experience", desc: "Giao diện màn hình chính dựa trên XAML Pro." },
+    { id: "ai_sidebar", name: "AI Sidebar Companion", desc: "Bảng trợ lý ảo Gemini luôn hiển thị ở bên cạnh." },
+    { id: "vids_for_uploads", name: "Vids Pro Upload", desc: "Mở khóa khả năng tải video lên tab Vids." },
+    { id: "dynamic_dashboard_blur", name: "Dynamic Dashboard Blur", desc: "Làm mờ cực mạnh nền phía sau Dashboard." }
   ];
 
   return (
@@ -7329,6 +7328,7 @@ function WidgetsDashboard({
   notifications,
   addNotification,
   onAction,
+  onAIToolsAction,
   onNavigate,
   channels,
   featureFlags,
@@ -7471,7 +7471,7 @@ function WidgetsDashboard({
     left: isWidgetsFullScreen ? 0 : 16,
     borderRadius: isWidgetsFullScreen ? 0 : 12,
     boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-    backdropFilter: featureFlags?.dynamic_dashboard_blur ? "blur(40px) saturate(200%)" : "blur(24px) saturate(150%)"
+    backdropFilter: featureFlags?.dynamic_dashboard_blur ? "blur(80px) saturate(240%)" : "blur(24px) saturate(150%)"
   }}
   exit={{ opacity: 0, x: -100 }}
   transition={{ duration: 0.1 }}
@@ -7613,6 +7613,11 @@ function WidgetsDashboard({
                animate={{ opacity: 1, y: 0 }}
                className="space-y-6"
              >
+                <div className="mb-10 text-center md:text-left">
+                   <h3 className="text-3xl font-black tracking-tighter text-slate-900 mb-2">What are Widgets Dashboard?</h3>
+                   <p className="text-slate-500 font-medium max-w-2xl leading-relaxed">Widgets Dashboard is a place to use handful widgets, create shortcuts, play games, spending Vpoints, using commands and more!</p>
+                </div>
+
                 {widgetSettings.allowWebSearches && (
                   <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
                      <Search size={18} className="text-blue-500" />
@@ -7738,6 +7743,30 @@ function WidgetsDashboard({
                animate={{ opacity: 1, y: 0 }}
                className="flex flex-col gap-6"
              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {[
+                      { name: "Speak for me", icon: Mic, action: "speak_for_me", desc: "Chuyển văn bản thành giọng nói thông minh." },
+                      { name: "Copy for me", icon: Clipboard, action: "copy_for_me", desc: "Tự động trích xuất và sao chép dữ liệu." },
+                      { name: "Capture for me", icon: Camera, action: "capture_for_me", desc: "Chụp ảnh màn hình và phân tích với AI." },
+                      { name: "Record for me", icon: Video, action: "screen_recorder", desc: "Quay video màn hình chất lượng cao." },
+                      { name: "Narrate for me", icon: MessageSquare, action: "narrator", desc: "Đọc to các nội dung trên màn hình của bạn." }
+                   ].map((tool, i) => (
+                      <button 
+                         key={i}
+                         onClick={() => onAIToolsAction(tool.action)}
+                         className="p-6 rounded-[32px] bg-white border border-black/5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col text-left gap-4 group"
+                      >
+                         <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                            <tool.icon size={24} />
+                         </div>
+                         <div>
+                            <h4 className="text-sm font-bold tracking-tight">{tool.name}</h4>
+                            <p className="text-[11px] text-slate-500 font-medium mt-1">{tool.desc}</p>
+                         </div>
+                      </button>
+                   ))}
+                </div>
+
                 <div className="p-8 rounded-[32px] bg-white border border-black/5 shadow-sm flex flex-col gap-6">
                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -7820,6 +7849,7 @@ function WidgetsDashboard({
                         { id: 'ai_for_me', name: 'Do For Me Pro', icon: Sparkles, price: 150, desc: 'Gói tiện ích AI nâng cao với Gemini API.', cat: 'AI' },
                         { id: 'channel_pack_vtvcab', name: 'VTVCab Pack', icon: Tv, price: 200, desc: 'Mở khóa toàn bộ hệ thống kênh thể thao VTVCab.', cat: 'Channels' },
                         { id: 'channel_pack_htv', name: 'HTV Full Pack', icon: Radio, price: 100, desc: 'Mở khóa toàn bộ kênh HTV7, HTV9 HD.', cat: 'Channels' },
+                         { id: 'channel_pack_local', name: 'Địa phương Pack', icon: MapPin, price: 50, desc: 'Mở khóa các kênh truyền hình địa phương trên toàn quốc.', cat: 'Channels' },
                         { id: 'game_noitu', name: 'Nối Từ (EN/VN)', icon: RefreshCw, price: 85, desc: 'Game nối từ 1v1 hoặc vs Bot thông minh.', cat: 'Games' },
                         { id: 'sys_mon', name: 'Performance Monitor', icon: Activity, price: 50, desc: 'Theo dõi tài nguyên hệ thống chuyên sâu.', cat: 'Utility' },
                         { id: 'crypto', name: 'Crypto Pro', icon: Bitcoin, price: 75, desc: 'Theo dõi tiền điện tử thời gian thực.', cat: 'Finance' },
@@ -7861,12 +7891,12 @@ function WidgetsDashboard({
                key="operator"
                initial={{ opacity: 0, y: 10 }}
                animate={{ opacity: 1, y: 0 }}
-               className="flex-1 flex flex-col min-h-0 bg-[#0c0c0c] rounded-[32px] overflow-hidden border border-white/5 font-mono shadow-2xl"
+               className="flex-1 flex flex-col min-h-0 bg-white rounded-[32px] overflow-hidden border border-black/5 font-mono shadow-2xl"
              >
-                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
+                <div className="p-4 border-b border-black/5 flex items-center justify-between bg-slate-50">
                    <div className="flex items-center gap-3">
-                      <Terminal size={14} className="text-emerald-500" />
-                      <span className="text-[10px] font-bold text-white uppercase tracking-widest">Operator Console v1.0.1</span>
+                      <Terminal size={14} className="text-blue-600" />
+                      <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Operator Console v1.0.1</span>
                    </div>
                    <div className="flex gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
@@ -7876,19 +7906,19 @@ function WidgetsDashboard({
                 </div>
                 <div className="flex-1 p-6 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col gap-1.5 scroll-smooth">
                    {operatorLogs.map((log, i) => (
-                      <div key={`log-${i}`} className={`text-[11px] ${log.startsWith('>') ? 'text-blue-400' : log.includes('Error') ? 'text-red-400' : 'text-emerald-500/80'}`}>
+                      <div key={`log-${i}`} className={`text-[11px] ${log.startsWith('>') ? 'text-blue-600' : log.includes('Error') ? 'text-red-500' : 'text-slate-600'}`}>
                          {log}
                       </div>
                    ))}
                    <div id="operator-scroll-anchor" />
                 </div>
-                <form onSubmit={handleOperatorCommand} className="p-4 bg-white/5 border-t border-white/5 flex items-center gap-3">
-                   <ChevronRight size={14} className="text-emerald-500 shrink-0" />
+                <form onSubmit={handleOperatorCommand} className="p-4 bg-slate-50 border-t border-black/5 flex items-center gap-3">
+                   <ChevronRight size={14} className="text-slate-400 shrink-0" />
                    <input 
                      autoFocus
                      type="text" 
                      placeholder="Enter command..." 
-                     className="bg-transparent border-none outline-none text-[11px] text-white w-full font-mono placeholder:opacity-20"
+                     className="bg-transparent border-none outline-none text-[11px] text-slate-900 w-full font-mono placeholder:opacity-50"
                      value={operatorCommand}
                      onChange={(e) => setOperatorCommand(e.target.value)}
                    />
@@ -10545,6 +10575,31 @@ export default function App() {
       setShowAuthModal(true);
       return;
     }
+    // Locking logic
+    const category = (ch.category || "").toLowerCase();
+    const isVTVCab = category.includes("vtvcab");
+    const isHTV = category.includes("htv");
+    const isLocal = category.includes("địa phương") || category.includes("local");
+
+    if (isVTVCab && !purchasedWidgets.includes('channel_pack_vtvcab') && !isDev) {
+      addNotification("VStore", "Kênh này thuộc gói VTVCab. Vui lòng mua từ VStore để xem.", "warning");
+      setActiveBoardTab('vstore');
+      setShowWidgets(true);
+      return;
+    }
+    if (isHTV && !purchasedWidgets.includes('channel_pack_htv') && !isDev) {
+      addNotification("VStore", "Kênh này thuộc gói HTV. Vui lòng mua từ VStore để xem.", "warning");
+      setActiveBoardTab('vstore');
+      setShowWidgets(true);
+      return;
+    }
+    if (isLocal && !purchasedWidgets.includes('channel_pack_local') && !isDev) {
+      addNotification("VStore", "Kênh địa phương yêu cầu gói Local Pack. Vui lòng mua từ VStore để xem.", "warning");
+      setActiveBoardTab('vstore');
+      setShowWidgets(true);
+      return;
+    }
+
     if (ch.name === "VTV6") {
       setShowVTV6Popup(true);
       logHistory('action', 'Mở popup VTV6');
@@ -13442,6 +13497,7 @@ export default function App() {
             notifications={notifications}
             addNotification={addNotification}
             onAction={onAction}
+            onAIToolsAction={onAIToolsAction}
             onNavigate={onNavigate}
             channels={channels}
             featureFlags={featureFlags}
