@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, ChangeEvent, FormEvent, MouseEvent, ReactNode, Fragment, Dispatch, SetStateAction } from "react";
-import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown, CloudLightning, Grid, ShoppingBag, Bitcoin, StickyNote } from "lucide-react";
+import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown, CloudLightning, Grid, ShoppingBag, Bitcoin, StickyNote, Mail } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig, Reorder } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
@@ -39,6 +39,17 @@ const SettingsIcon = ({ className, size = 24 }: { className?: string, size?: num
 const vplayLogo = "https://static.wikia.nocookie.net/ftv/images/0/0f/Nx626.png/revision/latest/scale-to-width-down/1000?cb=20260505125314&path-prefix=vi";
 
 const vpilotIcon = "https://static.wikia.nocookie.net/ftv/images/3/30/Icon_AI_TOols.png/revision/latest?cb=20260507071656&path-prefix=vi";
+
+const PIZZA_EXPERIMENTS = [
+  { id: 'sidebar_resizable', name: 'Resizable sidebar', status: 'Active', desc: 'Cho phép điều chỉnh độ rộng của sidebar bằng cách kéo thả.' },
+  { id: 'multiview_experimental', name: 'Multiview (Picture-in-Picture)', status: 'Beta', desc: 'Xem nhiều kênh truyền hình cùng một lúc.' },
+  { id: 'disable_animation', name: 'Reduce Animation', status: 'Stable', desc: 'Giảm hiệu ứng chuyển động, tiết kiệm tài nguyên.' },
+  { id: 'settings_vertical', name: 'List Settings', status: 'Beta', desc: 'Chuyển layout cài đặt về dạng danh sách (yêu cầu XAML View).' },
+  { id: 'scambidi_ui', name: 'Scambidi Mode', status: 'Experimental', desc: 'Giao diện phong cách Scambidi Streaming.' },
+  { id: 'xaml_home', name: 'XAML Home Page', status: 'Internal', desc: 'Sử dụng trang chủ thế hệ mới dựa trên XAML system.' },
+  { id: 'xaml_experience', name: 'Vplay Symphony UI', status: 'Active', desc: 'Trải nghiệm giao diện hoàn toàn mới được tái thiết kế.' }
+];
+
 const SEARCH_TREATMENTS = [
   "Search Vplay",
   "Search channels",
@@ -5142,17 +5153,7 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
 function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: any) {
   const [flagSearch, setFlagSearch] = useState("");
 
-  const experiences = [
-    { id: "cobalt_ui", name: "Cobalt UI v3", desc: "Kích hoạt ngôn ngữ thiết kế Cobalt Thế hệ 3 mới nhất." },
-    { id: "liquid_glass", name: "Liquid Glass", desc: "Engine hiển thị kính lỏng cho độ mờ siêu mịn." },
-    { id: "acrylic_blur", name: "Acrylic Blur", desc: "Hiệu ứng Acrylic mờ đục lấy cảm hứng từ Fluent Design." },
-    { id: "mica_effect", name: "Mica Effect", desc: "Vật liệu Mica tự động thay đổi theo hình nền máy tính." },
-    { id: "rounded_corners", name: "Modern Corners", desc: "Bo tròn 16px cho tất cả cửa sổ và thành phần UI." },
-    { id: "xaml_home", name: "XAML Experience", desc: "Giao diện màn hình chính dựa trên XAML Pro." },
-    { id: "ai_sidebar", name: "AI Sidebar Companion", desc: "Bảng trợ lý ảo Gemini luôn hiển thị ở bên cạnh." },
-    { id: "vids_for_uploads", name: "Vids Pro Upload", desc: "Mở khóa khả năng tải video lên tab Vids." },
-    { id: "dynamic_dashboard_blur", name: "Dynamic Dashboard Blur", desc: "Làm mờ cực mạnh nền phía sau Dashboard." }
-  ];
+  const experiences = PIZZA_EXPERIMENTS;
 
   return (
     <div className={`flex flex-col h-full ${isDark ? "bg-[#1c1c1c] text-white" : "bg-white text-slate-900"}`}>
@@ -5164,7 +5165,7 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: any) {
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text"
-              placeholder="Tìm kiếm tính năng..."
+              placeholder="Search experiments"
               className={`w-full pl-12 pr-6 py-3 border border-black/5 rounded-2xl text-sm font-medium outline-none transition-all ${isDark ? "bg-white/5 text-white" : "bg-white text-slate-900"}`}
               value={flagSearch}
               onChange={(e) => setFlagSearch(e.target.value)}
@@ -5756,19 +5757,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
   const [selectedMusicUrl, setSelectedMusicUrl] = useState<string>("");
   const [currentExpIndex, setCurrentExpIndex] = useState(0);
 
-  const experiments = [
-    { id: 'xaml_experience', name: 'Switch to the new UI', desc: 'Use the brand-new rebuilt Vplay app based on XAML system' },
-    { id: 'top_bar', name: 'Top bar', desc: 'Adds a nice top bar with "Desktop Interface" enabled' },
-    { id: 'scambidi_ui', name: 'Scambidi Mode', desc: 'Makes the web UI looks like some kind of ripoff horrible scambidi streaming platform' },
-    { id: 'xaml_home', name: 'XAML Home Page', desc: 'Giao diện Home mới mượt mà hơn.' },
-    { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
-    { id: 'settings_vertical', name: 'Vertical Settings', desc: 'Bố cục cài đặt danh sách đứng.' },
-    { id: 'revamp_process_animation', name: 'Revamped Process', desc: 'Sử dụng vòng xoay tải tiến trình mới' },
-    { id: 'search_merge', name: 'Merge Search', desc: 'Gộp nút tìm kiếm vào thanh điều hướng' },
-    { id: 'ai_tools_preview', name: 'V-pilot (preview)', desc: 'Trải nghiệm Microslop V-pilot (TM)' },
-    { id: 'scrollable_bar', name: 'Scrollable Bar', desc: 'Thanh điều hướng có thể cuộn' },
-    { id: 'copilot_action_v2', name: 'Advanced V-pilot Actions', desc: 'Sử dụng menu tác vụ V-pilot nâng cao (Ẩn sidebar/taskbar)' },
-  ];
+  const experiments = PIZZA_EXPERIMENTS;
 
   const handleFinishExperiments = () => {
     setPhase("final_loading_1");
@@ -7342,7 +7331,12 @@ function WidgetsDashboard({
   hasReceivedBonus,
   setHasReceivedBonus,
   activeBoardTab,
-  setActiveBoardTab
+  setActiveBoardTab,
+  activeDoForMeSubView,
+  setActiveDoForMeSubView,
+  pinnedDoForMeFeatures,
+  togglePinFeature,
+  liquidGlass
 }: any) {
   const isDark = false; // Always light mode per request
   const [gallerySearch, setGallerySearch] = useState("");
@@ -7511,28 +7505,15 @@ function WidgetsDashboard({
      <button 
         onClick={() => setActiveBoardTab('doforme')}
         className={`p-2 rounded-xl transition-all ${activeBoardTab === 'doforme' ? (isDark ? "bg-white/10 text-purple-400" : "bg-white text-purple-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
-        title="Do For Me"
+        title="Operate for me"
      >
         <Sparkles size={22} />
      </button>
 
-     <button 
-        onClick={() => setActiveBoardTab('vstore')}
-        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'vstore' ? (isDark ? "bg-white/10 text-amber-400" : "bg-white text-amber-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
-        title="Vplay Store"
-     >
-        <ShoppingBag size={22} />
-     </button>
-
-     <button 
-        onClick={() => setActiveBoardTab('operator')}
-        className={`p-2 rounded-xl transition-all ${activeBoardTab === 'operator' ? (isDark ? "bg-white/10 text-emerald-400" : "bg-white text-emerald-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
-        title="Operator Console"
-     >
-        <Terminal size={22} />
-     </button>
-
-     <div className="mt-auto flex flex-col items-center gap-6 pb-2">
+     <div className="mt-auto flex flex-col items-center gap-6 pb-2 text-current opacity-40">
+        <button className="hover:opacity-100 transition-opacity" title="Notifications"><Bell size={22} /></button>
+        <button className="hover:opacity-100 transition-opacity" title="History"><History size={22} /></button>
+     </div>
         <button 
           onClick={() => setActiveBoardTab('settings')}
           className={`p-2 rounded-xl transition-all ${activeBoardTab === 'settings' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
@@ -7544,18 +7525,24 @@ function WidgetsDashboard({
            {user?.photoURL ? <img src={user.photoURL} alt="User" /> : "V"}
         </div>
      </div>
-  </div>
 
   <div className="flex-1 flex flex-col p-8 min-w-0">
      <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold tracking-tight text-current leading-none">{getBoardGreeting()}</h2>
         <div className="flex items-center gap-2">
            <button 
-             onClick={() => setShowWidgetGallery(true)}
+             onClick={() => { setShowWidgetGallery(true); setActiveBoardTab('widgets'); }}
              className={`flex items-center gap-2 px-6 py-2.5 bg-[#0078d4] hover:bg-[#0078d4]/90 text-white rounded-2xl transition-all shadow-lg active:scale-95`}
            >
              <Pin size={18} fill="currentColor" />
              <span className="text-sm font-bold tracking-tight">Pin widgets</span>
+           </button>
+           <button 
+             onClick={() => setActiveBoardTab('vstore')}
+             className="flex items-center gap-3 px-6 py-2.5 bg-gradient-to-r from-amber-400 to-orange-600 text-white rounded-2xl font-bold tracking-tight shadow-xl shadow-orange-500/20 active:scale-95 transition-all text-sm"
+           >
+             <ShoppingBag size={18} />
+             <span>Go to Vstore</span>
            </button>
            <button 
              onClick={() => setIsWidgetsFullScreen(!isWidgetsFullScreen)}
@@ -7640,10 +7627,19 @@ function WidgetsDashboard({
                       <h3 className="text-2xl font-bold tracking-tight text-slate-800">Whoops! Chưa có tiện ích nào ở đây :(</h3>
                       <p className="text-slate-500 mt-2 max-w-sm font-medium">Bấm chọn "Pin widgets" để bắt đầu thêm các tiện ích vào bảng tiện ích</p>
                       <button 
-                        onClick={() => setShowWidgetGallery(true)}
+                        onClick={() => {
+                          setShowWidgetGallery(true);
+                          localStorage.setItem("vplay_widgets_ever_opened", "true");
+                        }}
                         className="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold tracking-tight shadow-xl shadow-blue-500/20 active:scale-95 transition-all"
                       >
                         Pin widgets
+                      </button>
+                      <button 
+                        onClick={() => setActiveBoardTab('vstore')}
+                        className="mt-4 px-8 py-3 bg-gradient-to-r from-amber-400 to-orange-600 text-white rounded-2xl font-bold tracking-tight shadow-xl shadow-orange-500/20 active:scale-95 transition-all text-xs uppercase"
+                      >
+                        Go to Vstore
                       </button>
                     </div>
                   ) : (
@@ -7712,9 +7708,9 @@ function WidgetsDashboard({
                className="flex flex-col gap-6"
              >
                 {[
-                  { title: "Vplay OS Canary SMR26 - New Hardware Acceleration Tech", time: "2h", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
-                  { title: "Windows Style Widgets Board updated today", time: "5h", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
-                  { title: "Top 5 trending movies on Vplay this week", time: "8h", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
+                  { title: "Vplay Canary SMR26 - Hệ thống ổn định hơn 30%", time: "10m", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80", cat: "Technology" },
+                  { title: "Ra mắt Console 'Operate for me' mới trong Build 2026.05", time: "1h", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400&q=80", cat: "Updates" },
+                  { title: "Sửa lỗi Hardware Acceleration cho các thiết bị yếu", time: "2h", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80", cat: "Entertainment" }
                 ].map((item, i) => (
                    <div key={`board-news-${i}`} className={`cursor-pointer group flex gap-5 p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-black/5"}`}>
                       <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/5">
@@ -7739,192 +7735,228 @@ function WidgetsDashboard({
           {!isTabTransitioning && activeBoardTab === 'doforme' && (
              <motion.div 
                key="doforme"
-               initial={{ opacity: 0, y: 10 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="flex flex-col gap-6"
+               initial={{ opacity: 0, scale: 0.98 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="flex-1 flex flex-col min-h-0 bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-2xl"
              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   {[
-                      { name: "Speak for me", icon: Mic, action: "speak_for_me", desc: "Chuyển văn bản thành giọng nói thông minh." },
-                      { name: "Copy for me", icon: Clipboard, action: "copy_for_me", desc: "Tự động trích xuất và sao chép dữ liệu." },
-                      { name: "Capture for me", icon: Camera, action: "capture_for_me", desc: "Chụp ảnh màn hình và phân tích với AI." },
-                      { name: "Record for me", icon: Video, action: "screen_recorder", desc: "Quay video màn hình chất lượng cao." },
-                      { name: "Narrate for me", icon: MessageSquare, action: "narrator", desc: "Đọc to các nội dung trên màn hình của bạn." }
-                   ].map((tool, i) => (
-                      <button 
-                         key={i}
-                         onClick={() => onAIToolsAction(tool.action)}
-                         className="p-6 rounded-[32px] bg-white border border-black/5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col text-left gap-4 group"
-                      >
-                         <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                            <tool.icon size={24} />
-                         </div>
-                         <div>
-                            <h4 className="text-sm font-bold tracking-tight">{tool.name}</h4>
-                            <p className="text-[11px] text-slate-500 font-medium mt-1">{tool.desc}</p>
-                         </div>
-                      </button>
-                   ))}
-                </div>
+               <div className="px-8 py-6 border-b border-black/5 flex items-center justify-between bg-slate-50/50">
+                  <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-200">
+                        <Terminal size={20} />
+                     </div>
+                     <div>
+                       <h3 className="text-xl font-bold tracking-tight text-slate-900">Operate for me</h3>
+                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Automation & System Console</p>
+                     </div>
+                  </div>
+                  <div className="flex gap-2">
+                     <button className="p-2 rounded-xl border border-black/5 bg-white hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900" title="Settings"><Settings size={18} /></button>
+                     <button className="p-2 rounded-xl border border-black/5 bg-white hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900" title="Refresh"><RefreshCw size={18} /></button>
+                  </div>
+               </div>
 
-                <div className="p-8 rounded-[32px] bg-white border border-black/5 shadow-sm flex flex-col gap-6">
-                   <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-                            <Sparkles size={20} className="text-purple-500" />
+               <div className="flex-1 flex flex-col min-h-0">
+                  {activeDoForMeSubView ? (
+                    <div className="flex-1 overflow-auto custom-scrollbar p-6 bg-slate-50/30 animate-in fade-in zoom-in-95 duration-200">
+                       <div className="max-w-4xl mx-auto">
+                          {activeDoForMeSubView === 'speak_for_me' && <SpeakForMeContent isDark={isDark} />}
+                          {activeDoForMeSubView === 'copy_for_me' && <CopyForMeContent />}
+                          {activeDoForMeSubView === 'capture_for_me' && <CaptureForMeContent />}
+                          {activeDoForMeSubView === 'screen_recorder' && <RecordForMeContent featureFlags={featureFlags} />}
+                          {activeDoForMeSubView === 'play_for_me' && <PlayForMeContent isDark={isDark} liquidGlass={liquidGlass} featureFlags={featureFlags} />}
+                          {activeDoForMeSubView === 'about_do_stuff' && <AboutDoStuffContent />}
+                          {activeDoForMeSubView === 'gemini' && <GeminiWindowContent />}
+                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col md:flex-row min-h-0 divide-x divide-black/5">
+                      <div className="flex-1 p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                           {[
+                              { id: "speak_for_me", name: "Speak for me", icon: Mic, action: "speak_for_me", desc: "Giọng nói AI thông minh.", color: "bg-blue-500" },
+                              { id: "copy_for_me", name: "Copy for me", icon: Clipboard, action: "copy_for_me", desc: "Trích xuất dữ liệu tự động.", color: "bg-emerald-500" },
+                              { id: "capture_for_me", name: "Capture for me", icon: Camera, action: "capture_for_me", desc: "Phân tích ảnh màn hình.", color: "bg-orange-500" },
+                              { id: "screen_recorder", name: "Record for me", icon: Video, action: "screen_recorder", desc: "Quay video chất lượng cao.", color: "bg-red-500" },
+                              { id: "narrator", name: "Narrate for me", icon: MessageSquare, action: "narrator", desc: "Đọc to nội dung màn hình.", color: "bg-indigo-500" }
+                           ].map((tool, i) => {
+                              const isPinned = pinnedDoForMeFeatures.includes(tool.id);
+                              return (
+                                <div key={i} className="relative group">
+                                  <button 
+                                     onClick={() => onAIToolsAction(tool.action)}
+                                     className="w-full p-5 rounded-[24px] bg-white border border-black/5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col text-left gap-3 group overflow-hidden"
+                                  >
+                                     <div className={`w-10 h-10 rounded-xl ${tool.color} flex items-center justify-center text-white scale-100 group-hover:scale-110 transition-transform shadow-lg`}>
+                                        <tool.icon size={20} />
+                                     </div>
+                                     <div>
+                                        <h4 className="text-xs font-bold tracking-tight text-slate-800">{tool.name}</h4>
+                                        <p className="text-[10px] text-slate-500 font-medium mt-1 leading-tight">{tool.desc}</p>
+                                     </div>
+                                  </button>
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); togglePinFeature(tool.id); }}
+                                    className={`absolute top-4 right-4 p-2 rounded-full transition-all z-10 ${isPinned ? "bg-amber-100 text-amber-600 opacity-100" : "bg-black/5 text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-600"}`}
+                                  >
+                                    <Pin size={12} fill={isPinned ? "currentColor" : "none"} />
+                                  </button>
+                                </div>
+                              );
+                           })}
                          </div>
-                         <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">Do For Me AI</span>
+
+                         <div className="mt-4 p-6 rounded-[32px] bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-xl shadow-purple-200">
+                            <div className="flex items-center gap-3 mb-4">
+                               <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                  <Sparkles size={20} />
+                               </div>
+                               <div>
+                                  <h4 className="font-bold tracking-tight">AI Intelligent Agent</h4>
+                                  <p className="text-[10px] opacity-70 font-medium">Sẵn sàng hỗ trợ mọi tác vụ của bạn.</p>
+                               </div>
+                            </div>
+                            <button 
+                              onClick={() => onAIToolsAction('gemini')}
+                              className="w-full py-3 bg-white text-purple-700 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all"
+                            >
+                              Launch Gemini Pro
+                            </button>
+                         </div>
                       </div>
-                   </div>
-                   <p className="text-2xl font-bold tracking-tight">Hãy để trợ lý ảo Do For Me giúp bạn tìm kiếm nội dung yêu thích.</p>
-                   <button 
-                     onClick={() => onNavigate("Do For Me")}
-                     className="mt-4 py-3 px-6 rounded-2xl bg-purple-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-purple-500 transition-all self-start shadow-xl active:scale-95"
-                   >
-                     Trò chuyện ngay
-                   </button>
-                </div>
+
+                      <div className="w-full md:w-[320px] bg-slate-50/50 flex flex-col min-h-0">
+                         <div className="p-6 border-b border-black/5 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                               <Terminal size={14} className="text-blue-600" />
+                               <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Operator Console v1.0.1</span>
+                            </div>
+                            <div className="flex gap-1.5">
+                               <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
+                               <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20" />
+                               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20" />
+                            </div>
+                         </div>
+                         <div className="flex-1 p-6 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col gap-1.5 scroll-smooth">
+                            {operatorLogs.map((log, i) => (
+                               <div key={`log-${i}`} className={`text-[11px] ${log.startsWith('>') ? 'text-blue-600' : log.includes('Error') ? 'text-red-500' : 'text-slate-600'}`}>
+                                  {log}
+                               </div>
+                            ))}
+                            <div id="operator-scroll-anchor" />
+                         </div>
+                         <form onSubmit={handleOperatorCommand} className="p-4 bg-slate-50 border-t border-black/5 flex items-center gap-3">
+                            <ChevronRight size={14} className="text-slate-400 shrink-0" />
+                            <input 
+                              autoFocus
+                              type="text" 
+                              placeholder="Enter command..." 
+                              className="bg-transparent border-none outline-none text-[11px] text-slate-900 w-full font-mono placeholder:opacity-50"
+                              value={operatorCommand}
+                              onChange={(e) => setOperatorCommand(e.target.value)}
+                            />
+                         </form>
+                      </div>
+                    </div>
+                  )}
+               </div>
              </motion.div>
           )}
 
-           {!isTabTransitioning && activeBoardTab === 'vstore' && (
-             <motion.div 
-               key="vstore_tab"
-               initial={{ opacity: 0, scale: 0.98 }}
-               animate={{ opacity: 1, scale: 1 }}
-               className="flex-1 flex flex-col min-h-0 bg-white rounded-[32px] overflow-hidden border border-black/5"
-             >
-               <div className="p-8 bg-slate-50 border-b border-black/5 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/30">
-                        <ShoppingBag size={24} />
-                     </div>
-                     <div>
-                        <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-none">Vplay Widgets Store</h2>
-                        <p className="text-xs font-medium text-slate-500 mt-2 uppercase tracking-widest leading-none opacity-60">Sáp nhập V-Store & Widget Market</p>
-                     </div>
+          {!isTabTransitioning && activeBoardTab === 'vstore' && (
+              <motion.div 
+                key="vstore"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex-1 flex flex-col min-h-0 bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-2xl"
+              >
+               <div className="px-8 py-6 border-b border-black/5 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight text-slate-900">Vplay Store</h3>
+                    <p className="text-xs text-slate-400 font-medium">Khám phá và ghim tiện ích vào Board</p>
                   </div>
                   <div className="flex items-center gap-3">
-                     <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
-                        <div className="w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase">V</div>
-                        <span className="text-sm font-black text-amber-700">{vpoints} <span className="opacity-40 text-[10px] ml-1">VP</span></span>
-                     </div>
-                  </div>
-               </div>
-               
-               <div className="px-8 py-4 border-b border-black/5 flex items-center gap-4">
-                  <div className="relative flex-1 group">
-                     <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                     <input 
-                       type="text" 
-                       placeholder="Tìm kiếm tiện ích trong kho..." 
-                       className="w-full pl-12 pr-6 py-2.5 bg-slate-100 border-none rounded-xl text-xs font-bold outline-none"
-                       value={vstoreSearch}
-                       onChange={(e) => setVstoreSearch(e.target.value)}
-                     />
-                  </div>
-                  <div className="flex gap-2">
-                     <button 
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${isDark ? "bg-black/20 border-white/10" : "bg-white border-black/10"}`}>
+                       <Search size={14} className="text-slate-400" />
+                       <input 
+                         type="text" 
+                         placeholder="Search Vstore" 
+                         className="bg-transparent border-none outline-none text-[11px] w-32 font-bold"
+                         value={vstoreSearch}
+                         onChange={(e) => setVstoreSearch(e.target.value)}
+                       />
+                    </div>
+                    <button 
                        onClick={() => {
-                         setIsVstorePinned(true);
-                         localStorage.setItem("vplay_vstore_pinned", "true");
-                         addNotification("Vstore", "Đã ghim Vstore vào thanh bên hệ thống!");
+                         if (!isVstorePinned) {
+                           
+                           setIsVstorePinned(true);
+                           addNotification("Vstore", "Đã ghim Vstore vào thanh bên hệ thống!");
+                         }
                        }}
                        disabled={isVstorePinned}
-                       className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isVstorePinned ? "bg-slate-50 text-slate-300" : "bg-blue-50 text-blue-600 shadow-sm"}`}
-                     >
-                        {isVstorePinned ? "Pinned" : "Pin to Sidebar"}
-                     </button>
+                       className="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-gradient-to-r from-amber-400 to-orange-600 text-white shadow-xl shadow-orange-500/20 active:scale-95"
+                    >
+                       {isVstorePinned ? "Pinned" : "Go to Vstore"}
+                    </button>
                   </div>
                </div>
 
                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50/30">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                     {[
-                        { id: 'music_player', name: 'Music Pro', icon: Music, price: 50, desc: 'Music widget with material design.', cat: 'Utility' },
-                        { id: 'game_tictactoe', name: 'Tic Tac Toe', icon: Gamepad, price: 80, desc: 'Chơi cờ caro vs Bot hoặc 2 người cực giải trí.', cat: 'Games' },
-                        { id: 'game_wordle', name: 'Wordle Quest', icon: Hash, price: 90, desc: 'Thử thách đoán từ tiếng Anh/Việt mỗi ngày.', cat: 'Games' },
-                        { id: 'game_fishing', name: 'Fishing Mini', icon: CloudLightning, price: 120, desc: 'Game câu cá thư giãn ngay trên Board.', cat: 'Games' },
-                        { id: 'game_word_scramble', name: 'Word Scramble', icon: Type, price: 70, desc: 'Sắp xếp lại từ tiếng Anh/Việt bị xáo trộn.', cat: 'Games' },
-                        { id: 'ai_for_me', name: 'Do For Me Pro', icon: Sparkles, price: 150, desc: 'Gói tiện ích AI nâng cao với Gemini API.', cat: 'AI' },
-                        { id: 'channel_pack_vtvcab', name: 'VTVCab Pack', icon: Tv, price: 200, desc: 'Mở khóa toàn bộ hệ thống kênh thể thao VTVCab.', cat: 'Channels' },
-                        { id: 'channel_pack_htv', name: 'HTV Full Pack', icon: Radio, price: 100, desc: 'Mở khóa toàn bộ kênh HTV7, HTV9 HD.', cat: 'Channels' },
-                         { id: 'channel_pack_local', name: 'Địa phương Pack', icon: MapPin, price: 50, desc: 'Mở khóa các kênh truyền hình địa phương trên toàn quốc.', cat: 'Channels' },
-                        { id: 'game_noitu', name: 'Nối Từ (EN/VN)', icon: RefreshCw, price: 85, desc: 'Game nối từ 1v1 hoặc vs Bot thông minh.', cat: 'Games' },
-                        { id: 'sys_mon', name: 'Performance Monitor', icon: Activity, price: 50, desc: 'Theo dõi tài nguyên hệ thống chuyên sâu.', cat: 'Utility' },
-                        { id: 'crypto', name: 'Crypto Pro', icon: Bitcoin, price: 75, desc: 'Theo dõi tiền điện tử thời gian thực.', cat: 'Finance' },
-                        { id: 'notes', name: 'Quick Notes', icon: StickyNote, price: 30, desc: 'Ghi chú nhanh đồng bộ đám mây.', cat: 'Utility' }
-                     ].filter(item => item.name.toLowerCase().includes(vstoreSearch.toLowerCase())).map(item => {
-                        const isPurchased = purchasedWidgets.includes(item.id);
-                        return (
-                          <div key={item.id} className={`p-6 rounded-[32px] border transition-all flex flex-col h-full bg-white border-black/5 hover:shadow-xl hover:-translate-y-1`}>
-                             <div className="flex items-start justify-between mb-6">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${item.cat === 'Games' ? 'bg-pink-500' : item.cat === 'AI' ? 'bg-purple-600' : 'bg-blue-600'}`}>
-                                   <item.icon size={24} />
-                                </div>
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30">{item.cat}</span>
-                             </div>
-                             <h4 className="text-sm font-bold tracking-tight mb-2">{item.name}</h4>
-                             <p className="text-[11px] text-slate-500 line-clamp-2 mb-6 flex-1">{item.desc}</p>
-                             
-                             <button
-                               disabled={isPurchased || vpoints < item.price}
-                               onClick={() => {
-                                  setVpoints((prev: number) => prev - item.price);
-                                  setPurchasedWidgets((prevArr: string[]) => [...prevArr, item.id]);
-                                  addNotification("Vplay Store", `Bạn đã mua thành công ${item.name}!`, 'success');
-                               }}
-                               className={`w-full py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all ${isPurchased ? "bg-green-50 text-green-600 opacity-100" : (vpoints >= item.price ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400 opacity-50 cursor-not-allowed")}`}
-                             >
-                                {isPurchased ? "Đã sở hữu" : `${item.price} Vpoints`}
-                             </button>
-                          </div>
-                        )
-                     })}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                    {[
+                      { id: 'music_player', name: 'Music Pro', icon: Music, price: 50, desc: 'Trình phát nhạc Material Design.', cat: 'Utility' },
+                      { id: 'weather_extended', name: 'Weather Pro', icon: Cloud, price: 75, desc: 'Dự báo thời tiết chuyên sâu.', cat: 'Utility' },
+                      { id: 'stocks_pro', name: 'Stocks Pro', icon: TrendingUp, price: 120, desc: 'Theo dõi chứng khoán thời gian thực.', cat: 'Finance' },
+                      { id: 'calendar', name: 'Calendar', icon: Calendar, price: 40, desc: 'Lịch biểu tối giản.', cat: 'Productivity' },
+                      { id: 'todo_list', name: 'To-Do List', icon: List, price: 30, desc: 'Quản lý công việc hiệu quả.', cat: 'Productivity' },
+                      { id: 'ai_for_me', name: 'Do For Me Pro', icon: Sparkles, price: 150, desc: 'Gói AI nâng cao Gemini API.', cat: 'AI' },
+                      { id: 'v_assistant', name: 'V-Assistant Premium', icon: User, price: 300, desc: 'Trợ lý ảo cao cấp.', cat: 'AI' },
+                      { id: 'theme_pack_retro', name: 'Retro Theme Pack', icon: Palette, price: 120, desc: 'Giao diện hoài niệm VTV.', cat: 'Design' },
+                      { id: 'system_monitor', name: 'System Monitor', icon: Activity, price: 60, desc: 'Theo dõi tài nguyên phần cứng.', cat: 'Utility' },
+                      { id: 'crypto_tracker', name: 'Crypto Live', icon: Bitcoin, price: 90, desc: 'Giá tiền ảo cập nhật mỗi giây.', cat: 'Finance' },
+                      { id: 'calculator_pro', name: 'Calc Pro', icon: Hash, price: 20, desc: 'Máy tính đa năng.', cat: 'Utility' },
+                      { id: 'image_gen', name: 'Magic Image', icon: ImageIcon, price: 250, desc: 'Tạo ảnh từ văn bản với AI.', cat: 'AI' },
+                      { id: 'email_client', name: 'V-Mail', icon: Mail, price: 100, desc: 'Đọc email ngay trên Board.', cat: 'Productivity' },
+                      { id: 'news_reader', name: 'News Hub', icon: Newspaper, price: 45, desc: 'Tin tức tổng hợp từ nhiều nguồn.', cat: 'Social' },
+                      { id: 'browser_lite', name: 'Web Mini', icon: Globe, price: 180, desc: 'Trình duyệt web siêu nhẹ.', cat: 'Core' }
+                    ].filter(item => item.name.toLowerCase().includes(vstoreSearch.toLowerCase())).map(item => {
+                      const isPurchased = purchasedWidgets.includes(item.id);
+                      return (
+                        <div key={item.id} className="p-6 rounded-[32px] border transition-all flex flex-col h-full bg-white border-black/5 hover:shadow-xl hover:-translate-y-1">
+                           <div className="flex items-start justify-between mb-4">
+                              <div className="p-4 bg-slate-50 rounded-2xl">
+                                 <item.icon size={24} className="text-blue-500" />
+                              </div>
+                              <div className="flex flex-col items-end">
+                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{item.cat}</span>
+                                 <span className="px-2 py-1 bg-amber-400 text-white text-[10px] font-bold rounded-lg shadow-sm">{item.price} VP</span>
+                              </div>
+                           </div>
+                           <h4 className="font-bold text-lg mb-1 text-slate-900">{item.name}</h4>
+                           <p className="text-xs text-slate-500 mb-6 leading-relaxed flex-1">{item.desc}</p>
+                           <button 
+                              className={`w-full py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${isPurchased ? "bg-slate-100 text-slate-400 cursor-default" : "bg-slate-900 text-white hover:bg-black"}`}
+                              onClick={() => {
+                                 if (!isPurchased) {
+                                    if (vpoints >= item.price) {
+                                       setVpoints((v: number) => v - item.price);
+                                       setPurchasedWidgets((prev: string[]) => [...prev, item.id]);
+                                       addNotification("Store", `Đã mua thành công ${item.name}!`, "success");
+                                    } else {
+                                       addNotification("Store", "Chưa đủ Vpoints!", "warning");
+                                    }
+                                 }
+                              }}
+                           >
+                              {isPurchased ? "Owned" : "Purchase"}
+                           </button>
+                        </div>
+                      )
+                    })}
                   </div>
                </div>
-             </motion.div>
-          )}
-
-          {!isTabTransitioning && activeBoardTab === 'operator' && (
-             <motion.div 
-               key="operator"
-               initial={{ opacity: 0, y: 10 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="flex-1 flex flex-col min-h-0 bg-white rounded-[32px] overflow-hidden border border-black/5 font-mono shadow-2xl"
-             >
-                <div className="p-4 border-b border-black/5 flex items-center justify-between bg-slate-50">
-                   <div className="flex items-center gap-3">
-                      <Terminal size={14} className="text-blue-600" />
-                      <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Operator Console v1.0.1</span>
-                   </div>
-                   <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20" />
-                   </div>
-                </div>
-                <div className="flex-1 p-6 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col gap-1.5 scroll-smooth">
-                   {operatorLogs.map((log, i) => (
-                      <div key={`log-${i}`} className={`text-[11px] ${log.startsWith('>') ? 'text-blue-600' : log.includes('Error') ? 'text-red-500' : 'text-slate-600'}`}>
-                         {log}
-                      </div>
-                   ))}
-                   <div id="operator-scroll-anchor" />
-                </div>
-                <form onSubmit={handleOperatorCommand} className="p-4 bg-slate-50 border-t border-black/5 flex items-center gap-3">
-                   <ChevronRight size={14} className="text-slate-400 shrink-0" />
-                   <input 
-                     autoFocus
-                     type="text" 
-                     placeholder="Enter command..." 
-                     className="bg-transparent border-none outline-none text-[11px] text-slate-900 w-full font-mono placeholder:opacity-50"
-                     value={operatorCommand}
-                     onChange={(e) => setOperatorCommand(e.target.value)}
-                   />
-                </form>
-             </motion.div>
-          )}
+              </motion.div>
+           )}
 
           {!isTabTransitioning && activeBoardTab === 'pizza' && (
              <motion.div 
@@ -7981,7 +8013,7 @@ function WidgetsDashboard({
                 <Search size={14} className="text-slate-400" />
                 <input 
                   type="text" 
-                  placeholder="Tiện ích TV, thời tiết..." 
+                  placeholder="Search widgets" 
                   className="bg-transparent border-none outline-none text-xs font-bold w-48"
                   value={gallerySearch}
                   onChange={(e) => setGallerySearch(e.target.value)}
@@ -9711,6 +9743,30 @@ const SendFeedback = ({ size = 20, className }: { size?: number, className?: str
 
 export default function App() {
   const [showWidgets, setShowWidgets] = useState(false);
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme' | 'vstore'>('widgets');
+  const [activeDoForMeSubView, setActiveDoForMeSubView] = useState<string | null>(null);
+  const [pinnedDoForMeFeatures, setPinnedDoForMeFeatures] = useState<string[]>(() => {
+    const saved = localStorage.getItem("vplay_pinned_doforme");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const togglePinFeature = (id: string) => {
+    const newPinned = pinnedDoForMeFeatures.includes(id)
+      ? pinnedDoForMeFeatures.filter(f => f !== id)
+      : [...pinnedDoForMeFeatures, id];
+    setPinnedDoForMeFeatures(newPinned);
+    localStorage.setItem("vplay_pinned_doforme", JSON.stringify(newPinned));
+  };
+  
+  const [pinnedWidgets, setPinnedWidgets] = useState<any[]>(() => {
+    const saved = localStorage.getItem("vplay_widget_board_pins");
+    return saved ? JSON.parse(saved) : [
+      { id: 'weather', type: 'weather', size: 'medium' },
+      { id: 'stocks', type: 'stocks', size: 'small' },
+      { id: 'clock_date', type: 'clock_date', size: 'medium' },
+      { id: 'vtv6_countdown', type: 'vtv6_countdown', size: 'medium' }
+    ];
+  });
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showVVer, setShowVVer] = useState(false);
   const [showManageAccount, setShowManageAccount] = useState(false);
@@ -10134,6 +10190,14 @@ export default function App() {
     setShowAIToolsMenu(false);
     setShowAIToolsMenuMobile(false);
     setShowAIToolsMenuSidebar(false);
+
+    if (showWidgets && (activeBoardTab === 'doforme' || activeBoardTab === 'widgets')) {
+       if (["speak_for_me", "copy_for_me", "play_for_me", "capture_for_me", "convert_for_me", "gemini", "screen_recorder", "about_do_stuff"].includes(action)) {
+          setActiveBoardTab('doforme');
+          setActiveDoForMeSubView(action);
+          return;
+       }
+    }
     if (action === "ai_tools") {
       if (featureFlags.ai_sidebar) {
         setIsAISidebarOpen(true);
@@ -10333,16 +10397,6 @@ export default function App() {
   const [purchasedWidgets, setPurchasedWidgets] = useState<string[]>(() => {
     const saved = localStorage.getItem("vplay_purchased_widgets");
     return saved ? JSON.parse(saved) : [];
-  });
-  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme' | 'vstore'>('widgets');
-  const [pinnedWidgets, setPinnedWidgets] = useState<any[]>(() => {
-    const saved = localStorage.getItem("vplay_widget_board_pins");
-    return saved ? JSON.parse(saved) : [
-      { id: 'weather', type: 'weather', size: 'medium' },
-      { id: 'stocks', type: 'stocks', size: 'small' },
-      { id: 'clock_date', type: 'clock_date', size: 'medium' },
-      { id: 'vtv6_countdown', type: 'vtv6_countdown', size: 'medium' }
-    ];
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [customAlert, setCustomAlert] = useState<{ title: string, message: string } | null>(null);
@@ -13512,6 +13566,11 @@ export default function App() {
             setHasReceivedBonus={setHasReceivedBonus}
             activeBoardTab={activeBoardTab}
             setActiveBoardTab={setActiveBoardTab}
+            activeDoForMeSubView={activeDoForMeSubView}
+            setActiveDoForMeSubView={setActiveDoForMeSubView}
+            pinnedDoForMeFeatures={pinnedDoForMeFeatures}
+            togglePinFeature={togglePinFeature}
+            liquidGlass={liquidGlass}
           />
         )}
       </AnimatePresence>
