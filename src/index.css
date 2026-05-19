@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-minecraft: "Silkscreen", "Press Start 2P", cursive;
   --font-google-sans-flex: "Google Sans Flex", sans-serif;
   --font-google-sans: "Google Sans", sans-serif;
