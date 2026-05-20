@@ -52,7 +52,7 @@ const PIZZA_EXPERIMENTS = {
   widgets: [
     { id: 'settings_on_widgets', name: 'Settings on Widgets', status: 'Experimental', desc: 'Moves the app settings in the Widgets Dashboard.' },
     { id: 'blur_my_feed', name: 'Backdrop blur for Widgets', status: 'Active', desc: 'Blur the background behind the widgets board' },
-    { id: 'hide_feed_sidebar', name: 'Hide feed sidebar', status: 'Beta', desc: 'Ẩn sidebar của widgets board và thay bằng các icon bên dưới lời chào.' }
+    { id: 'widgets_feed_treatments', name: 'Widgets Feed Treatments', status: 'Beta', desc: 'Mỗi lần làm mới trang web sẽ tự động kích hoạt một kiểu giao diện Widgets Feed khác nhau.' }
   ]
 };
 
@@ -375,6 +375,7 @@ const baseTabs = [
   { name: "Widgets", icon: LayoutDashboard, id: "Widgets" },
   { name: "Vstore", icon: ShoppingBag, id: "Vstore", isExtra: true },
   { name: "Live", icon: Tv, id: "Phát sóng" },
+  { name: "Labs", icon: Pizza, id: "Pizza" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
 ];
 
@@ -1301,7 +1302,7 @@ function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags
   );
 }
 
-function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, onLock, addNotification, notifications, history, onAction, onNavigate, setShowVTV6Popup, channels }: any) {
+function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, onLock, addNotification, notifications, history, onAction, onNavigate, setShowVTV6Popup, channels, widgetsFeedTreatment }: any) {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
 
@@ -1349,7 +1350,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
     <>
       <div
         onContextMenu={handleContextMenu}
-        className={`group relative rounded-[24px] border p-6 flex flex-col justify-between overflow-hidden transition-all ${getBgClass()} ${getSizeClass()} ${w.locked ? 'ring-2 ring-blue-500/50' : ''}`}
+        className={`group relative ${widgetsFeedTreatment === 5 ? 'rounded-[40px]' : 'rounded-[24px]'} border p-6 flex flex-col justify-between overflow-hidden transition-all ${getBgClass()} ${getSizeClass()} ${w.locked ? 'ring-2 ring-blue-500/50' : ''}`}
       >
         {!w.locked && (
           <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 p-1.5 bg-white/40 backdrop-blur-xl rounded-2xl shadow-xl pointer-events-auto">
@@ -5143,47 +5144,53 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
   );
 }
 
-function ExperimentalContent({ featureFlags, setFeatureFlags, isDark }: any) {
+function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, hideHeader = false }: any) {
   const [flagSearch, setFlagSearch] = useState("");
 
   const experiences = PIZZA_EXPERIMENTS;
 
   return (
-    <div className={`flex flex-col h-full ${isDark ? "bg-[#1c1c1c] text-white" : "bg-white text-slate-900"}`}>
-       <div className="p-8 border-b border-black/5 bg-slate-50/50">
-          <h2 className="text-xl font-bold tracking-tight mb-1">Pizza Experiments</h2>
-          <p className="text-xs font-medium text-slate-500 opacity-60">Thử nghiệm các tính năng mới nhất tại Vplay.</p>
-          
-          <div className="mt-6 relative group">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text"
-              placeholder="Search experiments"
-              className={`w-full pl-12 pr-6 py-3 border border-black/5 rounded-2xl text-sm font-medium outline-none transition-all ${isDark ? "bg-white/5 text-white" : "bg-white text-slate-900"}`}
-              value={flagSearch}
-              onChange={(e) => setFlagSearch(e.target.value)}
-            />
-          </div>
+    <div className={`flex flex-col w-full ${isDark ? "text-white" : "text-slate-900"}`}>
+       {!hideHeader && (
+         <div className="p-8 border-b border-black/5 bg-slate-50/50 mb-6 rounded-[32px]">
+            <h2 className="text-xl font-bold tracking-tight mb-1">Pizza Experiments</h2>
+            <p className="text-xs font-medium text-slate-500 opacity-60">Thử nghiệm các tính năng mới nhất tại Vplay.</p>
+         </div>
+       )}
+       
+       <div className="mb-6 relative group">
+         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+         <input 
+           type="text"
+           placeholder="Search experiments..."
+           className={`w-full pl-12 pr-6 py-3 border border-black/5 rounded-2xl text-sm font-medium outline-none transition-all ${isDark ? "bg-white/5 text-white" : "bg-white text-slate-900"}`}
+           value={flagSearch}
+           onChange={(e) => setFlagSearch(e.target.value)}
+         />
        </div>
 
-       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-8">
+       <div className="space-y-8">
           {(['app', 'widgets'] as const).map(category => (
             <div key={category} className="space-y-4">
-              <h3 className="px-4 text-[10px] font-black uppercase tracking-widest opacity-30">
-                {category === 'app' ? "App Features" : "Widgets Dashboard Features"}
+              <h3 className="px-4 text-[10px] font-black uppercase tracking-widest opacity-35 text-left">
+                {category === 'app' ? "App experiment" : "Widgets feed experiment"}
               </h3>
               <div className="space-y-1">
                 {PIZZA_EXPERIMENTS[category]
                   .filter(exp => exp.name.toLowerCase().includes(flagSearch.toLowerCase()))
                   .map(exp => (
                     <div key={exp.id} className={`flex items-center justify-between p-4 rounded-2xl transition-all ${isDark ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
-                       <div className="flex flex-col">
+                       <div className="flex flex-col text-left">
                           <span className="text-sm font-bold">{exp.name}</span>
                           <span className="text-[11px] opacity-50">{exp.desc}</span>
                        </div>
                        <div 
-                          onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
-                          className={`w-11 h-6 rounded-full transition-colors relative p-1 cursor-pointer ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-300"}`}
+                          onClick={() => {
+                            const nextVal = !featureFlags[exp.id];
+                            const nextFlags = { ...featureFlags, [exp.id]: nextVal };
+                            setFeatureFlags(nextFlags, exp.id, exp.name, nextVal);
+                          }}
+                          className={`w-11 h-6 rounded-full transition-colors relative p-1 cursor-pointer shrink-0 ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-300"}`}
                        >
                           <motion.div 
                             className="w-4 h-4 bg-white rounded-full shadow-sm"
@@ -7336,6 +7343,7 @@ function WidgetsDashboard({
   channels,
   featureFlags,
   setFeatureFlags,
+  onFeedbackClick,
   vpoints,
   setVpoints,
   purchasedWidgets,
@@ -7385,7 +7393,9 @@ function WidgetsDashboard({
   desktopWallpaper,
   setDesktopWallpaper,
   forcedFont,
-  setForcedFont
+  setForcedFont,
+  widgetsFeedTreatment,
+  setWidgetsFeedTreatment
 }: any) {
   const isDark = widgetsTheme === "dark"; 
   const [gallerySearch, setGallerySearch] = useState("");
@@ -7393,11 +7403,33 @@ function WidgetsDashboard({
   const [showStore, setShowStore] = useState(false);
   const [showBonusPopup, setShowBonusPopup] = useState(false);
   const [boardSearch, setBoardSearch] = useState("");
-  const [widgetSettings, setWidgetSettings] = useState({
-    openFeedOnHover: false,
-    showFeedBadges: true,
-    showFeed: true,
-    allowWebSearches: true
+  const [selectedSettingCategory, setSelectedSettingCategory] = useState<string | null>(null);
+  const [settingSearchQuery, setSettingSearchQuery] = useState("");
+  const [widgetSettings, setWidgetSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("vplay_widget_settings");
+      if (saved) {
+        return {
+          openFeedOnHover: false,
+          showFeedBadges: true,
+          showFeed: true,
+          allowWebSearches: true,
+          collapsePinButton: false,
+          showCalendarInWidgets: false,
+          showClockInWidgets: false,
+          ...JSON.parse(saved)
+        };
+      }
+    } catch (e) {}
+    return {
+      openFeedOnHover: false,
+      showFeedBadges: true,
+      showFeed: true,
+      allowWebSearches: true,
+      collapsePinButton: false,
+      showCalendarInWidgets: false,
+      showClockInWidgets: false,
+    };
   });
   const [time, setTime] = useState(new Date());
   const [isTabTransitioning, setIsTabTransitioning] = useState(false);
@@ -7500,6 +7532,17 @@ function WidgetsDashboard({
     setOperatorCommand("");
   };
 
+  const shouldHideSidebar = featureFlags?.hide_feed_sidebar || widgetsFeedTreatment === 2;
+
+  let sidebarClassName = "";
+  if (widgetsFeedTreatment === 3) {
+    sidebarClassName = `w-14 h-[calc(100%-32px)] my-4 ml-4 mr-2 rounded-[28px] border flex flex-col items-center py-6 gap-6 shadow-xl ${isDark ? "bg-black/45 border-white/10 text-white" : "bg-white/80 border-black/10 text-slate-900 shadow-slate-200"}`;
+  } else if (widgetsFeedTreatment === 4) { // Collapse
+    sidebarClassName = `w-11 h-full flex flex-col items-center py-6 gap-4 border-r ${isDark ? "bg-black/20 border-white/5 text-white" : "bg-black/5 border-black/5 text-slate-800"}`;
+  } else { // Default Treatment 1 or 5
+    sidebarClassName = `w-14 h-full flex flex-col items-center py-6 gap-6 border-r ${isDark ? "bg-black/20 border-white/5 text-white" : "bg-black/5 border-black/5 text-slate-800"}`;
+  }
+
   return (
     <AnimatePresence>
       {showWidgets && (
@@ -7512,7 +7555,7 @@ function WidgetsDashboard({
     height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
     top: isWidgetsFullScreen ? 0 : 16,
     left: isWidgetsFullScreen ? 0 : 16,
-    borderRadius: isWidgetsFullScreen ? 0 : 12,
+    borderRadius: isWidgetsFullScreen ? 0 : (widgetsFeedTreatment === 5 ? 40 : 12),
     boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
     backdropFilter: featureFlags?.blur_my_feed ? "blur(200px) saturate(300%) brightness(1.15)" : (featureFlags?.dynamic_dashboard_blur ? "blur(80px) saturate(240%)" : "blur(24px) saturate(150%)")
   }}
@@ -7523,56 +7566,56 @@ function WidgetsDashboard({
   }`}
   onClick={(e) => e.stopPropagation()}
 >
-  {/* Windows 11 Style Sidebar */}
-  {!featureFlags?.hide_feed_sidebar && (
-    <div className={`w-14 h-full flex flex-col items-center py-6 gap-6 border-r ${isDark ? "bg-black/20 border-white/5" : "bg-black/5 border-black/5"}`}>
+  {/* Windows 11 Style Sidebar with treatments */}
+  {!shouldHideSidebar && (
+    <div className={sidebarClassName}>
       <button 
           onClick={() => setActiveBoardTab('widgets')}
-          className={`p-2 rounded-xl transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+          className={`${widgetsFeedTreatment === 4 ? "p-1.5 rounded-lg" : (widgetsFeedTreatment === 5 ? "p-2 rounded-full" : "p-2 rounded-xl")} transition-all ${activeBoardTab === 'widgets' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
           title="Widgets"
       >
-          <LayoutDashboard size={22} />
+          <LayoutDashboard size={widgetsFeedTreatment === 4 ? 18 : 22} />
       </button>
       
       {widgetSettings.showFeed && (
         <button 
             onClick={() => setActiveBoardTab('feed')}
-            className={`p-2 rounded-xl transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+            className={`${widgetsFeedTreatment === 4 ? "p-1.5 rounded-lg" : (widgetsFeedTreatment === 5 ? "p-2 rounded-full" : "p-2 rounded-xl")} transition-all ${activeBoardTab === 'feed' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
             title="Feed"
         >
-            <Newspaper size={22} />
+            <Newspaper size={widgetsFeedTreatment === 4 ? 18 : 22} />
         </button>
       )}
 
       <button 
           onClick={() => setActiveBoardTab('pizza')}
-          className={`p-2 rounded-xl transition-all ${activeBoardTab === 'pizza' ? (isDark ? "bg-white/10 text-purple-400" : "bg-white text-purple-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+          className={`${widgetsFeedTreatment === 4 ? "p-1.5 rounded-lg" : (widgetsFeedTreatment === 5 ? "p-2 rounded-full" : "p-2 rounded-xl")} transition-all ${activeBoardTab === 'pizza' ? (isDark ? "bg-white/10 text-purple-400" : "bg-white text-purple-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
           title="Pizza Experiments"
       >
-          <Pizza size={22} />
+          <Pizza size={widgetsFeedTreatment === 4 ? 18 : 22} />
       </button>
 
       <button 
           onClick={() => setActiveBoardTab('doforme')}
-          className={`p-2 rounded-xl transition-all ${activeBoardTab === 'doforme' ? (isDark ? "bg-white/10 text-purple-400" : "bg-white text-purple-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+          className={`${widgetsFeedTreatment === 4 ? "p-1.5 rounded-lg" : (widgetsFeedTreatment === 5 ? "p-2 rounded-full" : "p-2 rounded-xl")} transition-all ${activeBoardTab === 'doforme' ? (isDark ? "bg-white/10 text-purple-400" : "bg-white text-purple-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
           title="Operate for me"
       >
-          <Sparkles size={22} />
+          <Sparkles size={widgetsFeedTreatment === 4 ? 18 : 22} />
       </button>
 
       <div className="mt-auto flex flex-col items-center gap-6 pb-2 text-current opacity-40">
-          <button className="hover:opacity-100 transition-opacity" title="Notifications"><Bell size={22} /></button>
-          <button className="hover:opacity-100 transition-opacity" title="History"><History size={22} /></button>
+          <button className="hover:opacity-100 transition-opacity" title="Notifications"><Bell size={widgetsFeedTreatment === 4 ? 18 : 22} /></button>
+          <button className="hover:opacity-100 transition-opacity" title="History"><History size={widgetsFeedTreatment === 4 ? 18 : 22} /></button>
       </div>
           <button 
             onClick={() => setActiveBoardTab('settings')}
-            className={`p-2 rounded-xl transition-all ${activeBoardTab === 'settings' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
+            className={`${widgetsFeedTreatment === 4 ? "p-1.5 rounded-lg" : (widgetsFeedTreatment === 5 ? "p-2 rounded-full" : "p-2 rounded-xl")} transition-all ${activeBoardTab === 'settings' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`}
             title="Settings"
           >
-            <Settings size={22} />
+            <Settings size={widgetsFeedTreatment === 4 ? 18 : 22} />
           </button>
-          <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-[11px] font-bold overflow-hidden ring-1 ring-white/20">
-            {user?.photoURL && <img src={user.photoURL} alt="User" />}
+          <div className={`${widgetsFeedTreatment === 4 ? "w-7 h-7 text-[9px]" : "w-9 h-9 text-[11px]"} rounded-full bg-blue-600 flex items-center justify-center text-white font-bold overflow-hidden ring-1 ring-white/20`}>
+            {user?.photoURL ? <img src={user.photoURL} alt="User" referrerPolicy="no-referrer" /> : (user?.email?.[0]?.toUpperCase() || 'V')}
           </div>
     </div>
   )}
@@ -7581,7 +7624,7 @@ function WidgetsDashboard({
      <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-current leading-none">{getBoardGreeting()}</h2>
-          {featureFlags?.hide_feed_sidebar && (
+          {shouldHideSidebar && (
             <div className="flex items-center gap-4 mt-6">
               {[
                 { id: 'widgets', icon: LayoutDashboard, label: 'Widgets' },
@@ -7592,17 +7635,19 @@ function WidgetsDashboard({
                 <button 
                   key={tab.id}
                   onClick={() => setActiveBoardTab(tab.id as any)}
-                  className={`flex items-center gap-2 p-1 px-3 rounded-full transition-all ${activeBoardTab === tab.id ? "bg-blue-600 text-white" : "opacity-40 hover:opacity-100"}`}
+                  className={`flex items-center gap-1.5 p-1.5 px-3 rounded-full transition-all ${activeBoardTab === tab.id ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" : "opacity-45 hover:opacity-100 dark:hover:bg-white/5 hover:bg-black/5"}`}
                 >
-                  <tab.icon size={16} />
+                  <tab.icon size={15} />
+                  <span className="text-xs font-bold tracking-tight">{tab.label}</span>
                 </button>
               ))}
               <div className="w-px h-4 bg-current opacity-20" />
               <button 
                 onClick={() => setActiveBoardTab('settings')}
-                className={`flex items-center gap-2 p-1 px-3 rounded-full transition-all ${activeBoardTab === 'settings' ? "bg-blue-600 text-white" : "opacity-40 hover:opacity-100"}`}
+                className={`flex items-center gap-1.5 p-1.5 px-3 rounded-full transition-all ${activeBoardTab === 'settings' ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" : "opacity-45 hover:opacity-100 dark:hover:bg-white/5 hover:bg-black/5"}`}
               >
-                <Settings size={16} />
+                <Settings size={15} />
+                <span className="text-xs font-bold tracking-tight">Settings</span>
               </button>
             </div>
           )}
@@ -7771,6 +7816,7 @@ function WidgetsDashboard({
                         onAction={onAction}
                         onNavigate={onNavigate}
                         channels={channels}
+                        widgetsFeedTreatment={widgetsFeedTreatment}
                       />
                     ))
                   )}
@@ -7913,78 +7959,771 @@ function WidgetsDashboard({
                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20" />
                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20" />
                             </div>
-                         </div>
-                         <div className="flex-1 p-6 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col gap-1.5 scroll-smooth">
-                            {operatorLogs.map((log, i) => (
-                               <div key={`log-${i}`} className={`text-[11px] ${log.startsWith('>') ? 'text-blue-600' : log.includes('Error') ? 'text-red-500' : 'text-slate-600'}`}>
-                                  {log}
-                               </div>
-                            ))}
-                            <div id="operator-scroll-anchor" />
-                         </div>
-                         <form onSubmit={handleOperatorCommand} className="p-4 bg-slate-50 border-t border-black/5 flex items-center gap-3">
-                            <ChevronRight size={14} className="text-slate-400 shrink-0" />
-                            <input 
-                              autoFocus
-                              type="text" 
-                              placeholder="Enter command..." 
-                              className="bg-transparent border-none outline-none text-[11px] text-slate-900 w-full font-mono placeholder:opacity-50"
-                              value={operatorCommand}
-                              onChange={(e) => setOperatorCommand(e.target.value)}
-                            />
-                         </form>
-                      </div>
-                    </div>
-                  )}
-               </div>
-             </motion.div>
-          )}
+                          </div>
+                          <div className="flex-1 p-6 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col gap-1.5 scroll-smooth">
+                             {operatorLogs.map((log, i) => (
+                                <div key={`log-${i}`} className={`text-[11px] ${log.startsWith('>') ? 'text-blue-600' : log.includes('Error') ? 'text-red-500' : 'text-slate-600'}`}>
+                                   {log}
+                                </div>
+                             ))}
+                             <div id="operator-scroll-anchor" />
+                          </div>
+                          <form onSubmit={handleOperatorCommand} className="p-4 bg-slate-50 border-t border-black/5 flex items-center gap-3">
+                             <ChevronRight size={14} className="text-slate-400 shrink-0" />
+                             <input 
+                               autoFocus
+                               type="text" 
+                               placeholder="Enter command..." 
+                               className="bg-transparent border-none outline-none text-[11px] text-slate-900 w-full font-mono placeholder:opacity-50"
+                               value={operatorCommand}
+                               onChange={(e) => setOperatorCommand(e.target.value)}
+                             />
+                          </form>
+                       </div>
+                     </div>
+                   )}
+                </div>
+              </motion.div>
+           )}
 
-          {!isTabTransitioning && activeBoardTab === 'pizza' && (
-             <motion.div 
-               key="pizza"
-               initial={{ opacity: 0, scale: 0.98 }}
-               animate={{ opacity: 1, scale: 1 }}
-               className="flex-1 flex flex-col min-h-0 bg-white rounded-[32px] overflow-hidden border border-black/5 shadow-2xl"
-             >
-                <div className="h-16 px-8 flex items-center justify-between border-b border-black/5 bg-slate-50/50">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
-                      <Pizza size={20} />
+           {!isTabTransitioning && activeBoardTab === 'pizza' && (
+              <motion.div 
+                key="pizza"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`w-full p-8 rounded-[40px] border shadow-xl text-left ${isDark ? "bg-[#1c1c1c] border-white/5" : "bg-white border-black/5"}`}
+              >
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-600/10 text-purple-600 flex items-center justify-center">
+                      <Pizza size={24} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold tracking-tight text-slate-900 leading-none">Pizza Experiments</h3>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Beta features & Experimental labs</p>
+                      <h3 className={`font-bold text-xl ${isDark ? "text-white" : "text-slate-900"}`}>Pizza Experiments</h3>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Beta features & Experimental labs</p>
                     </div>
                   </div>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                   <ExperimentalContent featureFlags={featureFlags} setFeatureFlags={setFeatureFlags} isDark={isDark} />
-                </div>
-             </motion.div>
-          )}
+                  
+                  <ExperimentalContent 
+                    isDark={isDark} 
+                    featureFlags={featureFlags} 
+                    hideHeader={true}
+                    setFeatureFlags={(f: any, id: string, name: string, val: boolean) => {
+                      setFeatureFlags(f);
+                      localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
+                      if (name) {
+                        addNotification?.("Thử nghiệm", `${val ? 'Bật' : 'Tắt'} flag: ${name}`, 'success');
+                      }
+                    }} 
+                  />
+              </motion.div>
+           )}
 
-          {!isTabTransitioning && activeBoardTab === 'settings' && (
+                      {!isTabTransitioning && activeBoardTab === 'settings' && (() => {
+            const filteredCategories = [
+              { id: 'account', name: 'Tài khoản', desc: 'Quản lý hồ sơ và tài khoản Vplay', icon: User },
+              { id: 'appearance', name: 'Chủ đề và Giao diện', desc: 'Tùy biến giao diện và trải nghiệm người dùng theo ý thích', icon: Palette },
+              { id: 'topbar', name: 'Topbar (Desktop mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng trên', icon: PanelTop },
+              { id: 'sidebar', name: 'Sidebar (Desktop mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng bên', icon: Columns },
+              { id: 'floatbar', name: 'Floatbar (Touch mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng dưới', icon: LayoutGrid },
+              { id: 'widgets_board', name: 'Widgets board', desc: 'Tùy chỉnh các tính năng và hành vi của bảng tiện ích', icon: Pizza },
+              { id: 'system_settings', name: 'Cài đặt hệ thống (Toàn bộ)', desc: 'Xem danh sách đầy đủ tất cả các tùy chỉnh cài đặt ứng dụng', icon: Settings },
+              { id: 'experiments', name: 'Experimental Features', desc: 'Trải nghiệm sớm các tính năng mới sắp ra mắt của Vplay', icon: Flask }
+            ].filter(cat => 
+              cat.name.toLowerCase().includes(settingSearchQuery.toLowerCase()) || 
+              cat.desc.toLowerCase().includes(settingSearchQuery.toLowerCase())
+            );
+
+            const renderSelectedCategoryContent = () => {
+              switch (selectedSettingCategory) {
+                case 'account':
+                  return (
+                    <div className="space-y-6">
+                      {/* User Profile */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <div className="flex flex-col items-center justify-center text-center gap-4 py-4">
+                          <div className={`w-24 h-24 rounded-full flex items-center justify-center border-4 relative overflow-hidden group ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
+                            {user?.photoURL ? (
+                              <img src={user.photoURL} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                              <User className="w-12 h-12 text-slate-400" />
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="text-xl font-bold">{user?.displayName || user?.email?.split('@')[0] || "Khách (Guest)"}</h4>
+                            <p className="text-sm opacity-55 mt-1">{user?.email || "Chưa hoàn tất thiết lập hồ sơ đăng nhập"}</p>
+                          </div>
+                          
+                          {!user ? (
+                            <button 
+                              onClick={onLogin}
+                              className="mt-4 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold tracking-tight shadow-xl shadow-blue-500/20 active:scale-95 transition-all w-full max-w-xs"
+                            >
+                              Đăng nhập đồng bộ dữ liệu
+                            </button>
+                          ) : (
+                            <div className="space-y-2 w-full max-w-sm">
+                              <div className={`p-3 rounded-xl text-xs font-mono border ${isDark ? "bg-black/40 border-white/5 text-amber-400" : "bg-orange-50/50 border-orange-100 text-orange-600"} text-center`}>
+                                Hệ thống tài khoản Cloud sync đang hoạt động ổn định
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Developer Section under account */}
+                      {isDev && (
+                        <div className={`p-8 rounded-[32px] border transition-all ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"}`}>
+                          <div className="flex items-center gap-4 mb-6">
+                            <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
+                              <ShieldAlert size={24} />
+                            </div>
+                            <div>
+                              <h3 className={`font-semibold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Developer & System Settings</h3>
+                              <p className="text-xs text-slate-500">Special tools to debug or factory reset Vplay</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button 
+                              onClick={() => {
+                                const newFlags = { ...featureFlags, xaml_oobe_force: !featureFlags.xaml_oobe_force };
+                                setFeatureFlags(newFlags);
+                                localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
+                              }}
+                              className={`p-4 rounded-[24px] border flex items-center justify-between gap-4 transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}
+                            >
+                               <div className="text-left">
+                                  <span className="font-bold text-xs">Force Launch OOBE</span>
+                                  <p className="text-[10px] opacity-40">Bật OOBE khi khởi động</p>
+                               </div>
+                               <div className={`w-10 h-5 rounded-full relative transition-all ${featureFlags.xaml_oobe_force ? "bg-red-500" : "bg-slate-700"}`}>
+                                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags.xaml_oobe_force ? "left-5.5" : "left-0.5"}`} />
+                               </div>
+                            </button>
+
+                            <button 
+                              onClick={() => {
+                                onAlert("Resetting", "All settings and local data will be wiped.");
+                                const wasDev = localStorage.getItem("vplay_dev_mode") === "true";
+                                localStorage.clear();
+                                if (wasDev) localStorage.setItem("vplay_dev_mode", "true");
+                                window.location.reload();
+                              }}
+                              className={`p-4 rounded-[24px] border border-red-500/10 bg-red-500/5 hover:bg-red-500/10 text-red-500 flex items-center justify-between gap-4 transition-all`}
+                            >
+                               <div className="text-left">
+                                  <span className="font-bold text-xs text-red-500">Factory Reset</span>
+                                  <p className="text-[10px] opacity-60">Xóa sạch toàn bộ dữ liệu</p>
+                                </div>
+                               <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                case 'appearance':
+                  return (
+                    <div className="space-y-6 pb-16">
+                      {/* Theme Selection */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Chủ đề hệ thống (System Theme)</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            onClick={() => setIsDark(false)}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${!isDark ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Sun size={20} className={!isDark ? "text-white" : "text-slate-400"} />
+                              <span className="text-xs font-bold">Giao diện Sáng (Light)</span>
+                            </div>
+                            {!isDark && <CheckCircle2 size={16} />}
+                          </button>
+                          <button 
+                            onClick={() => setIsDark(true)}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${isDark ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Moon size={20} className={isDark ? "text-white" : "text-slate-400"} />
+                              <span className="text-xs font-bold">Giao diện Tối (Dark)</span>
+                            </div>
+                            {isDark && <CheckCircle2 size={16} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Liquid Glass and Fonts */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Liquid Glass Effect</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button 
+                              onClick={() => setLiquidGlass("glassy")}
+                              className={`p-3 rounded-xl border text-xs font-bold transition-all ${liquidGlass === "glassy" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                            >
+                              Glassy
+                            </button>
+                            <button 
+                              onClick={() => setLiquidGlass("tinted")}
+                              className={`p-3 rounded-xl border text-xs font-bold transition-all ${liquidGlass === "tinted" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                            >
+                              Tinted
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Forced Fonts (Vietnamese Support)</span>
+                          <div className="relative group">
+                            <select 
+                              value={forcedFont}
+                              onChange={(e) => {
+                                setForcedFont(e.target.value);
+                                localStorage.setItem("vplay_forced_font", e.target.value);
+                              }}
+                              className={`w-full p-3 pr-10 rounded-xl border appearance-none transition-all cursor-pointer font-bold text-sm ${
+                                isDark ? "bg-black/30 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700"
+                              }`}
+                            >
+                              <option value="">Mặc định (Default)</option>
+                              <option value="google-sans-flex">Google Sans Flex</option>
+                              <option value="google-sans">Google Sans</option>
+                              <option value="josefin-sans">Josefin Sans</option>
+                              <option value="montserrat">Montserrat</option>
+                              <option value="playfair-display">Playfair Display</option>
+                              <option value="league-spartan">League Spartan</option>
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                              <ChevronDown size={14} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Background Wallpaper */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-4">Background Desktop Wallpaper</span>
+                        <div className="flex gap-2 p-1 bg-black/5 rounded-2xl w-fit mb-6">
+                          {[
+                            { id: 'preset', name: 'Presets' },
+                            { id: 'solid', name: 'Solid' },
+                            { id: 'gradient', name: 'Gradients' }
+                          ].map(type => (
+                            <button
+                              key={type.id}
+                              onClick={() => {
+                                setWallpaperType(type.id as any);
+                                localStorage.setItem("vplay_wallpaper_type", type.id);
+                              }}
+                              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${wallpaperType === type.id ? "bg-white text-black shadow-md" : "text-slate-500 hover:text-slate-700"}`}
+                            >
+                              {type.name}
+                            </button>
+                          ))}
+                        </div>
+
+                        {wallpaperType === 'preset' && (
+                          <div className="grid grid-cols-3 gap-4 font-sans max-sm:grid-cols-1">
+                            {[
+                              { id: 'flow_light', name: 'Flow Light', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=2000&auto=format&fit=crop' },
+                              { id: 'flow_dark', name: 'Material Blue', url: 'https://images.unsplash.com/photo-1635776062127-d379bfcba9f8?q=80&w=2000&auto=format&fit=crop' },
+                              { id: 'canary_lake', name: 'Canary Lake', url: 'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2000&auto=format&fit=crop' }
+                            ].map(p => (
+                              <button 
+                                key={p.id}
+                                onClick={() => {
+                                  setDesktopWallpaper(p.url);
+                                  localStorage.setItem("vplay_desktop_wallpaper", p.url);
+                                }}
+                                className={`relative p-1 rounded-2xl border overflow-hidden transition-all hover:scale-[1.02] ${desktopWallpaper === p.url ? "border-blue-500 ring-2 ring-blue-500/10" : "border-transparent"}`}
+                              >
+                                <div className="aspect-video w-full rounded-xl overflow-hidden mb-1.5 animate-pulse-slow">
+                                  <img src={p.url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                </div>
+                                <span className="text-[10px] font-bold block text-center truncate">{p.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {wallpaperType === 'solid' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-4 bg-black/5 p-4 rounded-2xl">
+                              <input 
+                                type="color" 
+                                value={solidColor}
+                                onChange={(e) => {
+                                  setSolidColor(e.target.value);
+                                  localStorage.setItem("vplay_wallpaper_solid_color", e.target.value);
+                                }}
+                                className="w-12 h-12 rounded-xl border bg-transparent cursor-pointer"
+                              />
+                              <div>
+                                <p className="font-mono text-sm font-bold uppercase">{solidColor}</p>
+                                <p className="text-[10px] opacity-40">Pick a custom solid color</p>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {['#0b0b0b', '#1a1a1a', '#2d3436', '#0984e3', '#6c5ce7', '#d63031', '#e17055', '#f8fafc'].map(c => (
+                                <button 
+                                  key={c}
+                                  onClick={() => {
+                                    setSolidColor(c);
+                                    localStorage.setItem("vplay_wallpaper_solid_color", c);
+                                  }}
+                                  className="w-8 h-8 rounded-full border transition-all hover:scale-110"
+                                  style={{ backgroundColor: c }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {wallpaperType === 'gradient' && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex items-center gap-3 bg-black/5 p-3 rounded-2xl">
+                                <input 
+                                  type="color" 
+                                  value={gradientColors[0]}
+                                  onChange={(e) => {
+                                    const next: [string, string] = [e.target.value, gradientColors[1]];
+                                    setGradientColors(next);
+                                    localStorage.setItem("vplay_wallpaper_gradient_colors", JSON.stringify(next));
+                                  }}
+                                  className="w-10 h-10 rounded-xl"
+                                />
+                                <span className="font-mono text-xs font-bold uppercase">{gradientColors[0]}</span>
+                              </div>
+                              <div className="flex items-center gap-3 bg-black/5 p-3 rounded-2xl">
+                                <input 
+                                  type="color" 
+                                  value={gradientColors[1]}
+                                  onChange={(e) => {
+                                    const next: [string, string] = [gradientColors[0], e.target.value];
+                                    setGradientColors(next);
+                                    localStorage.setItem("vplay_wallpaper_gradient_colors", JSON.stringify(next));
+                                  }}
+                                  className="w-10 h-10 rounded-xl"
+                                />
+                                <span className="font-mono text-xs font-bold uppercase">{gradientColors[1]}</span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { n: 'Cosmic', c: ['#2d0b3b', '#1a0525'] },
+                                { n: 'Ocean', c: ['#00d2ff', '#3a7bd5'] },
+                                { n: 'Sunset', c: ['#f83600', '#f9d423'] }
+                              ].map(g => (
+                                <button
+                                  key={g.n}
+                                  onClick={() => {
+                                    const next: [string, string] = [g.c[0], g.c[1]];
+                                    setGradientColors(next);
+                                    localStorage.setItem("vplay_wallpaper_gradient_colors", JSON.stringify(next));
+                                  }}
+                                  className="flex items-center gap-2 p-2 rounded-xl bg-black/5 hover:bg-black/10 transition-all text-left"
+                                >
+                                  <div className="w-6 h-6 rounded-full shadow-lg shrink-0" style={{ background: `linear-gradient(135deg, ${g.c[0]} 0%, ${g.c[1]} 100%)` }} />
+                                  <span className="text-[10px] font-bold uppercase truncate">{g.n}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                case 'topbar':
+                  return (
+                    <div className="space-y-6">
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Search box position</span>
+                        <div className="grid grid-cols-2 gap-3 pb-4">
+                          <button 
+                            onClick={() => setSearchBoxPosition("sidebar")}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${searchBoxPosition === "sidebar" ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <LayoutDashboard size={20} className={searchBoxPosition === "sidebar" ? "text-white" : "text-slate-400"} />
+                            <span className="text-xs font-bold">Show inside sidebar</span>
+                          </button>
+                          <button 
+                            onClick={() => setSearchBoxPosition("top")}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${searchBoxPosition === "top" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="h-4 w-12 rounded border border-current opacity-60 flex items-center justify-center text-[8px] uppercase font-black">TOP</div>
+                            <span className="text-xs font-bold">Show inside Top bar</span>
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-medium opacity-65">This layout preference aligns the quick television command center search box position.</p>
+                      </div>
+                    </div>
+                  );
+                case 'sidebar':
+                  return (
+                    <div className="space-y-6">
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Sidebar Positioning (LTR/RTL)</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            onClick={() => setIsSidebarRight(false)}
+                            className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${!isSidebarRight ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <span className="text-xs font-bold">Trái (Left-side)</span>
+                          </button>
+                          <button 
+                            onClick={() => setIsSidebarRight(true)}
+                            className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${isSidebarRight ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <span className="text-xs font-bold">Phải (Right-side)</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Channel Pinning on Sidebar</span>
+                        <button 
+                          onClick={() => setIsPinningEnabled(!isPinningEnabled)}
+                          className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${isPinningEnabled ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Pin size={18} className={isPinningEnabled ? "text-white" : "text-slate-400"} />
+                            <span className="text-xs font-bold text-left">Hiện lối tắt kênh yêu thích trên sidebar</span>
+                          </div>
+                          <div className={`w-10 h-5 rounded-full relative transition-colors ${isPinningEnabled ? "bg-white/20" : "bg-slate-700"}`}>
+                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${isPinningEnabled ? "left-5.5" : "left-0.5"}`} />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                case 'floatbar':
+                  return (
+                    <div className="space-y-6">
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Layout Platform Integration</span>
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                          <button 
+                            onClick={() => setUseSidebar(true)}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${useSidebar ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <Monitor size={20} />
+                            <span className="text-xs font-bold">Desktop style (Sidebar)</span>
+                          </button>
+                          <button 
+                            onClick={() => setUseSidebar(false)}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${!useSidebar ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <MousePointer2 size={20} />
+                            <span className="text-xs font-bold">Touch style (Floatbar)</span>
+                          </button>
+                        </div>
+                        
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Quick Navigation Shortcut</span>
+                        <button 
+                          onClick={() => {
+                            setActiveTab("Phát nhạc");
+                            setShowWidgets(false);
+                          }}
+                          className={`w-full p-6 rounded-2xl border transition-all flex flex-col items-center justify-center gap-3 ${isDark ? "bg-white/5 border-white/10 hover:bg-white/20" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}
+                        >
+                          <Music className="text-purple-500 animate-bounce" size={24} />
+                          <span className="text-xs font-bold uppercase tracking-widest">Mở bảng điều khiển phát nhạc</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                case 'widgets_board':
+                  return (
+                    <div className="space-y-6 pb-12">
+                      {/* Feed Theme Card */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-4">Widgets Feed Theme</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            onClick={() => {
+                              setWidgetsTheme('light');
+                              localStorage.setItem("vplay_widgets_theme", "light");
+                            }}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${widgetsTheme === 'light' ? "border-blue-500 bg-blue-500/5 ring-2 ring-blue-500/10" : "border-black/5"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Sun size={18} className="text-orange-500" />
+                              <span className="text-xs font-bold">Light mode widgets</span>
+                            </div>
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setWidgetsTheme('dark');
+                              localStorage.setItem("vplay_widgets_theme", "dark");
+                            }}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${widgetsTheme === 'dark' ? "border-blue-500 bg-blue-500/5 ring-2 ring-blue-500/10" : "border-black/5"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Moon size={18} className="text-blue-500" />
+                              <span className="text-xs font-bold">Dark mode widgets</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Preferences */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-4">Dashboard Interactions</span>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between border-b border-black/5 pb-3">
+                             <div>
+                                <span className="text-xs font-bold block text-left">Open feed on hover</span>
+                                <span className="text-[10px] opacity-50 block text-left">Mở feed tự động khi hover chuột</span>
+                             </div>
+                             <div 
+                               onClick={() => setWidgetSettings({ ...widgetSettings, openFeedOnHover: !widgetSettings.openFeedOnHover })}
+                               className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 transition-all ${widgetSettings.openFeedOnHover ? "bg-blue-600" : "bg-slate-300"}`}
+                             >
+                               <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${widgetSettings.openFeedOnHover ? "left-5.5" : "left-0.5"}`} />
+                             </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                             <div>
+                                <span className="text-xs font-bold block text-left">Show feed badges</span>
+                                <span className="text-[10px] opacity-50 block text-left">Hiển thị chấm thông báo chưa đọc</span>
+                             </div>
+                             <div 
+                               onClick={() => setWidgetSettings({ ...widgetSettings, showFeedBadges: !widgetSettings.showFeedBadges })}
+                               className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 transition-all ${widgetSettings.showFeedBadges ? "bg-blue-600" : "bg-slate-300"}`}
+                             >
+                                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${widgetSettings.showFeedBadges ? "left-5.5" : "left-0.5"}`} />
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dropdown for widgets_feed_treatment */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-amber-500/5 border-amber-500/10" : "bg-amber-50 border-amber-100 shadow-xl shadow-amber-100/20"}`}>
+                        <div className="flex items-center gap-3 mb-4">
+                           <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+                              <LayoutGrid size={20} />
+                           </div>
+                           <div>
+                              <h4 className="font-bold text-sm text-left">WIDGETS_FEED_TREATMENT Layout Select</h4>
+                              <p className="text-[10px] text-amber-600/70 font-bold uppercase mt-0.5">Custom layout rendering variants</p>
+                           </div>
+                        </div>
+
+                        <div className="relative group">
+                          <select 
+                            value={widgetsFeedTreatment}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setWidgetsFeedTreatment(val);
+                              localStorage.setItem("vplay_widgets_feed_treatment", val.toString());
+                            }}
+                            className={`w-full p-4 pr-10 rounded-2xl border appearance-none transition-all cursor-pointer font-bold text-sm ${
+                              isDark ? "bg-black/40 border-amber-500/25 text-white focus:ring-amber-500" : "bg-white border-amber-200 text-slate-800 focus:ring-amber-500"
+                            }`}
+                          >
+                            <option value={1}>Treatment 1: Navigation sidebar (Default)</option>
+                            <option value={2}>Treatment 2: Top navigation (Giống với option hide widgets sidebar)</option>
+                            <option value={3}>Treatment 3: Float sidebar (Layout giống hình 1)</option>
+                            <option value={4}>Treatment 4: More collapse (Hẹp hơn giống hình 2)</option>
+                            <option value={5}>Treatment 5: Extremely rounded (Bo cong giống hình 3)</option>
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                            <ChevronDown size={16} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                case 'experiments':
+                  return (
+                    <div className="space-y-6 pb-16">
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3 text-left">WIDGETS_FEED_TREATMENT Experiment (Dropdown)</span>
+                        <div className="relative group mb-6">
+                          <select 
+                            value={widgetsFeedTreatment}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setWidgetsFeedTreatment(val);
+                              localStorage.setItem("vplay_widgets_feed_treatment", val.toString());
+                            }}
+                            className={`w-full p-4 pr-10 rounded-2xl border appearance-none transition-all cursor-pointer font-bold text-sm ${
+                              isDark ? "bg-black/20 border-white/10 text-white focus:ring-blue-500" : "bg-white border-black/10 text-slate-800 focus:ring-blue-500 shadow"
+                            }`}
+                          >
+                            <option value={1}>Treatment 1: Navigation sidebar (default)</option>
+                            <option value={2}>Treatment 2: Top navigation (giống với option hide widgets sidebar, chuyển các nút lên)</option>
+                            <option value={3}>Treatment 3: Float sidebar (layout giống hình 1)</option>
+                            <option value={4}>Treatment 4: More collapse (độ rộng sidebar hẹp hơn như hình 2)</option>
+                            <option value={5}>Treatment 5: Extremely rounded (các layout bo cong hơn như hình 3)</option>
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                            <ChevronDown size={16} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Two experiments groupings requested */}
+                      <div className="space-y-8">
+                        <div className="space-y-4">
+                          <h3 className="text-[10px] font-black uppercase tracking-widest opacity-40 px-2 text-left">App experiment</h3>
+                          <div className={`p-6 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"} space-y-4`}>
+                            {PIZZA_EXPERIMENTS.app.map(exp => (
+                              <div key={exp.id} className="flex items-center justify-between border-b border-black/5 last:border-0 last:pb-0 pb-4">
+                                 <div className="flex-1 pr-6 text-left">
+                                    <span className="text-sm font-bold block">{exp.name}</span>
+                                    <span className="text-[11px] opacity-50 block mt-0.5">{exp.desc}</span>
+                                 </div>
+                                 <div 
+                                    onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
+                                    className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 shrink-0 transition-colors ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-300"}`}
+                                 >
+                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags[exp.id] ? "left-5.5" : "left-0.5"}`} />
+                                 </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="text-[10px] font-black uppercase tracking-widest opacity-40 px-2 text-left">Widgets feed experiment</h3>
+                          <div className={`p-6 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"} space-y-4`}>
+                            {PIZZA_EXPERIMENTS.widgets.map(exp => (
+                              <div key={exp.id} className="flex items-center justify-between border-b border-black/5 last:border-0 last:pb-0 pb-4">
+                                 <div className="flex-1 pr-6 text-left">
+                                    <span className="text-sm font-bold block">{exp.name}</span>
+                                    <span className="text-[11px] opacity-50 block mt-0.5">{exp.desc}</span>
+                                 </div>
+                                 <div 
+                                    onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
+                                    className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 shrink-0 transition-colors ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-300"}`}
+                                 >
+                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags[exp.id] ? "left-5.5" : "left-0.5"}`} />
+                                 </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                case 'system_settings':
+                  return (
+                    <div className="pb-16 max-w-4xl mx-auto">
+                      <SettingsContent 
+                        isDark={isDark} 
+                        setIsDark={setIsDark} 
+                        isDev={isDev} 
+                        setIsDev={setIsDev} 
+                        featureFlags={featureFlags}
+                        setFeatureFlags={setFeatureFlags}
+                        liquidGlass={liquidGlass} 
+                        setLiquidGlass={setLiquidGlass}
+                        useSidebar={useSidebar}
+                        setUseSidebar={setUseSidebar}
+                        isSidebarRight={isSidebarRight}
+                        setIsSidebarRight={setIsSidebarRight}
+                        isPinningEnabled={isPinningEnabled}
+                        setIsPinningEnabled={setIsPinningEnabled}
+                        user={user}
+                        userData={userData}
+                        setUserData={setUserData}
+                        onAlert={onAlert}
+                        onLogin={onLogin}
+                        onUpdateLogsClick={() => {}}
+                        favorites={favorites}
+                        backgroundMusicOption={backgroundMusicOption}
+                        setBackgroundMusicOption={setBackgroundMusicOption}
+                        customMusicId={customMusicId}
+                        setCustomMusicId={setCustomMusicId}
+                        searchBoxPosition={searchBoxPosition}
+                        setSearchBoxPosition={setSearchBoxPosition}
+                        sidebarStyle={sidebarStyle}
+                        setSidebarStyle={setSidebarStyle}
+                        setActiveTab={setActiveTab}
+                        wallpaperType={wallpaperType}
+                        setWallpaperType={setWallpaperType}
+                        solidColor={solidColor}
+                        setSolidColor={setSolidColor}
+                        gradientColors={gradientColors}
+                        setGradientColors={setGradientColors}
+                        desktopWallpaper={desktopWallpaper}
+                        setDesktopWallpaper={setDesktopWallpaper}
+                        forcedFont={forcedFont}
+                        setForcedFont={setForcedFont}
+                      />
+                    </div>
+                  );
+                default:
+                  return null;
+              }
+            };
+
+            return (
               <motion.div 
                 key="settings"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className={`flex-1 flex flex-col min-h-0 ${isDark ? "bg-[#1c1c1c]" : "bg-white"} rounded-[32px] overflow-hidden border border-black/5 shadow-2xl transition-colors duration-300`}
               >
-                {/* Header mimicking the screenshot */}
+                {/* Header */}
                 <div className="h-20 px-8 flex items-center justify-between border-b border-black/5">
-                  <h3 className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Settings</h3>
-                  
-                  <div className="flex-1 max-w-lg mx-8">
-                     <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
-                        <Search size={18} className="opacity-40" />
-                        <input 
-                          type="text" 
-                          placeholder="Search settings" 
-                          className="bg-transparent border-none outline-none text-sm w-full font-medium text-current"
-                        />
-                     </div>
+                  <div className="flex items-center gap-3">
+                    {selectedSettingCategory && (
+                      <button 
+                        onClick={() => setSelectedSettingCategory(null)}
+                        className={`p-2.5 rounded-xl transition-all ${isDark ? "hover:bg-white/5 text-white" : "hover:bg-slate-100 text-slate-900"}`}
+                        title="Quay lại"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                    )}
+                    <h3 className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+                      {selectedSettingCategory === 'account' ? 'Tài khoản' :
+                       selectedSettingCategory === 'appearance' ? 'Chủ đề và Giao diện' :
+                       selectedSettingCategory === 'topbar' ? 'Topbar' :
+                       selectedSettingCategory === 'sidebar' ? 'Sidebar' :
+                       selectedSettingCategory === 'floatbar' ? 'Floatbar' :
+                       selectedSettingCategory === 'widgets_board' ? 'Widgets Board' :
+                       selectedSettingCategory === 'system_settings' ? 'Cài đặt hệ thống' :
+                       selectedSettingCategory === 'experiments' ? 'Labs & Experiments' :
+                       'Settings'}
+                    </h3>
+                    {!selectedSettingCategory && (
+                      <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-xl gap-1 ml-4 shadow-inner">
+                        <button
+                          onClick={() => setSettingsLayoutMode('classic')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${settingsLayoutMode === 'classic' ? "bg-blue-600 text-white shadow" : "text-slate-400 hover:text-current hover:bg-black/5 dark:hover:bg-white/5"}`}
+                        >
+                          Classic
+                        </button>
+                        <button
+                          onClick={() => setSettingsLayoutMode('categories')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${settingsLayoutMode === 'categories' ? "bg-purple-600 text-white shadow" : "text-slate-400 hover:text-current hover:bg-black/5 dark:hover:bg-white/5"}`}
+                        >
+                          Categories
+                        </button>
+                      </div>
+                    )}
                   </div>
+                  
+                  {!selectedSettingCategory && (
+                    <div className="flex-1 max-w-lg mx-8">
+                       <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl border transition-all ${isDark ? "bg-black/20 border-white/10 focus-within:bg-black/40 focus-within:border-blue-500/50" : "bg-white border-black/10 shadow-sm focus-within:border-blue-500/50"}`}>
+                          <Search size={18} className="opacity-40" />
+                          <input 
+                            type="text" 
+                            placeholder="Search settings..." 
+                            className="bg-transparent border-none outline-none text-xs w-full font-medium text-current"
+                            value={settingSearchQuery}
+                            onChange={(e) => setSettingSearchQuery(e.target.value)}
+                          />
+                          {settingSearchQuery && (
+                            <button onClick={() => setSettingSearchQuery("")} className="text-xs opacity-50 hover:opacity-100">Xóa</button>
+                          )}
+                       </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-2">
                     <button 
@@ -8003,147 +8742,207 @@ function WidgetsDashboard({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar">
-                   <div className="flex flex-col lg:flex-row gap-6 mb-8 items-stretch">
-                      {/* About Card */}
-                      <div className={`p-8 rounded-[40px] border flex-1 relative overflow-hidden transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
-                         <h4 className={`text-xl font-bold mb-4 ${isDark ? "text-white" : "text-slate-900"}`}>About Vplay by VNRT</h4>
-                         <div className="space-y-1">
-                            <div className="flex items-center gap-12">
-                               <span className="text-sm font-medium opacity-60">Branch:</span>
-                               <span className="text-sm font-bold text-orange-600">Canary</span>
-                            </div>
-                            <div className="flex items-center gap-12">
-                               <span className="text-sm font-medium opacity-60">Build:</span>
-                               <span className="text-sm font-bold">Nx626</span>
-                            </div>
-                            <div className="flex items-center gap-8">
-                               <span className="text-sm font-medium opacity-60">Compiled:</span>
-                               <span className="text-sm font-bold">2026</span>
-                            </div>
-                         </div>
-                      </div>
+                  {selectedSettingCategory ? (
+                    renderSelectedCategoryContent()
+                  ) : settingsLayoutMode === 'classic' ? (
+                    <div className="max-w-4xl mx-auto">
+                      <SettingsContent 
+                        isDark={isDark} 
+                        setIsDark={setIsDark} 
+                        isDev={isDev} 
+                        setIsDev={setIsDev} 
+                        featureFlags={featureFlags}
+                        setFeatureFlags={setFeatureFlags}
+                        liquidGlass={liquidGlass} 
+                        setLiquidGlass={setLiquidGlass}
+                        useSidebar={useSidebar}
+                        setUseSidebar={setUseSidebar}
+                        isSidebarRight={isSidebarRight}
+                        setIsSidebarRight={setIsSidebarRight}
+                        isPinningEnabled={isPinningEnabled}
+                        setIsPinningEnabled={setIsPinningEnabled}
+                        user={user}
+                        userData={userData}
+                        setUserData={setUserData}
+                        onAlert={onAlert}
+                        onLogin={onLogin}
+                        onUpdateLogsClick={() => {}}
+                        favorites={favorites}
+                        backgroundMusicOption={backgroundMusicOption}
+                        setBackgroundMusicOption={setBackgroundMusicOption}
+                        customMusicId={customMusicId}
+                        setCustomMusicId={setCustomMusicId}
+                        searchBoxPosition={searchBoxPosition}
+                        setSearchBoxPosition={setSearchBoxPosition}
+                        sidebarStyle={sidebarStyle}
+                        setSidebarStyle={setSidebarStyle}
+                        setActiveTab={setActiveTab}
+                        wallpaperType={wallpaperType}
+                        setWallpaperType={setWallpaperType}
+                        solidColor={solidColor}
+                        setSolidColor={setSolidColor}
+                        gradientColors={gradientColors}
+                        setGradientColors={setGradientColors}
+                        desktopWallpaper={desktopWallpaper}
+                        setDesktopWallpaper={setDesktopWallpaper}
+                        forcedFont={forcedFont}
+                        setForcedFont={setForcedFont}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                       {/* General info cards */}
+                       <div className="flex flex-col lg:flex-row gap-6 mb-8 items-stretch">
+                          {/* About Card */}
+                          <div className={`p-8 rounded-[40px] border flex-1 relative overflow-hidden transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                             <h4 className={`text-xl font-bold mb-4 ${isDark ? "text-white" : "text-slate-900"}`}>About Vplay by VNRT</h4>
+                             <div className="space-y-1 text-left">
+                                <div className="flex items-center gap-12">
+                                   <span className="text-sm font-medium opacity-60">Branch:</span>
+                                   <span className="text-sm font-bold text-orange-600">Canary</span>
+                                </div>
+                                <div className="flex items-center gap-12">
+                                   <span className="text-sm font-medium opacity-60">Build:</span>
+                                   <span className="text-sm font-bold">Nx626</span>
+                                </div>
+                                <div className="flex items-center gap-8">
+                                   <span className="text-sm font-medium opacity-60">Compiled:</span>
+                                   <span className="text-sm font-bold">2026</span>
+                                </div>
+                             </div>
+                          </div>
 
-                      {/* Feedback Card */}
-                      <div className={`p-8 rounded-[40px] border flex-1 flex items-center gap-6 relative overflow-hidden transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
-                         <div className="p-3 rounded-2xl bg-current opacity-10" />
-                         <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-1">
-                               <ExternalLink size={20} className={isDark ? "text-white" : "text-slate-900"} />
-                               <h4 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Give Feedback!</h4>
-                            </div>
-                            <p className="text-sm opacity-50 leading-relaxed font-medium">Hãy giúp chúng tôi cải thiện Vplay. Chúng tôi luôn lắng nghe ý kiến của bạn</p>
-                         </div>
-                      </div>
-
-                      {/* Logo Section */}
-                      <div className="hidden lg:flex items-center justify-center px-8">
-                         <img src={vplayLogo} alt="Vplay" className="h-24 object-contain filter drop-shadow-2xl" />
-                      </div>
-                   </div>
-                   
-                   <div className="space-y-3">
-                      {[
-                        { id: 'account', name: 'Tài khoản', desc: 'Quản lý hồ sơ và tài khoản Vplay', icon: User },
-                        { id: 'appearance', name: 'Chủ đề và Giao diện', desc: 'Tùy biến giao diện và trải nghiệm người dùng theo ý thích', icon: Palette },
-                        { id: 'topbar', name: 'Topbar (Desktop mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng trên', icon: PanelTop },
-                        { id: 'sidebar', name: 'Sidebar (Desktop mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng bên', icon: Columns },
-                        { id: 'floatbar', name: 'Floatbar (Touch mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng dưới', icon: LayoutGrid },
-                        { id: 'widgets_board', name: 'Widgets board', desc: 'Tùy chỉnh các tính năng và hành vi của bảng tiện ích', icon: Pizza },
-                        { id: 'experiments', name: 'Experimental Features', desc: 'Trải nghiệm sớm các tính năng mới sắp ra mắt của Vplay', icon: Flask }
-                      ].map((item) => (
-                        <button 
-                          key={item.id}
-                          className={`w-full p-6 rounded-[24px] border flex items-center justify-between transition-all group ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-black/5 hover:bg-slate-50 shadow-sm"}`}
-                        >
-                           <div className="flex items-center gap-6">
-                              <div className={`p-4 rounded-2xl ${isDark ? "bg-white/5 text-white" : "bg-slate-100 text-slate-900"}`}>
-                                 <item.icon size={24} />
-                              </div>
-                              <div className="text-left">
-                                 <h5 className={`font-bold text-base ${isDark ? "text-white" : "text-slate-900"}`}>{item.name}</h5>
-                                 <p className="text-sm opacity-40 font-medium">{item.desc}</p>
-                              </div>
-                           </div>
-                           <ChevronRight className="opacity-20 group-hover:opacity-100 transition-opacity" size={20} />
-                        </button>
-                      ))}
-
-                      {/* Widgets Feed Theme section */}
-                      <div className={`w-full p-8 rounded-[32px] border mt-12 transition-all ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
-                        <div className="flex items-center gap-4 mb-8">
-                           <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
-                             <Palette size={24} />
-                           </div>
-                           <div>
-                             <h4 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Widgets feed theme</h4>
-                             <p className="text-sm opacity-50 font-medium">Tùy chỉnh riêng cho widgets, không ảnh hưởng tới ứng dụng</p>
-                           </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                           <button 
+                          {/* Feedback Card */}
+                          <div 
                              onClick={() => {
-                               setWidgetsTheme('light');
-                               localStorage.setItem("vplay_widgets_theme", "light");
+                                onFeedbackClick?.();
+                                setShowWidgets(false);
                              }}
-                             className={`p-6 rounded-[24px] border-2 flex flex-col items-center gap-3 transition-all ${widgetsTheme === 'light' ? "border-blue-500 bg-blue-500/5 ring-4 ring-blue-500/10" : "border-black/5 hover:border-black/20"}`}
-                           >
-                              <div className="w-full aspect-video rounded-xl bg-slate-100 border border-black/5 flex items-center justify-center">
-                                 <Sun size={32} className="text-orange-500" />
-                              </div>
-                              <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Light mode (Default)</span>
-                           </button>
-                           <button 
-                             onClick={() => {
-                               setWidgetsTheme('dark');
-                               localStorage.setItem("vplay_widgets_theme", "dark");
-                             }}
-                             className={`p-6 rounded-[24px] border-2 flex flex-col items-center gap-3 transition-all ${widgetsTheme === 'dark' ? "border-blue-500 bg-blue-500/5 ring-4 ring-blue-500/10" : "border-black/5 hover:border-black/20"}`}
-                           >
-                              <div className="w-full aspect-video rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center">
-                                 <Moon size={32} className="text-blue-400" />
-                              </div>
-                              <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Dark mode</span>
-                           </button>
-                        </div>
-                      </div>
+                             className={`p-8 rounded-[40px] border flex-1 flex items-center gap-6 relative overflow-hidden transition-all cursor-pointer ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-black/5 hover:bg-slate-50 shadow-xl shadow-slate-100"}`}
+                          >
+                             <div className="p-3 rounded-2xl bg-current opacity-10" />
+                             <div className="flex-1 text-left">
+                                <div className="flex items-center gap-3 mb-1">
+                                   <ExternalLink size={20} className={isDark ? "text-white" : "text-slate-900"} />
+                                   <h4 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Give Feedback!</h4>
+                                </div>
+                                <p className="text-xs opacity-50 leading-relaxed font-medium">Hãy giúp chúng tôi cải thiện Vplay. Chúng tôi luôn lắng nghe ý kiến của bạn</p>
+                             </div>
+                          </div>
 
-                      {/* Board Preferences */}
-                      <div className="mt-12 mb-4 px-2">
-                        <h2 className="text-xl font-bold tracking-tight">Widget Board Preferences</h2>
-                        <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">Dash optimization</p>
-                      </div>
+                          {/* Logo Section */}
+                          <div className="hidden lg:flex items-center justify-center px-8">
+                             <img src={vplayLogo} alt="Vplay" className="h-24 object-contain filter drop-shadow-2xl" />
+                          </div>
+                       </div>
+                       
+                       {/* Categories Options */}
+                       <div className="space-y-3">
+                          {filteredCategories.map((item) => (
+                            <button 
+                              key={item.id}
+                              onClick={() => setSelectedSettingCategory(item.id)}
+                              className={`w-full p-6 rounded-[24px] border flex items-center justify-between transition-all group ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-black/5 hover:bg-slate-50 shadow-sm"}`}
+                            >
+                               <div className="flex items-center gap-6">
+                                  <div className={`p-4 rounded-2xl ${isDark ? "bg-white/5 text-white" : "bg-slate-100 text-slate-900"}`}>
+                                     <item.icon size={24} />
+                                  </div>
+                                  <div className="text-left">
+                                     <h5 className={`font-bold text-base ${isDark ? "text-white" : "text-slate-900"}`}>{item.name}</h5>
+                                     <p className="text-xs opacity-40 font-medium">{item.desc}</p>
+                                  </div>
+                               </div>
+                               <ChevronRight className="opacity-20 group-hover:opacity-100 transition-opacity" size={20} />
+                            </button>
+                          ))}
+                          
+                          {filteredCategories.length === 0 && (
+                            <div className="text-center py-8 text-slate-500 font-bold">Không tìm thấy cài đặt phù hợp.</div>
+                          )}
 
-                      <div className={`p-8 rounded-[32px] border transition-all space-y-6 ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
-                        <div className="flex items-center justify-between">
-                           <div className="flex flex-col">
-                             <span className="text-sm font-bold">Open feed on hover</span>
-                             <span className="text-[11px] opacity-50 font-medium">Tự động mở feed khi di chuột qua biểu tượng</span>
-                           </div>
-                           <div 
-                             onClick={() => setWidgetSettings({ ...widgetSettings, openFeedOnHover: !widgetSettings.openFeedOnHover })}
-                             className={`w-11 h-6 rounded-full transition-colors relative p-1 cursor-pointer ${widgetSettings.openFeedOnHover ? "bg-blue-600" : "bg-slate-300"}`}
-                           >
-                             <motion.div className="w-4 h-4 bg-white rounded-full shadow-sm" animate={{ x: widgetSettings.openFeedOnHover ? 20 : 0 }} />
-                           </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                           <div className="flex flex-col">
-                             <span className="text-sm font-bold">Show feed badges</span>
-                             <span className="text-[11px] opacity-50 font-medium">Hiển thị số lượng mục chưa đọc trên widget feed</span>
-                           </div>
-                           <div 
-                             onClick={() => setWidgetSettings({ ...widgetSettings, showFeedBadges: !widgetSettings.showFeedBadges })}
-                             className={`w-11 h-6 rounded-full transition-colors relative p-1 cursor-pointer ${widgetSettings.showFeedBadges ? "bg-blue-600" : "bg-slate-300"}`}
-                           >
-                             <motion.div className="w-4 h-4 bg-white rounded-full shadow-sm" animate={{ x: widgetSettings.showFeedBadges ? 20 : 0 }} />
-                           </div>
-                        </div>
-                      </div>
-                   </div>
+                          {/* Keep original widgets theme shortcut card below if search query is empty */}
+                          {!settingSearchQuery && (
+                            <>
+                              <div className={`w-full p-8 rounded-[32px] border mt-12 transition-all ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                                <div className="flex items-center gap-4 mb-8 text-left">
+                                   <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
+                                     <Palette size={24} />
+                                   </div>
+                                   <div>
+                                     <h4 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Widgets feed theme</h4>
+                                     <p className="text-sm opacity-50 font-medium">Tùy chỉnh riêng cho widgets, không ảnh hưởng tới ứng dụng</p>
+                                   </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                   <button 
+                                     onClick={() => {
+                                       setWidgetsTheme('light');
+                                       localStorage.setItem("vplay_widgets_theme", "light");
+                                     }}
+                                     className={`p-6 rounded-[24px] border-2 flex flex-col items-center gap-3 transition-all ${widgetsTheme === 'light' ? "border-blue-500 bg-blue-500/5 ring-4 ring-blue-500/10" : "border-black/5 hover:border-black/20"}`}
+                                   >
+                                      <div className="w-full aspect-video rounded-xl bg-slate-100 border border-black/5 flex items-center justify-center">
+                                         <Sun size={32} className="text-orange-500" />
+                                      </div>
+                                      <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Light mode (Default)</span>
+                                   </button>
+                                   <button 
+                                     onClick={() => {
+                                       setWidgetsTheme('dark');
+                                       localStorage.setItem("vplay_widgets_theme", "dark");
+                                     }}
+                                     className={`p-6 rounded-[24px] border-2 flex flex-col items-center gap-3 transition-all ${widgetsTheme === 'dark' ? "border-blue-500 bg-blue-500/5 ring-4 ring-blue-500/10" : "border-black/5 hover:border-black/20"}`}
+                                   >
+                                      <div className="w-full aspect-video rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center">
+                                         <Moon size={32} className="text-blue-400" />
+                                      </div>
+                                      <span className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Dark mode</span>
+                                   </button>
+                                </div>
+                              </div>
+
+                              <div className="mt-12 mb-4 px-2 text-left">
+                                <h2 className="text-xl font-bold tracking-tight">Widget Board Preferences</h2>
+                                <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">Dash optimization</p>
+                              </div>
+
+                              <div className={`p-8 rounded-[32px] border transition-all space-y-6 ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                                <div className="flex items-center justify-between">
+                                   <div className="flex flex-col text-left">
+                                     <span className="text-sm font-bold">Open feed on hover</span>
+                                     <span className="text-[11px] opacity-50 font-medium">Tự động mở feed khi di chuột qua biểu tượng</span>
+                                   </div>
+                                   <div 
+                                     onClick={() => setWidgetSettings({ ...widgetSettings, openFeedOnHover: !widgetSettings.openFeedOnHover })}
+                                     className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 transition-colors ${widgetSettings.openFeedOnHover ? "bg-blue-600" : "bg-slate-300"}`}
+                                   >
+                                     <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${widgetSettings.openFeedOnHover ? "left-5.5" : "left-0.5"}`} />
+                                   </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                   <div className="flex flex-col text-left">
+                                     <span className="text-sm font-bold">Show feed badges</span>
+                                     <span className="text-[11px] opacity-50 font-medium">Hiển thị số lượng mục chưa đọc trên widget feed</span>
+                                   </div>
+                                   <div 
+                                     onClick={() => setWidgetSettings({ ...widgetSettings, showFeedBadges: !widgetSettings.showFeedBadges })}
+                                     className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 transition-colors ${widgetSettings.showFeedBadges ? "bg-blue-600" : "bg-slate-300"}`}
+                                   >
+                                     <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${widgetSettings.showFeedBadges ? "left-5.5" : "left-0.5"}`} />
+                                   </div>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                       </div>
+                    </>
+                  )}
                 </div>
               </motion.div>
-           )}
+            );
+          })()}
 
            {!isTabTransitioning && activeBoardTab === 'vstore' && (
               <motion.div 
@@ -13876,6 +14675,7 @@ export default function App() {
             addNotification={addNotification}
             onAction={onAction}
             onAIToolsAction={onAIToolsAction}
+            onFeedbackClick={() => setShowFeedback(true)}
             onNavigate={onNavigate}
             onAlert={(title: string, msg: string) => setCustomAlert({ title, message: msg })}
             channels={channels}
