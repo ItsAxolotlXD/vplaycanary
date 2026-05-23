@@ -99,46 +99,40 @@ const LoadingAnimation = ({ isDark, featureFlags, className = "w-10 h-10" }: { i
   );
 };
 
-const SplashView = ({ text, subtext, featureFlags }: { text: string, subtext?: string, featureFlags?: any }) => (
+const SplashView = ({ text, subtext, featureFlags }: { key?: string, text: string, subtext?: string, featureFlags?: any }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[20000] flex flex-col items-center justify-center pt-8 overflow-hidden"
+    className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-light leading-relaxed select-none overflow-hidden"
   >
-    <div 
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110"
-      style={{ backgroundImage: `url(${splashBg})` }}
-    />
-    <div className="absolute inset-0 bg-black/20" />
-    <div className="relative z-10 flex flex-col items-center space-y-12">
-      <motion.img 
-        initial={{ scale: 0.9 }}
-        animate={{ scale: [0.9, 1.05, 0.9] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        src={vplayLogo}
-        alt="Vplay Logo" 
-        className="h-56 w-56 object-contain drop-shadow-[0_0_50px_rgba(255,255,255,0.3)]"
-        referrerPolicy="no-referrer"
-      />
-      <div className="flex flex-col items-center gap-6">
-        <LoadingAnimation featureFlags={featureFlags} isDark={true} className="w-10 h-10" />
-        <div className="text-center space-y-2">
-          <h2 className="text-white text-3xl font-light tracking-tight drop-shadow-lg">
-            {text}
+    <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
+      <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
+        <div className="space-y-3 w-full">
+          <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+            {text || "Just a moment"}
           </h2>
           {subtext && (
-            <p className="text-white/60 text-lg font-medium tracking-wide">
+            <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full font-light">
               {subtext}
             </p>
           )}
+        </div>
+        
+        <div className="flex items-center gap-4 pt-4">
+          <img 
+            src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+            alt="loading" 
+            className="w-7 h-7 object-contain shrink-0" 
+            referrerPolicy="no-referrer"
+          />
         </div>
       </div>
     </div>
   </motion.div>
 );
 
-const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = false, featureFlags }: { isDark: boolean, onEnter: () => void, isSessionChange?: boolean, isUpdating?: boolean, featureFlags?: any }) => {
+const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = false, featureFlags }: { key?: string, isDark: boolean, onEnter: () => void, isSessionChange?: boolean, isUpdating?: boolean, featureFlags?: any }) => {
   const isWelcome = !isUpdating && !isSessionChange;
   const [showBypass, setShowBypass] = useState(isWelcome);
   const [progress, setProgress] = useState(0);
@@ -148,8 +142,8 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
   
   useEffect(() => {
     let duration = 5000; 
-    if (isSessionChange) duration = 10000;
-    if (isUpdating) duration = 60000; 
+    if (isSessionChange) duration = 5000;
+    if (isUpdating) duration = 30000; 
     
     const interval = 100;
     const step = (100 / (duration / interval));
@@ -169,7 +163,7 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
     if (!isWelcome) {
       bypassTimer = setTimeout(() => {
         setShowBypass(true);
-      }, 10000);
+      }, 5000);
     }
     
     return () => {
@@ -179,7 +173,7 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
     };
   }, [onEnter, isSessionChange, isUpdating, isWelcome]);
 
-  const handleBypass = (e: FormEvent) => {
+  const handleBypass = (e: React.FormEvent) => {
     e.preventDefault();
     if (passInput === "sus") {
       onEnter();
@@ -189,89 +183,82 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
     }
   };
 
-  const titleText = isUpdating ? "Updates are underway" : (isSessionChange ? "Vplay Canary OS" : "Gói trọn Việt Nam trong tầm mắt bạn");
-  const statusText = isUpdating ? "Loading experience..." : (isSessionChange ? "Preparing new experience..." : "Chào mừng!");
+  const filesToLoad = [
+    "system/loader.bin",
+    "system/kernel.sys",
+    "system/config.cfg",
+    "system/gui.dll",
+    "system/vplay_core.wasm",
+    "system/vplay_api.dll",
+    "services/media_service.sys",
+    "services/audio_driver.dll",
+    "services/video_decoder.sys",
+    "resources/theme_renderer.dll",
+    "resources/fonts/Inter-Light.ttf",
+    "resources/fonts/JetBrainsMono-Regular.ttf",
+    "resources/icons/lucide.pack",
+    "resources/images/backgrounds.cfg",
+    "widgets/widgets_feed.json",
+    "widgets/weather_widget.js",
+    "widgets/clock_widget.js",
+    "widgets/news_board.js",
+    "widgets/vstore_list.db",
+    "data/index_db.bin",
+    "data/user_profile.dat",
+    "data/playback_history.json",
+    "data/settings_v2.dat",
+    "security/security_provider.dll",
+    "security/firewall.cfg",
+    "security/auth_state.bin",
+    "shell/explorer.exe",
+    "shell/desktop.dll",
+    "shell/taskbar.dll",
+    "shell/context_menu.sys",
+    "shell/copilot_engine.wasm",
+    "ready"
+  ];
+
+  const currentFileIndex = Math.min(Math.floor((progress / 100) * (filesToLoad.length - 1)), filesToLoad.length - 2);
+  const currentFilename = filesToLoad[currentFileIndex];
+  const totalFiles = filesToLoad.length - 1;
+  const filesLoadedCount = Math.min(Math.floor((progress / 100) * totalFiles), totalFiles);
 
   return (
     <motion.div
-      initial={{ opacity: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
-      className="fixed inset-0 z-[100001] flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-light leading-relaxed select-none overflow-hidden"
     >
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110"
-        style={{ backgroundImage: `url(${splashBg})` }}
-      />
-      <div className="absolute inset-0 bg-black/20" />
-
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative z-10 flex flex-col items-center space-y-12"
-      >
-        <motion.img 
-          initial={{ scale: 0.9 }}
-          animate={{ scale: [0.9, 1.05, 0.9] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          src={vplayLogo} 
-          alt="Vplay Logo" 
-          className="h-[520px] w-[520px] md:h-[680px] md:w-[680px] object-contain drop-shadow-[0_0_100px_rgba(255,255,255,0.4)] transition-all duration-700"
-          referrerPolicy="no-referrer"
-        />
-
-        <div className="flex flex-col items-center space-y-6 px-6 text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="text-white text-3xl md:text-4xl font-light tracking-tight drop-shadow-lg"
-          >
-            {titleText}
-          </motion.h2>
+      <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
+          <div className="space-y-3 w-full animate-fade-in">
+            <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+              Just a moment
+            </h2>
+            <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+              Loading {currentFilename}...
+            </p>
+          </div>
           
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1, duration: 0.5 }}
-            className="flex flex-col items-center gap-6"
-          >
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-4">
-                  <LoadingAnimation featureFlags={featureFlags} isDark={true} className="w-8 h-8" />
-                  <span className="text-white/70 text-xl font-medium tracking-wide">
-                    {statusText}
-                  </span>
-                </div>
-                
-                {/* Visual Progress Bar - Looping as requested */}
-                <div className="w-64 h-1.5 bg-white/10 rounded-full overflow-hidden mt-2 relative">
-                  <motion.div 
-                    initial={{ width: "0%", x: "-100%" }}
-                    animate={{ 
-                      width: ["0%", "100%", "0%"],
-                      x: ["0%", "0%", "100%"]
-                    }}
-                    transition={{ 
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    className="absolute h-full bg-blue-500 rounded-full"
-                  />
-                </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+                alt="loading" 
+                className="w-7 h-7 object-contain shrink-0" 
+                referrerPolicy="no-referrer"
+              />
+              <span className="text-xl font-light text-white/90">
+                {filesLoadedCount} files loaded ({Math.floor(progress)}%)
+              </span>
+            </div>
 
-                <span className="text-white/40 text-sm font-mono mt-2">{Math.floor(progress)}%</span>
-              </div>
-
-            <AnimatePresence>
-              {showBypass && !showPassPrompt && (
-                <motion.button
-                  key="bypass-btn"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+            {showBypass && !showPassPrompt && (
+              <div className="pt-4 flex flex-wrap items-center justify-start gap-4">
+                <button
+                  type="button"
                   onClick={() => {
                     if (isUpdating) {
                       setShowPassPrompt(true);
@@ -279,51 +266,47 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
                       onEnter();
                     }
                   }}
-                  className="px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 text-white rounded-2xl font-bold text-sm tracking-widest uppercase transition-all shadow-2xl active:scale-95"
+                  className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                 >
                   Bypass Splash
-                </motion.button>
-              )}
+                </button>
+              </div>
+            )}
 
-              {showPassPrompt && (
-                <motion.form
-                  key="pass-prompt"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  onSubmit={handleBypass}
-                  className="flex flex-col items-center gap-4 bg-black/40 backdrop-blur-2xl p-6 rounded-[32px] border border-white/10 shadow-2xl"
-                >
-                  <p className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Xác thực quyền bypass</p>
-                  <div className="flex gap-2">
-                    <input 
-                      autoFocus
-                      type="password"
-                      placeholder="Mật khẩu"
-                      value={passInput}
-                      onChange={(e) => setPassInput(e.target.value)}
-                      className={`bg-white/10 border ${passError ? "border-red-500" : "border-white/10"} rounded-xl px-4 py-2 text-white outline-none focus:border-white/40 transition-all text-center w-40 font-mono`}
-                    />
-                    <button 
-                      type="submit"
-                      className="bg-white text-black px-4 py-2 rounded-xl font-bold text-xs uppercase"
-                    >
-                      OK
-                    </button>
-                  </div>
-                  <button 
+            {showPassPrompt && (
+              <form
+                onSubmit={handleBypass}
+                className="flex flex-col items-start gap-4 bg-black/40 backdrop-blur-2xl p-6 border border-white/10 shadow-2xl max-w-md w-full font-light mt-4"
+              >
+                <span className="text-sm text-white/90 font-light">Enter bypass password:</span>
+                <input
+                  type="password"
+                  value={passInput}
+                  onChange={(e) => setPassInput(e.target.value)}
+                  placeholder="Password"
+                  className="w-full bg-white/10 border border-white/20 text-white px-4 py-2 font-light focus:outline-none focus:border-white/40"
+                />
+                {passError && <span className="text-red-400 text-xs font-light">Incorrect password!</span>}
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    className="border border-white text-white font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/10"
+                  >
+                    Submit
+                  </button>
+                  <button
                     type="button"
                     onClick={() => setShowPassPrompt(false)}
-                    className="text-white/30 text-[9px] font-bold uppercase tracking-widest hover:text-white transition-colors"
+                    className="border border-white/40 text-white/80 font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/5"
                   >
-                    Hủy bỏ
+                    Cancel
                   </button>
-                </motion.form>
-              )}
-            </AnimatePresence>
-          </motion.div>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 };
@@ -5145,7 +5128,15 @@ function AIToolsContent({ isDark, liquidGlass, featureFlags }: { isDark: boolean
   );
 }
 
-function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, hideHeader = false }: any) {
+function ExperimentalContent({ 
+  featureFlags, 
+  setFeatureFlags, 
+  isDark, 
+  hideHeader = false,
+  isWidgetsUpdated,
+  setIsInstallingUpdate,
+  addNotification
+}: any) {
   const [flagSearch, setFlagSearch] = useState("");
 
   const experiences = PIZZA_EXPERIMENTS;
@@ -5187,6 +5178,19 @@ function ExperimentalContent({ featureFlags, setFeatureFlags, isDark, hideHeader
                        </div>
                        <div 
                           onClick={() => {
+                            const isUpdated = isWidgetsUpdated !== undefined 
+                              ? isWidgetsUpdated 
+                              : (localStorage.getItem("vplay_widgets_updated_canary") === "true");
+                            
+                            if (exp.id === 'blur_my_feed' && !isUpdated && !featureFlags[exp.id]) {
+                              if (typeof addNotification === 'function') {
+                                addNotification("Update required", "Kích hoạt hiệu ứng mờ yêu cầu cập nhật Widgets Feed trước!", "warning");
+                              }
+                              if (typeof setIsInstallingUpdate === 'function') {
+                                setIsInstallingUpdate(true);
+                              }
+                              return;
+                            }
                             const nextVal = !featureFlags[exp.id];
                             const nextFlags = { ...featureFlags, [exp.id]: nextVal };
                             setFeatureFlags(nextFlags, exp.id, exp.name, nextVal);
@@ -5759,6 +5763,7 @@ const BroadcastExperimentalView = ({ onContinue, onSwitchToRelease }: { onContin
 };
 
 const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInfo }: { 
+  key?: string,
   isDark: boolean, 
   onContinue: () => void, 
   featureFlags: any, 
@@ -5850,7 +5855,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
                  <img 
                    src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
                    alt="Loading" 
-                   className="w-24 h-24 filter brightness-200 opacity-60"
+                   className="w-12 h-12 filter brightness-200 opacity-60"
                    referrerPolicy="no-referrer"
                  />
               </div>
@@ -5966,7 +5971,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
                  <img 
                    src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
                    alt="Loading" 
-                   className="w-24 h-24 filter brightness-200 opacity-60"
+                   className="w-12 h-12 filter brightness-200 opacity-60"
                    referrerPolicy="no-referrer"
                  />
               </div>
@@ -5992,7 +5997,7 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
                  <img 
                    src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
                    alt="Loading" 
-                   className="w-24 h-24 filter brightness-200 opacity-60"
+                   className="w-12 h-12 filter brightness-200 opacity-60"
                    referrerPolicy="no-referrer"
                  />
               </div>
@@ -6327,7 +6332,8 @@ function SettingsContent({
   desktopWallpaper,
   setDesktopWallpaper,
   forcedFont,
-  setForcedFont
+  setForcedFont,
+  onEraseClick
 }: { 
   isDark: boolean, 
   setIsDark: (val: boolean) => void, 
@@ -6368,7 +6374,8 @@ function SettingsContent({
   desktopWallpaper: string,
   setDesktopWallpaper: (val: string) => void,
   forcedFont: string,
-  setForcedFont: (val: string) => void
+  setForcedFont: (val: string) => void,
+  onEraseClick?: () => void
 }) {
   const [saving, setSaving] = useState(false);
   const [flagSearch, setFlagSearch] = useState("");
@@ -6904,6 +6911,31 @@ function SettingsContent({
           </div>
         </div>
       )}
+
+      {/* Erase Data Section */}
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full mt-8 border-red-500/10 ${isDark ? "bg-red-500/5" : "bg-red-500/2 shadow-xl shadow-red-100/30"}`}>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
+            <Trash2 size={24} />
+          </div>
+          <div>
+            <h3 className={`font-bold text-xl tracking-tight text-red-500`}>Erase Vplay Canary</h3>
+            <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} font-medium`}>Reset all local settings, preferences, and data to their system defaults.</p>
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <button 
+            onClick={() => {
+              if (onEraseClick) onEraseClick();
+            }}
+            className="px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
+          >
+            <Trash2 size={14} />
+            Erase data
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -7394,7 +7426,8 @@ function WidgetsDashboard({
   desktopWallpaper,
   setDesktopWallpaper,
   forcedFont,
-  setForcedFont
+  setForcedFont,
+  onEraseClick
 }: any) {
   const isDark = widgetsTheme === "dark"; 
   const [widgetsFeedTreatment, setWidgetsFeedTreatment] = useState<number>(() => {
@@ -7459,6 +7492,7 @@ function WidgetsDashboard({
   const [isWidgetsUpdated, setIsWidgetsUpdated] = useState(() => {
     return localStorage.getItem("vplay_widgets_updated_canary") === "true";
   });
+  const [isUpdateSkipped, setIsUpdateSkipped] = useState(false);
   const [isInstallingUpdate, setIsInstallingUpdate] = useState(false);
   const [installProgress, setInstallProgress] = useState(0);
   const [installMessage, setInstallMessage] = useState("Initializing installation...");
@@ -7610,7 +7644,7 @@ function WidgetsDashboard({
 
   const shouldHideSidebar = widgetSettings?.hideFeedSidebar || widgetsFeedTreatment === 2;
 
-  const isFullPageTab = ['vstore', 'pizza', 'settings', 'doforme'].includes(activeBoardTab);
+  const isFullPageTab = ['vstore', 'pizza', 'settings', 'doforme', 'update_widgets_feed', 'erase_data'].includes(activeBoardTab);
 
   const isCollapsedSidebar = widgetsFeedTreatment === 4;
 
@@ -7728,60 +7762,82 @@ function WidgetsDashboard({
       }
     `}</style>
   )}
-  {!isWidgetsUpdated ? (
-     <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center p-8 bg-[#1c1c1c]/55 backdrop-blur-[40px] text-white select-none z-[10005]">
-        {!isInstallingUpdate ? (
-           <motion.div 
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             className="max-w-md flex flex-col items-center gap-6"
-           >
-              <div className="w-16 h-16 rounded-3xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/10">
-                 <RefreshCw size={32} className="text-blue-500 animate-spin" style={{ animationDuration: '4s' }} />
-              </div>
-              <div className="text-center">
-                 <h2 className="text-2xl font-black tracking-tight mb-3 text-white">Widgets Feed needs an update</h2>
-                 <p className="text-sm text-slate-300 leading-relaxed font-semibold">A new update for widgets board is available to install. Please install the newest updates for the best experience, this may take a while</p>
-              </div>
-              <button
-                onClick={() => setIsInstallingUpdate(true)}
-                className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all mt-2"
-              >
-                Install now
-              </button>
-           </motion.div>
-        ) : (
-           <div className="max-w-md flex flex-col items-center gap-8">
-              <div className="relative w-24 h-24 flex items-center justify-center">
-                 <span className="font-mono font-bold text-xl text-blue-400">{installProgress}%</span>
-                 <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                    <circle
-                       cx="48"
-                       cy="48"
-                       r="42"
-                       fill="none"
-                       stroke="rgba(255, 255, 255, 0.05)"
-                       strokeWidth="6"
-                    />
-                    <circle
-                       cx="48"
-                       cy="48"
-                       r="42"
-                       fill="none"
-                       stroke="#3b82f6"
-                       strokeWidth="6"
-                       strokeDasharray={`${2 * Math.PI * 42}`}
-                       strokeDashoffset={`${2 * Math.PI * 42 * (1 - installProgress / 100)}`}
-                       strokeLinecap="round"
-                    />
-                 </svg>
-              </div>
-              <div className="space-y-3 text-center">
-                 <h3 className="text-xl font-bold tracking-tight text-white animate-pulse">Installing newest updates...</h3>
-                 <p className="text-xs text-slate-300 font-mono select-none h-4">{installMessage}</p>
-              </div>
+  {!isWidgetsUpdated && (
+    <style>{`
+      #vplay-widgets-dashboard, 
+      #vplay-widgets-dashboard *, 
+      [id^="vplay-widgets-dashboard"], 
+      .backdrop-blur-xl, 
+      .backdrop-blur-2xl, 
+      .backdrop-blur-3xl, 
+      .backdrop-blur-md, 
+      .backdrop-blur-sm, 
+      .backdrop-blur {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+    `}</style>
+  )}
+  {!isWidgetsUpdated && !isUpdateSkipped ? (
+     <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white select-none z-[10005] overflow-hidden">
+        <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
+           <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
+              {!isInstallingUpdate ? (
+                 <>
+                    <div className="space-y-3 w-full">
+                       <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+                          Widgets Feed needs an update
+                       </h2>
+                       <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full max-w-2xl">
+                          We are experimenting new frosted glass effect design on Widget Feeds and it requires a server-side update to work. You can skip the update but the nice frosted glass effect will not work
+                       </p>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-start gap-4">
+                       <button
+                          onClick={() => setIsInstallingUpdate(true)}
+                          className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                       >
+                          Install now
+                       </button>
+                       <button
+                          onClick={() => setIsUpdateSkipped(true)}
+                          className="border border-white/40 text-white/80 font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/5 hover:text-white rounded-none active:scale-[0.98] cursor-pointer"
+                       >
+                          Skip update
+                       </button>
+                    </div>
+                 </>
+              ) : (
+                 <div className="space-y-3 w-full">
+                    <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+                       Installing newest updates...
+                    </h2>
+                    <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+                       We are updating Widgets Feed for you. This might take a few moments...<br />
+                       {installMessage}
+                    </p>
+                    
+                    <div className="flex items-center gap-4 pt-4">
+                       <div 
+                          className="w-10 h-10 rounded-full border-2 border-white/20 border-t-white animate-spin shrink-0"
+                          style={{ borderWidth: '3px', display: 'none' }}
+                        />
+                        <img 
+                           src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+                           alt="loading" 
+                           className="w-7 h-7 object-contain shrink-0" 
+                           referrerPolicy="no-referrer"
+                        />
+                        <div style={{ display: 'none' }}
+                       />
+                       <span className="text-xl font-light text-white/90">
+                          {installProgress}% complete
+                       </span>
+                    </div>
+                 </div>
+              )}
            </div>
-        )}
+        </div>
      </div>
   ) : isRefreshingWidgets ? (
      <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-[#1c1c1c] text-white z-[10006]">
@@ -9023,6 +9079,7 @@ function WidgetsDashboard({
                         setDesktopWallpaper={setDesktopWallpaper}
                         forcedFont={forcedFont}
                         setForcedFont={setForcedFont}
+                        onEraseClick={onEraseClick}
                       />
                     </div>
                   );
@@ -10646,7 +10703,7 @@ interface AppWindow {
   y?: number;
 }
 
-const LockScreen = ({ isDark, userName, weatherCity, onSignIn, setUserName, setWeatherCity, wallpaper }: { isDark: boolean, userName: string, weatherCity: string, onSignIn: () => void, setUserName: (v: string) => void, setWeatherCity: (v: string) => void, wallpaper: string }) => {
+const LockScreen = ({ isDark, userName, weatherCity, onSignIn, setUserName, setWeatherCity, wallpaper }: { key?: string, isDark: boolean, userName: string, weatherCity: string, onSignIn: () => void, setUserName: (v: string) => void, setWeatherCity: (v: string) => void, wallpaper: string }) => {
   const [time, setTime] = useState(new Date());
   const [showInputs, setShowInputs] = useState(false);
 
@@ -11198,8 +11255,36 @@ const SendFeedback = ({ size = 20, className }: { size?: number, className?: str
 );
 
 export default function App() {
+  const [showEraseModal, setShowEraseModal] = useState(false);
+  const [isErasing, setIsErasing] = useState(false);
+  const [eraseProgress, setEraseProgress] = useState(0);
+
+  useEffect(() => {
+    let interval: any;
+    if (isErasing) {
+      setEraseProgress(0);
+      const duration = 60000; // 60 seconds (1 minute)
+      const steps = 100;
+      const intervalTime = duration / steps; // 600ms per step
+      interval = setInterval(() => {
+        setEraseProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            localStorage.clear();
+            window.location.reload();
+            return 100;
+          }
+          return prev + 1;
+        });
+      }, intervalTime);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isErasing]);
+
   const [showWidgets, setShowWidgets] = useState(false);
-  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme' | 'vstore'>('widgets');
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme' | 'vstore' | 'update_widgets_feed' | 'erase_data'>('widgets');
   const [widgetsTheme, setWidgetsTheme] = useState<"light" | "dark">(() => (localStorage.getItem("vplay_widgets_theme") as "light" | "dark") || "light");
   const [activeDoForMeSubView, setActiveDoForMeSubView] = useState<string | null>(null);
   const [pinnedDoForMeFeatures, setPinnedDoForMeFeatures] = useState<string[]>(() => {
@@ -12305,6 +12390,7 @@ export default function App() {
       <AnimatePresence mode="wait">
         {showSplash ? (
           <SplashScreen 
+            key="welcome-splash"
             isDark={isDark} 
             onEnter={handleEnterApp} 
             isSessionChange={false}
@@ -12312,6 +12398,7 @@ export default function App() {
           />
         ) : showOOBE ? (
           <OOBEView 
+            key="oobe-view"
             isDark={isDark} 
             onContinue={handleCloseOOBE} 
             featureFlags={featureFlags} 
@@ -12370,15 +12457,17 @@ export default function App() {
             />
             {isUpdating ? (
               <SplashScreen 
+                key="updating-splash"
                 isDark={isDark} 
                 onEnter={() => {}} // Controlled by setTimeout in handleToggleOS
                 isUpdating={true}
                 featureFlags={featureFlags}
               />
             ) : isChangingSession ? (
-              <SplashView text="Preparing new experience..." featureFlags={featureFlags} />
+              <SplashView key="changing-session-splash" text="Preparing new experience..." featureFlags={featureFlags} />
             ) : (featureFlags.windows_mode && isLocked) ? (
               <LockScreen 
+                key="lock-screen"
                 isDark={isDark}
                 userName={userName}
                 weatherCity={weatherCity}
@@ -12511,6 +12600,7 @@ export default function App() {
                           setDesktopWallpaper={setDesktopWallpaper}
                           forcedFont={forcedFont}
                           setForcedFont={setForcedFont}
+                          onEraseClick={() => setShowEraseModal(true)}
                         />
                     </div>
                   )}
@@ -13109,6 +13199,7 @@ export default function App() {
                         <p className="text-slate-500 font-medium">Cá nhân hóa trải nghiệm Vplay Media Player của bạn</p>
                       </header>
                       <SettingsContent 
+                        onEraseClick={() => setShowEraseModal(true)}
                         isDark={isDark} 
                         setIsDark={setIsDark} 
                         isDev={isDev} 
@@ -15039,6 +15130,7 @@ export default function App() {
             setDesktopWallpaper={setDesktopWallpaper}
             forcedFont={forcedFont}
             setForcedFont={setForcedFont}
+            onEraseClick={() => setShowEraseModal(true)}
           />
         )}
       </AnimatePresence>
@@ -15261,6 +15353,95 @@ export default function App() {
             isNarratorActive={isNarratorActive}
           />
         )}
+
+        {/* Global Erase Modal Overlay */}
+        <AnimatePresence>
+          {showEraseModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center font-light leading-relaxed select-none overflow-hidden"
+            >
+              <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
+                <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
+                  {!isErasing ? (
+                    <>
+                      <div className="space-y-3 w-full">
+                        <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+                          Ready to erase Vplay Canary?
+                        </h2>
+                        <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+                          This mean we will restore all of the settings and accounts back to their defaults. You can create and download a data backup file in case (that includes all your current options, UI layout and account settings). The erase process will take around 30 seconds to a minute.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-start gap-4">
+                        <button
+                          onClick={() => setIsErasing(true)}
+                          className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Erase now
+                        </button>
+                        <button
+                          onClick={() => {
+                            const data: Record<string, string> = {};
+                            for (let i = 0; i < localStorage.length; i++) {
+                              const key = localStorage.key(i);
+                              if (key && (key.startsWith('vplay_') || key === 'vpoints' || key.includes('vplay') || key === 'feature_flags')) {
+                                data[key] = localStorage.getItem(key) || "";
+                              }
+                            }
+                            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = `vplay_canary_backup_${new Date().toISOString().split('T')[0]}.json`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Download backup file
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowEraseModal(false);
+                          }}
+                          className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-3 w-full">
+                      <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+                        Please wait
+                      </h2>
+                      <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+                        We are erasing Vplay Canary for you. This might take a several minutes (about 30 seconds to a minute)...<br />
+                        All of the settings will be reset to their defaults. that includes all your current options, UI layout and account settings
+                      </p>
+                      
+                      <div className="flex items-center gap-4 pt-4">
+                        <img 
+                          src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+                          alt="loading" 
+                          className="w-7 h-7 object-contain shrink-0" 
+                          referrerPolicy="no-referrer"
+                        />
+                        <span className="text-xl font-light text-white/90">
+                          {eraseProgress}% complete
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <Tooltip text={hoveredHeadingItem || ""} show={!!hoveredHeadingItem} targetRect={hoveredHeadingRect} isDesktop={true} position="bottom" />
       </div>
     </MotionConfig>
