@@ -104,16 +104,16 @@ const SplashView = ({ text, subtext, featureFlags }: { key?: string, text: strin
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-light leading-relaxed select-none overflow-hidden"
+    className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-sans font-light leading-relaxed select-none overflow-hidden"
   >
     <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-      <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
+      <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-sans font-light leading-relaxed">
         <div className="space-y-3 w-full">
-          <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+          <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
             {text || "Just a moment"}
           </h2>
           {subtext && (
-            <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full font-light">
+            <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full font-sans font-light">
               {subtext}
             </p>
           )}
@@ -229,15 +229,15 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
-      className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-light leading-relaxed select-none overflow-hidden"
+      className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-sans font-light leading-relaxed select-none overflow-hidden"
     >
       <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-        <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-sans font-light leading-relaxed">
           <div className="space-y-3 w-full animate-fade-in">
-            <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+            <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
               Just a moment
             </h2>
-            <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+            <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full">
               Loading {currentFilename}...
             </p>
           </div>
@@ -250,7 +250,7 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
                 className="w-7 h-7 object-contain shrink-0" 
                 referrerPolicy="no-referrer"
               />
-              <span className="text-xl font-light text-white/90">
+              <span className="text-xl font-sans font-light text-white/90">
                 {filesLoadedCount} files loaded ({Math.floor(progress)}%)
               </span>
             </div>
@@ -266,7 +266,7 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
                       onEnter();
                     }
                   }}
-                  className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                  className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                 >
                   Bypass Splash
                 </button>
@@ -276,28 +276,28 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
             {showPassPrompt && (
               <form
                 onSubmit={handleBypass}
-                className="flex flex-col items-start gap-4 bg-black/40 backdrop-blur-2xl p-6 border border-white/10 shadow-2xl max-w-md w-full font-light mt-4"
+                className="flex flex-col items-start gap-4 bg-black/40 backdrop-blur-2xl p-6 border border-white/10 shadow-2xl max-w-md w-full font-sans font-light mt-4"
               >
-                <span className="text-sm text-white/90 font-light">Enter bypass password:</span>
+                <span className="text-sm text-white/90 font-sans font-light">Enter bypass password:</span>
                 <input
                   type="password"
                   value={passInput}
                   onChange={(e) => setPassInput(e.target.value)}
                   placeholder="Password"
-                  className="w-full bg-white/10 border border-white/20 text-white px-4 py-2 font-light focus:outline-none focus:border-white/40"
+                  className="w-full bg-white/10 border border-white/20 text-white px-4 py-2 font-sans font-light focus:outline-none focus:border-white/40 animate-fade-in"
                 />
-                {passError && <span className="text-red-400 text-xs font-light">Incorrect password!</span>}
+                {passError && <span className="text-red-400 text-xs font-sans font-light">Incorrect password!</span>}
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="border border-white text-white font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/10"
+                    className="border border-white text-white font-sans font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/10 cursor-pointer"
                   >
                     Submit
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowPassPrompt(false)}
-                    className="border border-white/40 text-white/80 font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/5"
+                    className="border border-white/40 text-white/80 font-sans font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/5 cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -5768,247 +5768,171 @@ const OOBEView = ({ isDark, onContinue, featureFlags, setFeatureFlags, forcedInf
   onContinue: () => void, 
   featureFlags: any, 
   setFeatureFlags: (f: any) => void,
-  forcedInfo?: { title: string, subtitle: string }
+  forcedInfo?: any
 }) => {
-  const [phase, setPhase] = useState<"initial_loading" | "wizard" | "experiments" | "music" | "final_loading_1" | "final_loading_2" | "almost_there" | "forced_info">(forcedInfo ? "forced_info" : "experiments");
-  const [selectedMusicUrl, setSelectedMusicUrl] = useState<string>("");
-  const [currentExpIndex, setCurrentExpIndex] = useState(0);
-
-  const experiments = [...PIZZA_EXPERIMENTS.app, ...PIZZA_EXPERIMENTS.widgets];
-
-  const handleFinishExperiments = () => {
-    setPhase("final_loading_1");
-  };
-
-  const handleStartExperiments = () => {
-    // Mobile audio context unlock on user interaction
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    audioContext.resume().then(() => {
-      console.log("AudioContext resumed via OOBE interaction");
-    });
-    setPhase("experiments");
-  };
-
-  const handleToggleExperiment = (id: string, active: boolean) => {
-    const newFlags = { ...featureFlags, [id]: active };
-    setFeatureFlags(newFlags);
-    localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
-    
-    if (currentExpIndex < experiments.length - 1) {
-      setCurrentExpIndex(prev => prev + 1);
-    } else {
-      handleFinishExperiments();
-    }
-  };
-
-  const handleToggleSingleFlag = (id: string, active: boolean) => {
-    const newFlags = { ...featureFlags, [id]: active };
-    setFeatureFlags(newFlags);
-    localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
-  };
-
-  useEffect(() => {
-    if (phase === "initial_loading") {
-      setPhase("experiments");
-      return;
-    } else if (phase === "final_loading_1") {
-      setPhase("final_loading_2");
-      return;
-    } else if (phase === "final_loading_2") {
-      setPhase("almost_there");
-      return;
-    } else if (phase === "almost_there") {
-      const timer = setTimeout(() => {
-        onContinue();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [phase, onContinue]);
+  const [phase, setPhase] = useState<"initial_loading" | "experiments" | "final_loading_1" | "final_loading_2" | "forced_info" | "almost_there">(forcedInfo ? "forced_info" : "experiments");
 
   return (
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+    <div className="fixed inset-0 z-[100005] bg-black/70 backdrop-blur-md flex items-center justify-center select-none overflow-hidden" style={{ fontFamily: 'Inter, sans-serif' }}>
+      <button 
         onClick={onContinue}
-      />
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className={`relative w-full max-w-4xl max-h-[85vh] flex flex-col font-sans overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border ${
-          isDark ? "bg-[#1c1c1c] text-white border-white/5" : "bg-white text-slate-900 border-gray-100"
-        } rounded-[12px]`}
+        className="absolute top-6 right-6 p-2 text-white/55 hover:text-white transition-colors z-[100010]"
       >
-         <AnimatePresence mode="wait">
-         {phase === "initial_loading" ? (
-           <motion.div 
-             key="loading_initial"
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             exit={{ opacity: 0 }}
-             className="flex-1 flex flex-col items-center justify-center space-y-8"
-           >
-              <div className="relative">
-                 <img 
-                   src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-                   alt="Loading" 
-                   className="w-12 h-12 filter brightness-200 opacity-60"
-                   referrerPolicy="no-referrer"
-                 />
-              </div>
-              <p className="text-3xl md:text-4xl font-light tracking-tight text-white/60 animate-pulse">Just a moment...</p>
-           </motion.div>
-         ) : (phase === "experiments" || phase === "all_exp") ? (
-           <motion.div 
-             key="experiments"
-             initial={{ opacity: 0, x: 100 }}
-             animate={{ opacity: 1, x: 0 }}
-             exit={{ opacity: 0, x: -100 }}
-             className="flex-1 flex flex-col overflow-hidden"
-           >
-              <div className="h-24 w-full flex items-center justify-between px-12 bg-[#212121] border-b border-white/10 shrink-0">
-                 <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-500 flex items-center justify-center">
-                       <Flask size={18} />
-                    </div>
-                    <span className="text-xs font-normal">Vplay Experiments</span>
-                 </div>
-                 <div className="flex items-center gap-4 opacity-40">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{currentExpIndex + 1} / {experiments.length}</span>
-                 </div>
-              </div>
+        <X size={24} />
+      </button>
 
-               <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-                  <div className="max-w-4xl mx-auto space-y-12">
-                     <div className="text-center space-y-4">
-                        <h2 className="text-5xl font-light tracking-tight text-white line-clamp-1">Kích hoạt tính năng thử nghiệm</h2>
-                        <p className="text-lg text-white/60 font-light max-w-2xl mx-auto italic">
-                           Thử nghiệm các tính năng mới nhất ngay tại đây.
-                        </p>
-                     </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(['app', 'widgets'] as const).map(category => (
-              <Fragment key={category}>
-                <div className="col-span-full pt-6 pb-2">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 border-b border-white/5 pb-3">
-                    {category === 'app' ? "App Features" : "Widgets Dashboard Features"}
-                  </h3>
-                </div>
-                {PIZZA_EXPERIMENTS[category].map(exp => (
-                  <button 
-                      key={exp.id}
-                      onClick={() => {
-                        const newFlags = { ...featureFlags, [exp.id]: !featureFlags[exp.id] };
-                        setFeatureFlags(newFlags);
-                        localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
-                      }}
-                      className={`p-6 rounded-[32px] border transition-all text-left flex flex-col gap-3 group ${
-                          featureFlags[exp.id] 
-                            ? "bg-purple-600 border-purple-500 shadow-lg shadow-purple-600/20" 
-                            : "bg-white/5 border-white/10 hover:bg-white/10"
-                      }`}
-                  >
-                      <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Experimental</span>
-                          <div className={`w-10 h-5 rounded-full relative transition-colors ${featureFlags[exp.id] ? "bg-white/20" : "bg-white/10"}`}>
-                            <motion.div 
-                                animate={{ x: featureFlags[exp.id] ? 20 : 4 }}
-                                className={`absolute top-1 w-3 h-3 rounded-full bg-white shadow-lg`}
-                            />
-                          </div>
-                      </div>
-                      <h4 className="text-lg font-bold text-white tracking-tight leading-none">{exp.name}</h4>
-                      <p className={`text-xs ${featureFlags[exp.id] ? "text-white/80" : "text-white/40"} font-medium leading-relaxed line-clamp-2`}>{exp.desc}</p>
-                  </button>
-                ))}
-              </Fragment>
-            ))}
-          </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 50 }}
+        transition={{ type: "spring", damping: 25, stiffness: 180 }}
+        className="w-full bg-[#1e0a5c] text-white py-10 md:py-14 px-6 md:px-24 border-t border-b border-white/10 shadow-2xl relative max-h-[95vh] overflow-y-auto custom-scrollbar"
+      >
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 md:gap-8 text-left font-light leading-relaxed">
+          <AnimatePresence mode="wait">
+             {phase === "forced_info" ? (
+                <motion.div
+                  key="forced_info"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  className="space-y-6"
+                >
+                  <div className="max-w-2xl space-y-4">
+                     <h2 className="text-4xl md:text-5xl font-light tracking-wide leading-tight text-white mb-2">
+                        {forcedInfo?.title || "Cấu hình OOBE"}
+                     </h2>
+                     <p className="text-white/80 text-base md:text-lg font-light leading-relaxed">
+                        {forcedInfo?.subtitle || "Chào mừng bạn đến với chương trình thử nghiệm của Vplay Canary."}
+                     </p>
+                     <p className="text-white/60 text-sm font-light leading-relaxed">
+                        Chương trình bao gồm các thiết lập cho tính năng mới của Vplay, cho phép bạn tùy chỉnh các cờ thử nghiệm và tối ưu hóa dashboard widgets ngay từ lần khởi động đầu tiên.
+                     </p>
                   </div>
-               </div>
-               <div className="h-24 w-full flex items-center px-12 bg-[#212121] border-t border-white/10 shrink-0">
-                  <div className="flex items-center justify-between w-full">
-                     <div className="flex items-center gap-4 opacity-40">
-                        <p className="text-[10px] font-light text-white/40">Tính năng thử nghiệm có thể lỗi.</p>
+                  <div className="pt-4 flex gap-4">
+                     <button
+                       onClick={() => setPhase("experiments")}
+                       className="px-8 py-3.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 text-sm"
+                     >
+                       Thiết lập tính năng
+                     </button>
+                     <button
+                       onClick={onContinue}
+                       className="px-8 py-3.5 border border-white/20 text-white/80 hover:bg-white/5 hover:text-white rounded-xl font-medium transition-all active:scale-95 text-sm"
+                     >
+                       Bỏ qua
+                     </button>
+                  </div>
+                </motion.div>
+             ) : phase === "experiments" ? (
+                <motion.div
+                  key="experiments"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  className="space-y-6 w-full"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                     <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center">
+                           <Flask size={18} />
+                        </div>
+                        <span className="text-sm font-light text-white/90">Kích hoạt tính năng thử nghiệm</span>
+                     </div>
+                     <span className="text-xs font-mono opacity-60 tracking-wider">Chọn các tính năng để tiếp tục</span>
+                  </div>
+
+                  <div className="max-h-[45vh] overflow-y-auto pr-2 custom-scrollbar">
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+                        {(['app', 'widgets'] as const).map(category => (
+                          <Fragment key={category}>
+                            <div className="col-span-full pt-4 pb-1">
+                              <h3 className="text-xs uppercase tracking-widest text-white/55 border-b border-white/5 pb-2">
+                                {category === 'app' ? "Hệ thống / App Features" : "Widgets Board / Dashboard Features"}
+                              </h3>
+                            </div>
+                            {PIZZA_EXPERIMENTS[category].map(exp => (
+                              <button 
+                                  key={exp.id}
+                                  onClick={() => {
+                                    const newFlags = { ...featureFlags, [exp.id]: !featureFlags[exp.id] };
+                                    setFeatureFlags(newFlags);
+                                    localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
+                                  }}
+                                  className={`p-5 rounded-xl border transition-all text-left flex flex-col gap-2 group ${
+                                      featureFlags[exp.id] 
+                                        ? "bg-white text-slate-900 border-white shadow-lg shadow-white/10" 
+                                        : "bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                                  }`}
+                              >
+                                  <div className="flex items-center justify-between pointer-events-none">
+                                      <span className={`text-[9px] font-bold uppercase tracking-widest ${featureFlags[exp.id] ? "text-slate-800" : "text-white/40"}`}>Experimental</span>
+                                      <div className={`w-8 h-4 rounded-full relative transition-colors ${featureFlags[exp.id] ? "bg-slate-200" : "bg-white/10"}`}>
+                                        <motion.div 
+                                            animate={{ x: featureFlags[exp.id] ? 16 : 3 }}
+                                            className={`absolute top-0.5 w-3 h-3 rounded-full ${featureFlags[exp.id] ? "bg-slate-900" : "bg-white"} shadow`}
+                                        />
+                                      </div>
+                                  </div>
+                                  <h4 className="text-sm font-semibold tracking-tight leading-snug">{exp.name}</h4>
+                                  <p className={`text-[11px] leading-relaxed line-clamp-2 ${featureFlags[exp.id] ? "text-slate-700 font-normal" : "text-white/50 font-light"}`}>{exp.desc}</p>
+                              </button>
+                            ))}
+                          </Fragment>
+                        ))}
+                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                     <span className="text-[11px] text-white/50 font-light">Cấu hình có thể thay đổi sau này trong Cài đặt.</span>
+                     <div className="flex gap-4">
                         <button 
                            onClick={() => {
                              localStorage.setItem("vplay_seen_oobe", "true");
                              window.location.reload();
                            }}
-                           className="text-[10px] font-bold uppercase transition-colors hover:text-white"
+                           className="text-white/60 hover:text-white transition-colors text-xs font-light px-4 py-2 hover:underline"
                         >
-                           Skip
+                           Skip Setup
+                        </button>
+                        <button 
+                           onClick={() => {
+                             localStorage.setItem("vplay_seen_oobe", "true");
+                             window.location.reload();
+                           }}
+                           className="px-8 py-2.5 bg-white text-slate-900 font-bold hover:bg-slate-100 transition-all rounded-xl text-xs active:scale-95"
+                        >
+                           Hoàn tất
                         </button>
                      </div>
-                     <button 
-                        onClick={() => {
-                           localStorage.setItem("vplay_seen_oobe", "true");
-                           window.location.reload();
-                        }}
-                        className={featureFlags.xaml_experience 
-                          ? "vplay-retro-btn vplay-retro-btn-primary" 
-                          : "px-8 py-3 bg-red-600 hover:bg-red-500 text-white transition-all font-bold rounded-xl text-xs active:scale-95 shadow-xl shadow-red-600/20"}
-                     >
-                        Tiếp tục
-                     </button>
                   </div>
-               </div>
-
-           </motion.div>
-         ) : phase === "final_loading_1" ? (
-           <motion.div 
-             key="loading_final_1"
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             exit={{ opacity: 0 }}
-             className="flex-1 flex flex-col items-center justify-center space-y-8"
-           >
-              <div className="relative">
-                 <img 
-                   src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-                   alt="Loading" 
-                   className="w-12 h-12 filter brightness-200 opacity-60"
-                   referrerPolicy="no-referrer"
-                 />
-              </div>
-              <p className="text-3xl md:text-4xl font-light tracking-tight text-white/60 animate-pulse">Just a moment...</p>
-              <div className="absolute bottom-12 left-0 right-0 flex justify-center px-6">
-                 <button 
-                    onClick={() => setPhase("final_loading_2")}
-                    className="w-full max-w-sm py-5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] active:scale-95 transition-all"
-                 >
-                    Bypass Loading
-                 </button>
-              </div>
-           </motion.div>
-         ) : phase === "final_loading_2" ? (
-           <motion.div 
-             key="loading_final_2"
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             exit={{ opacity: 0 }}
-             className="flex-1 flex flex-col items-center justify-center space-y-8 text-center px-8"
-           >
-              <div className="relative">
-                 <img 
-                   src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-                   alt="Loading" 
-                   className="w-12 h-12 filter brightness-200 opacity-60"
-                   referrerPolicy="no-referrer"
-                 />
-              </div>
-              <p className="text-3xl md:text-4xl font-light tracking-tight text-white/60 animate-pulse">Getting your experience ready...</p>
-            </motion.div>
-          ) : (
-            <div className="hidden" />
-          )}
-
-       </AnimatePresence>
-    </motion.div>
+                </motion.div>
+             ) : phase === "final_loading_1" || phase === "final_loading_2" || phase === "almost_there" ? (
+                <motion.div 
+                  key="loading_final"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center justify-center space-y-6 py-6"
+                >
+                   <div className="relative">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+                        alt="Loading" 
+                        className="w-10 h-10 filter brightness-200 opacity-60"
+                        referrerPolicy="no-referrer"
+                      />
+                   </div>
+                   <p className="text-2xl font-light tracking-tight text-white/80 animate-pulse">
+                      {phase === "final_loading_1" ? "Just a moment..." : "Getting your experience ready..."}
+                   </p>
+                </motion.div>
+             ) : (
+                <div className="hidden" />
+             )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
     </div>
   );
 };
@@ -6394,48 +6318,35 @@ function SettingsContent({
         <p className="p-12 text-center w-full font-bold italic opacity-40">Một số mục cài đặt đã được chuyển vào Menu người dùng trên Top Bar.</p>
       </div>
 
-      {/* Force fonts change */}
-      <div className={`p-8 rounded-[40px] border flex flex-col transition-all ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"}`}>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-500">
-            <Type size={24} />
+      {/* Developer Mode */}
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-2xl ${isDev ? "bg-rose-500/10 text-rose-500" : "bg-slate-500/10 text-slate-500"}`}>
+              <ShieldAlert size={24} />
+            </div>
+            <div>
+              <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Developer Mode</h3>
+              <p className="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Kích hoạt chế độ nhà phát triển và hiển thị menu 'Dev'</p>
+            </div>
           </div>
-          <div>
-            <h3 className={`font-bold text-xl ${isDark ? "text-white" : "text-slate-900"}`}>Force fonts change</h3>
-            <p className="text-sm opacity-50">Chọn font chữ cho toàn bộ ứng dụng (Hỗ trợ tiếng Việt)</p>
-          </div>
-        </div>
-
-        <div className="relative group">
-          <select 
-            value={forcedFont}
-            onChange={(e) => setForcedFont(e.target.value)}
-            className={`w-full p-4 rounded-2xl border appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-bold ${
-              isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
-            }`}
+          <button 
+            type="button"
+            onClick={() => {
+              const nextVal = !isDev;
+              setIsDev(nextVal);
+              localStorage.setItem("vplay_dev_mode", nextVal.toString());
+              if (onAlert) {
+                onAlert(
+                  "Developer Mode", 
+                  nextVal ? "Chế độ nhà phát triển đã được KÍCH HOẠT. Hãy kiểm tra thanh bên Board tiện ích." : "Chế độ nhà phát triển đã bị vô hiệu hóa."
+                );
+              }
+            }}
+            className={`w-12 h-6 rounded-full relative p-1 transition-colors ${isDev ? "bg-rose-600" : "bg-slate-400"}`}
           >
-            <option value="">Mặc định (Inter)</option>
-            <option value="google-sans-flex">Google Sans Flex</option>
-            <option value="google-sans">Google Sans</option>
-            <option value="josefin-sans">Josefin Sans</option>
-            <option value="montserrat">Montserrat</option>
-            <option value="playfair-display">Playfair Display</option>
-            <option value="league-spartan">League Spartan</option>
-          </select>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-            <ChevronDown size={20} />
-          </div>
-        </div>
-        
-        <div className="mt-4 flex flex-wrap gap-2">
-            {forcedFont && (
-               <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest border border-indigo-500/20">
-                 Font hiện tại: {forcedFont}
-               </span>
-            )}
-            <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
-              Vietnamese Support
-            </span>
+            <div className={`w-4 h-4 rounded-full bg-white transition-all shadow-sm ${isDev ? "translate-x-6" : "translate-x-0"}`} />
+          </button>
         </div>
       </div>
 
@@ -6670,38 +6581,6 @@ function SettingsContent({
                   {featureFlags.xaml_view_test && featureFlags.settings_vertical && isDark && <CheckCircle2 size={16} />}
                 </button>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 px-1">
-                <Type size={14} className="text-purple-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Force fonts change</span>
-              </div>
-              <div className="relative group">
-                <select 
-                  value={forcedFont}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setForcedFont(val);
-                    localStorage.setItem("vplay_forced_font", val);
-                  }}
-                  className={`w-full p-4 pr-10 rounded-2xl border appearance-none transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer font-bold text-sm ${
-                    isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700"
-                  }`}
-                >
-                  <option value="">Mặc định (Default)</option>
-                  <option value="google-sans-flex">Google Sans Flex</option>
-                  <option value="google-sans">Google Sans</option>
-                  <option value="josefin-sans">Josefin Sans</option>
-                  <option value="montserrat">Montserrat</option>
-                  <option value="playfair-display">Playfair Display</option>
-                  <option value="league-spartan">League Spartan</option>
-                </select>
-                <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity ${isDark ? "text-white" : "text-slate-900"}`}>
-                  <ChevronsUpDown size={16} />
-                </div>
-              </div>
-              <p className="text-[10px] text-slate-500 font-medium px-1">Ghi đè phông chữ trên toàn bộ ứng dụng (Hỗ trợ tiếng Việt)</p>
             </div>
 
             <div className="space-y-3">
@@ -7071,144 +6950,161 @@ function AuthModal({ isOpen, onClose, isDark, liquidGlass, setIsDev, setUserData
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <LiquidModal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      isDark={isDark} 
-      title={getTitle()}
-      description={getDescription()}
-      liquidGlass={liquidGlass}
-      featureFlags={featureFlags}
-    >
-      { (
-        <div className="space-y-4">
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[999999] flex items-center justify-center select-none overflow-hidden"
+        style={{ fontFamily: 'Inter, sans-serif' }}
+      >
+        <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl relative">
+          <button 
+            onClick={onClose}
+            className="absolute top-6 right-6 p-2 text-white/55 hover:text-white transition-colors"
+          >
+            <X size={24} />
+          </button>
           
-          {/* Beta Notice Block */}
-          <div className={`p-4 rounded-2xl border text-left space-y-2 mb-4 ${
-            isDark ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-50 border-amber-200"
-          }`}>
-            <div className="flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-wider">
-              <Sparkles size={14} />
-              Thông tin phiên bản Beta
-            </div>
-            <p className={`text-[11px] leading-relaxed ${isDark ? "text-white/70" : "text-slate-600"}`}>
-              Vplay Beta không hỗ trợ hệ thống đăng nhập, chỉ có ở phiên bản chính thức. Bạn sẽ được phát cho một tài khoản xem truyền hình miễn phí:
-            </p>
-            <div className={`p-3 rounded-xl font-mono text-[10px] space-y-1 ${isDark ? "bg-black/40 text-amber-400" : "bg-white border border-amber-100 text-amber-600"}`}>
-              <div>Tên đăng nhập: <span className="font-bold">vplaybeta</span></div>
-              <div>Mật khẩu: <span className="font-bold">vplaybeta</span></div>
-            </div>
+          <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-12 text-left font-light leading-relaxed">
+             {/* Left Column: Title and Desc */}
+             <div className="md:w-1/2 space-y-4 flex flex-col justify-center">
+                <h2 className="text-4xl font-light text-white tracking-wide">
+                   {getTitle()}
+                </h2>
+                <p className="text-base text-white/80 font-light leading-relaxed max-w-lg">
+                   {getDescription()}
+                </p>
+
+                {/* Beta Info */}
+                <div className="p-4 rounded-xl border border-white/10 bg-white/5 text-left space-y-2 mt-4 max-w-lg">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+                    <Sparkles size={14} />
+                    Thông tin phiên bản Beta
+                  </div>
+                  <p className="text-xs leading-relaxed text-white/70">
+                    Vplay Beta không hỗ trợ hệ thống đăng nhập, chỉ có ở phiên bản chính thức. Bạn sẽ được phát cho một tài khoản xem truyền hình miễn phí:
+                  </p>
+                  <div className="p-3 rounded-lg font-mono text-xs bg-black/40 text-amber-400 space-y-1 border border-white/5">
+                    <div>Tên đăng nhập: <span className="font-bold">vplaybeta</span></div>
+                    <div>Mật khẩu: <span className="font-bold">vplaybeta</span></div>
+                  </div>
+                </div>
+             </div>
+
+             {/* Right Column: Auth Form */}
+             <div className="md:w-1/2 flex flex-col justify-center">
+                <form onSubmit={handleSubmit} className="space-y-4 max-w-md w-full">
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-medium text-center"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                  {success && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-xs font-medium text-center"
+                    >
+                      {success}
+                    </motion.div>
+                  )}
+                  
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider opacity-60 ml-1 text-white">Tên đăng nhập / Email</label>
+                    <input 
+                      required 
+                      value={username} 
+                      onChange={e => setUsername(e.target.value)} 
+                      className="w-full px-5 py-3 rounded-xl border bg-white/5 border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all font-light" 
+                      placeholder="Nhập tên đăng nhập hoặc email..."
+                    />
+                  </div>
+                  
+                  {!isForgotPassword && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider opacity-60 ml-1 text-white">Mật khẩu</label>
+                      <div className="relative">
+                        <input 
+                          required 
+                          type={showPassword ? "text" : "password"} 
+                          value={password} 
+                          onChange={e => setPassword(e.target.value)} 
+                          className="w-full px-5 py-3 rounded-xl border bg-white/5 border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all font-light" 
+                          placeholder="Nhập mật khẩu..." 
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isForgotPassword && !isLogin && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider opacity-60 ml-1 text-white">Xác nhận mật khẩu</label>
+                      <input 
+                        required 
+                        type={showPassword ? "text" : "password"} 
+                        value={confirmPassword} 
+                        onChange={e => setConfirmPassword(e.target.value)} 
+                        className="w-full px-5 py-3 rounded-xl border bg-white/5 border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all font-light" 
+                        placeholder="Nhập lại mật khẩu..." 
+                      />
+                    </div>
+                  )}
+
+                  {isLogin && !isForgotPassword && (
+                    <div className="text-right">
+                      <button 
+                        type="button" 
+                        onClick={() => setIsForgotPassword(true)}
+                        className="text-xs font-medium text-white/60 hover:text-white transition-colors hover:underline"
+                      >
+                        Quên mật khẩu?
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex flex-col gap-4">
+                    <button 
+                      type="submit" 
+                      disabled={loading} 
+                      className="w-full py-3.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl font-bold transition-all disabled:opacity-50 active:scale-95 text-sm"
+                    >
+                      {loading ? "..." : (isForgotPassword ? "Xác nhận" : (isLogin ? "Đăng nhập" : "Đăng ký"))}
+                    </button>
+
+                    <div className="flex justify-between items-center text-xs px-1">
+                      {isForgotPassword ? (
+                        <button type="button" onClick={() => setIsForgotPassword(false)} className="text-white/60 hover:text-white transition-colors hover:underline">
+                          Quay lại đăng nhập
+                        </button>
+                      ) : (
+                        <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-white/60 hover:text-white transition-colors hover:underline">
+                          {isLogin ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </form>
+             </div>
           </div>
-
-        <div className="flex items-center gap-4 py-2">
-          <div className={`flex-1 h-[1px] ${isDark ? "bg-white/10" : "bg-slate-200"}`} />
-          <span className="text-[10px] font-bold uppercase opacity-30">Hoặc</span>
-          <div className={`flex-1 h-[1px] ${isDark ? "bg-white/10" : "bg-slate-200"}`} />
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 text-left">
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl text-xs font-medium text-center"
-          >
-            {error}
-          </motion.div>
-        )}
-        {success && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-3 bg-green-500/10 border border-green-500/20 text-green-600 rounded-2xl text-xs font-medium text-center"
-          >
-            {success}
-          </motion.div>
-        )}
-        <div className="space-y-1">
-          <label className={labelClasses}>Tên đăng nhập / Email</label>
-          <input 
-            required 
-            value={username} 
-            onChange={e => setUsername(e.target.value)} 
-            className={inputClasses} 
-            placeholder="Nhập tên đăng nhập hoặc email..." 
-          />
-        </div>
-        {!isForgotPassword && (
-          <>
-            <div className="space-y-1">
-              <label className={labelClasses}>Mật khẩu</label>
-              <div className="relative">
-                <input 
-                  required 
-                  type={showPassword ? "text" : "password"} 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)} 
-                  className={inputClasses} 
-                  placeholder="Nhập mật khẩu..." 
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-500 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-            {!isLogin && (
-              <div className="space-y-1">
-                <label className={labelClasses}>Xác nhận mật khẩu</label>
-                <input 
-                  required 
-                  type={showPassword ? "text" : "password"} 
-                  value={confirmPassword} 
-                  onChange={e => setConfirmPassword(e.target.value)} 
-                  className={inputClasses} 
-                  placeholder="Nhập lại mật khẩu..." 
-                />
-              </div>
-            )}
-          </>
-        )}
-        
-        {isLogin && !isForgotPassword && (
-          <div className="text-right px-4">
-            <button 
-              type="button" 
-              onClick={() => setIsForgotPassword(true)}
-              className="text-[11px] font-bold text-purple-500 hover:underline"
-            >
-              Quên mật khẩu?
-            </button>
-          </div>
-        )}
-
-        <button 
-          type="submit" 
-          disabled={loading} 
-          className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-[32px] font-bold transition-all shadow-lg shadow-purple-600/20 disabled:opacity-50 active:scale-95 mt-2"
-        >
-          {loading ? "..." : (isForgotPassword ? "Xác nhận" : (isLogin ? "Đăng nhập" : "Đăng ký"))}
-        </button>
-      </form>
-        <div className="mt-6 flex flex-col gap-3">
-          {isForgotPassword ? (
-            <button type="button" onClick={() => setIsForgotPassword(false)} className="text-purple-500 text-xs font-bold hover:underline">
-              Quay lại đăng nhập
-            </button>
-          ) : (
-            <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-purple-500 text-xs font-bold hover:underline">
-              {isLogin ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập"}
-            </button>
-          )}
-        </div>
-      </div>
-    )}
-  </LiquidModal>
-);
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 function AppWindowContainer({ 
@@ -7427,7 +7323,10 @@ function WidgetsDashboard({
   setDesktopWallpaper,
   forcedFont,
   setForcedFont,
-  onEraseClick
+  onEraseClick,
+  isUnlimitedVpoints,
+  setIsUnlimitedVpoints,
+  handleDevOptionClick
 }: any) {
   const isDark = widgetsTheme === "dark"; 
   const [widgetsFeedTreatment, setWidgetsFeedTreatment] = useState<number>(() => {
@@ -7447,6 +7346,7 @@ function WidgetsDashboard({
     const saved = localStorage.getItem("vplay_widgets_feed_treatment");
     return saved ? parseInt(saved, 10) : 1;
   }); 
+  const [operateTabSection, setOperateTabSection] = useState<'tools' | 'dev'>('tools');
   const [gallerySearch, setGallerySearch] = useState("");
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
   const [showStore, setShowStore] = useState(false);
@@ -7609,7 +7509,22 @@ function WidgetsDashboard({
     const base = parts[0];
 
     if (base === '/help') {
-       setOperatorLogs(prev => [...prev, "Available commands:", "/reset store - Reset vpoints & purchases", "/reset widgets - Reset pinned widgets", "/add points <num> - Add Vpoints (max 999999)", "/cls - Clear logs"]);
+       setOperatorLogs(prev => [...prev, "Available commands:", "/developer <enable/disable> - Toggle Dev Mode", "/reset store - Reset vpoints & purchases", "/reset widgets - Reset pinned widgets", "/add points <num> - Add Vpoints (max 999999)", "/cls - Clear logs"]);
+    } else if (base === '/developer') {
+       const arg = parts[1];
+       if (arg === 'enable') {
+          setIsDev(true);
+          localStorage.setItem("vplay_dev_mode", "true");
+          setOperatorLogs(prev => [...prev, "Developer mode ENABLED. Tab 'Dev' is now available on board widgets."]);
+          addNotification("Developer", "Dev Mode enabled via Terminal command.", "success");
+       } else if (arg === 'disable') {
+          setIsDev(false);
+          localStorage.setItem("vplay_dev_mode", "false");
+          setOperatorLogs(prev => [...prev, "Developer mode DISABLED."]);
+          addNotification("Developer", "Dev Mode disabled via Terminal command.", "info");
+       } else {
+          setOperatorLogs(prev => [...prev, "Usage: /developer <enable/disable>"]);
+       }
     } else if (base === '/cls') {
        setOperatorLogs(["Vplay Operator Console Cleared"]);
     } else if (base === '/reset' && parts[1] === 'store') {
@@ -7644,7 +7559,7 @@ function WidgetsDashboard({
 
   const shouldHideSidebar = widgetSettings?.hideFeedSidebar || widgetsFeedTreatment === 2;
 
-  const isFullPageTab = ['vstore', 'pizza', 'settings', 'doforme', 'update_widgets_feed', 'erase_data'].includes(activeBoardTab);
+  const isFullPageTab = ['vstore', 'pizza', 'settings', 'doforme', 'update_widgets_feed', 'erase_data', 'dev'].includes(activeBoardTab);
 
   const isCollapsedSidebar = widgetsFeedTreatment === 4;
 
@@ -8249,57 +8164,126 @@ function WidgetsDashboard({
                   ) : (
                     <div className="flex-1 flex flex-col md:flex-row min-h-0 divide-x divide-white/5">
                       <div className="flex-1 p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                           {[
-                              { id: "speak_for_me", name: "Speak for me", icon: Mic, action: "speak_for_me", desc: "Giọng nói AI thông minh.", color: "bg-blue-500" },
-                              { id: "copy_for_me", name: "Copy for me", icon: Clipboard, action: "copy_for_me", desc: "Trích xuất dữ liệu tự động.", color: "bg-emerald-500" },
-                              { id: "capture_for_me", name: "Capture for me", icon: Camera, action: "capture_for_me", desc: "Phân tích ảnh màn hình.", color: "bg-orange-500" },
-                              { id: "screen_recorder", name: "Record for me", icon: Video, action: "screen_recorder", desc: "Quay video chất lượng cao.", color: "bg-red-500" },
-                              { id: "narrator", name: "Narrate for me", icon: MessageSquare, action: "narrator", desc: "Đọc to nội dung màn hình.", color: "bg-indigo-500" }
-                           ].map((tool, i) => {
-                              const isPinned = pinnedDoForMeFeatures.includes(tool.id);
-                              return (
-                                <div key={i} className="relative group">
-                                  <button 
-                                     onClick={() => onAIToolsAction(tool.action)}
-                                     className="w-full p-5 rounded-[24px] bg-white/5 border border-white/5 shadow-sm hover:shadow-md hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col text-left gap-3 group overflow-hidden"
-                                  >
-                                     <div className={`w-10 h-10 rounded-xl ${tool.color} flex items-center justify-center text-white scale-100 group-hover:scale-110 transition-transform shadow-lg`}>
-                                        <tool.icon size={20} />
-                                     </div>
-                                     <div>
-                                        <h4 className="text-xs font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors">{tool.name}</h4>
-                                        <p className="text-[10px] text-slate-400 font-medium mt-1 leading-tight">{tool.desc}</p>
-                                     </div>
-                                  </button>
-                                  <button 
-                                    onClick={(e) => { e.stopPropagation(); togglePinFeature(tool.id); }}
-                                    className={`absolute top-4 right-4 p-2 rounded-full transition-all z-10 ${isPinned ? "bg-amber-500/20 text-amber-400 opacity-100" : "bg-white/5 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-200"}`}
-                                  >
-                                    <Pin size={12} fill={isPinned ? "currentColor" : "none"} />
-                                  </button>
-                                </div>
-                              );
-                           })}
-                         </div>
-
-                         <div className="mt-4 p-6 rounded-[32px] bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-xl shadow-purple-950/20">
-                            <div className="flex items-center gap-3 mb-4">
-                               <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                                  <Sparkles size={20} />
-                               </div>
-                               <div>
-                                  <h4 className="font-bold tracking-tight">AI Intelligent Agent</h4>
-                                  <p className="text-[10px] opacity-70 font-medium">Sẵn sàng hỗ trợ mọi tác vụ của bạn.</p>
-                               </div>
-                            </div>
-                            <button 
-                              onClick={() => onAIToolsAction('gemini')}
-                              className="w-full py-3 bg-white text-purple-700 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all"
+                        {isDev && (
+                          <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl self-start border border-white/5 mb-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setOperateTabSection('tools')}
+                              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                                operateTabSection === 'tools'
+                                  ? "bg-purple-600 text-white shadow-md shadow-purple-500/10"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
                             >
-                              Launch Gemini Pro
+                              Automation Tools
                             </button>
-                         </div>
+                            <button
+                              type="button"
+                              onClick={() => setOperateTabSection('dev')}
+                              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                                operateTabSection === 'dev'
+                                  ? "bg-rose-500 text-white shadow-md shadow-rose-500/10"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                            >
+                              Dev Console
+                            </button>
+                          </div>
+                        )}
+
+                        {isDev && operateTabSection === 'dev' ? (
+                          <div className="space-y-6">
+                            <div className="p-5 rounded-2xl bg-rose-500/5 border border-rose-500/10 flex flex-col gap-1">
+                               <h4 className="text-xs font-bold uppercase tracking-wider text-rose-400 font-mono">Dev Options Console</h4>
+                               <p className="text-[10px] text-slate-400 font-medium">Canary Build Platform Settings - Click any card option to trigger developer configurations.</p>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {[
+                                { id: 'trigger_oobe', label: 'Trigger OOBE', desc: 'Khởi chạy lại màn hình cấu hình OOBE thiết lập đầu.' },
+                                { id: 'unlimited_vpoints', label: 'Unlimited Vpoints', desc: 'Bật Vpoints vô hạn (hiển thị biểu tượng vô cực ∞).' },
+                                { id: 'custom_vpoints', label: 'Custom Vpoints', desc: 'Điều chỉnh số lượng Vpoints tùy ý không giới hạn.' },
+                                { id: 'purchase_all_store_widgets', label: 'Purchase all store widgets', desc: 'Có đầy đủ mọi tiện ích Vstore không cần trả phí.' },
+                                { id: 'pin_all_widgets_to_feed', label: 'Pin all widgets to feed', desc: 'Ghim sạch mọi widgets có sẵn vào trang Feed hiện tại.' },
+                                { id: 'unpin_all_widgets_from_feed', label: 'Unpin all widgets from feed', desc: 'Gỡ ghim toàn bộ tất cả widgets khỏi trang Feed.' },
+                                { id: 'reset_vstore', label: 'Reset Vstore', desc: 'Đặt lại Vstore về mặc định (Lịch sử thanh toán & 100 VP).' },
+                                { id: 'reset_widgets_feed', label: 'Reset Widgets Feed', desc: 'Trở lại danh sách ghim Feed setup mặc định nhà máy.' },
+                                { id: 'respring_data', label: 'Respring Data', desc: 'Dẫn tới màn hình chờ please wait vĩnh viễn (bypass qua mã 3667).' },
+                                { id: 'erase_data', label: 'Erase Data', desc: 'Mở tiến trình xóa sạch dữ liệu hệ thống (Erase/Backup UI).' }
+                              ].map(opt => (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => handleDevOptionClick(opt.id, opt.label)}
+                                  className="p-5 rounded-[24px] border text-left flex flex-col justify-between h-40 transition-all bg-white/5 border-white/5 hover:bg-white/10 hover:border-rose-500/30 hover:-translate-y-0.5 active:scale-95 group shadow-lg cursor-pointer"
+                                >
+                                  <div className="space-y-1.5 animate-fade-in">
+                                    <span className="font-bold text-sm tracking-tight text-white group-hover:text-rose-400 transition-colors">{opt.label}</span>
+                                    <p className="text-xs text-slate-400 leading-relaxed font-semibold">{opt.desc}</p>
+                                  </div>
+                                  <div className="text-[10px] font-black tracking-widest uppercase text-rose-500/70 group-hover:opacity-100 flex items-center gap-1.5 self-end transition-colors group-hover:text-rose-400">
+                                    <span>Activate</span>
+                                    <ArrowRight size={12} />
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {[
+                                 { id: "speak_for_me", name: "Speak for me", icon: Mic, action: "speak_for_me", desc: "Giọng nói AI thông minh.", color: "bg-blue-500" },
+                                 { id: "copy_for_me", name: "Copy for me", icon: Clipboard, action: "copy_for_me", desc: "Trích xuất dữ liệu tự động.", color: "bg-emerald-500" },
+                                 { id: "capture_for_me", name: "Capture for me", icon: Camera, action: "capture_for_me", desc: "Phân tích ảnh màn hình.", color: "bg-orange-500" },
+                                 { id: "screen_recorder", name: "Record for me", icon: Video, action: "screen_recorder", desc: "Quay video chất lượng cao.", color: "bg-red-500" },
+                                 { id: "narrator", name: "Narrate for me", icon: MessageSquare, action: "narrator", desc: "Đọc to nội dung màn hình.", color: "bg-indigo-500" }
+                              ].map((tool, i) => {
+                                 const isPinned = pinnedDoForMeFeatures.includes(tool.id);
+                                 return (
+                                   <div key={i} className="relative group">
+                                     <button 
+                                        onClick={() => onAIToolsAction(tool.action)}
+                                        className="w-full p-5 rounded-[24px] bg-white/5 border border-white/5 shadow-sm hover:shadow-md hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col text-left gap-3 group overflow-hidden cursor-pointer"
+                                     >
+                                        <div className={`w-10 h-10 rounded-xl ${tool.color} flex items-center justify-center text-white scale-100 group-hover:scale-110 transition-transform shadow-lg`}>
+                                           <tool.icon size={20} />
+                                        </div>
+                                        <div>
+                                           <h4 className="text-xs font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors">{tool.name}</h4>
+                                           <p className="text-[10px] text-slate-400 font-medium mt-1 leading-tight">{tool.desc}</p>
+                                        </div>
+                                     </button>
+                                     <button 
+                                       onClick={(e) => { e.stopPropagation(); togglePinFeature(tool.id); }}
+                                       className={`absolute top-4 right-4 p-2 rounded-full transition-all z-10 ${isPinned ? "bg-amber-500/20 text-amber-400 opacity-100" : "bg-white/5 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-200"}`}
+                                     >
+                                       <Pin size={12} fill={isPinned ? "currentColor" : "none"} />
+                                     </button>
+                                   </div>
+                                 );
+                              })}
+                            </div>
+
+                            <div className="mt-4 p-6 rounded-[32px] bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-xl shadow-purple-950/20 pb-8">
+                               <div className="flex items-center gap-3 mb-4">
+                                  <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                     <Sparkles size={20} />
+                                  </div>
+                                  <div>
+                                     <h4 className="font-bold tracking-tight">AI Intelligent Agent</h4>
+                                     <p className="text-[10px] opacity-70 font-medium">Sẵn sàng hỗ trợ mọi tác vụ của bạn.</p>
+                                  </div>
+                               </div>
+                               <button 
+                                 type="button"
+                                 onClick={() => onAIToolsAction('gemini')}
+                                 className="w-full py-3 bg-white text-purple-700 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all cursor-pointer"
+                               >
+                                 Launch Gemini Pro
+                               </button>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       <div className="w-full md:w-[320px] bg-black/15 flex flex-col min-h-0">
@@ -8435,13 +8419,13 @@ function WidgetsDashboard({
                       {!isTabTransitioning && activeBoardTab === 'settings' && (() => {
             const isDark = true;
             const filteredCategories = [
+              { id: 'system_settings', name: 'Show more options', desc: 'Xem danh sách đầy đủ tất cả các tùy chỉnh cài đặt ứng dụng', icon: Settings },
               { id: 'account', name: 'Tài khoản', desc: 'Quản lý hồ sơ và tài khoản Vplay', icon: User },
               { id: 'appearance', name: 'Chủ đề và Giao diện', desc: 'Tùy biến giao diện và trải nghiệm người dùng theo ý thích', icon: Palette },
               { id: 'topbar', name: 'Topbar (Desktop mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng trên', icon: PanelTop },
               { id: 'sidebar', name: 'Sidebar (Desktop mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng bên', icon: Columns },
               { id: 'floatbar', name: 'Floatbar (Touch mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng dưới', icon: LayoutGrid },
               { id: 'widgets_board', name: 'Widgets board', desc: 'Tùy chỉnh các tính năng và hành vi của bảng tiện ích', icon: Pizza },
-              { id: 'system_settings', name: 'Cài đặt hệ thống (Toàn bộ)', desc: 'Xem danh sách đầy đủ tất cả các tùy chỉnh cài đặt ứng dụng', icon: Settings },
               { id: 'experiments', name: 'Experimental Features', desc: 'Trải nghiệm sớm các tính năng mới sắp ra mắt của Vplay', icon: Flask }
             ].filter(cat => 
               cat.name.toLowerCase().includes(settingSearchQuery.toLowerCase()) || 
@@ -8449,6 +8433,792 @@ function WidgetsDashboard({
             );
 
             const renderSelectedCategoryContent = () => {
+              const matchesSearch = (text: string) => {
+                if (!settingSearchQuery) return true;
+                return text.toLowerCase().includes(settingSearchQuery.toLowerCase());
+              };
+
+              return (
+                <div className="space-y-12 pb-24 text-white text-left">
+                  {/* General info cards: only show if query is blank or matches */}
+                  {matchesSearch("about vplay feedback") && (
+                    <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+                       {/* About Card */}
+                       <div className={`p-8 rounded-[40px] border flex-1 relative overflow-hidden transition-all ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                          <h4 className={`text-xl font-bold mb-4 ${isDark ? "text-white" : "text-slate-900"}`}>About Vplay by VNRT</h4>
+                          <div className="space-y-1 text-left">
+                             <div className="flex items-center gap-12">
+                                <span className="text-sm font-medium opacity-60">Branch:</span>
+                                <span className="text-sm font-bold text-orange-600">Canary</span>
+                             </div>
+                             <div className="flex items-center gap-12">
+                                <span className="text-sm font-medium opacity-60">Build:</span>
+                                <span className="text-sm font-bold">Nx626</span>
+                             </div>
+                             <div className="flex items-center gap-8">
+                                <span className="text-sm font-medium opacity-60">Compiled:</span>
+                                <span className="text-sm font-bold">2026</span>
+                             </div>
+                          </div>
+                       </div>
+
+                       {/* Feedback Card */}
+                       <div 
+                          onClick={() => {
+                             onFeedbackClick?.();
+                             setShowWidgets(false);
+                          }}
+                          className={`p-8 rounded-[40px] border flex-1 flex items-center gap-6 relative overflow-hidden transition-all cursor-pointer ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-black/5 hover:bg-slate-50 shadow-xl shadow-slate-100"}`}
+                       >
+                          <div className="p-3 rounded-2xl bg-current opacity-10" />
+                          <div className="flex-1 text-left">
+                             <div className="flex items-center gap-3 mb-1">
+                                <ExternalLink size={20} className={isDark ? "text-white" : "text-slate-900"} />
+                                <h4 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Give Feedback!</h4>
+                             </div>
+                             <p className="text-xs opacity-50 leading-relaxed font-medium">Hãy giúp chúng tôi cải thiện Vplay. Chúng tôi luôn lắng nghe ý kiến của bạn</p>
+                          </div>
+                       </div>
+
+                       {/* Logo Section */}
+                       <div className="hidden lg:flex items-center justify-center px-8">
+                          <img src={vplayLogo} alt="Vplay" className="h-24 object-contain filter drop-shadow-2xl" />
+                       </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 1: USER ACCOUNT */}
+                  {(matchesSearch("hồ sơ tài khoản đăng nhập guest khách cloud sync") || matchesSearch("account user profile")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <User className="text-blue-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Hồ sơ & Tài khoản</h4>
+                      </div>
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <div className="flex flex-col items-center justify-center text-center gap-4 py-4">
+                          <div className={`w-24 h-24 rounded-full flex items-center justify-center border-4 relative overflow-hidden group ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}>
+                            {user?.photoURL ? (
+                              <img src={user.photoURL} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                              <User className="w-12 h-12 text-slate-400" />
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="text-xl font-bold">{user?.displayName || user?.email?.split('@')[0] || "Khách (Guest)"}</h4>
+                            <p className="text-sm opacity-55 mt-1">{user?.email || "Chưa hoàn tất thiết lập hồ sơ đăng nhập"}</p>
+                          </div>
+                          
+                          {!user ? (
+                            <button 
+                              type="button"
+                              onClick={onLogin}
+                              className="mt-4 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold tracking-tight shadow-xl shadow-blue-500/20 active:scale-95 transition-all w-full max-w-xs"
+                            >
+                              Đăng nhập đồng bộ dữ liệu
+                            </button>
+                          ) : (
+                            <div className="space-y-2 w-full max-w-sm">
+                              <div className={`p-3 rounded-xl text-xs font-mono border ${isDark ? "bg-black/40 border-white/5 text-amber-400" : "bg-orange-50/50 border-orange-100 text-orange-600"} text-center`}>
+                                Hệ thống tài khoản Cloud sync đang hoạt động ổn định
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 2: DEVELOPER SWITCH */}
+                  {(matchesSearch("developer mode nhà phát triển menu dev keypass") || matchesSearch("developer mode")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <ShieldAlert className="text-rose-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">System & Developers</h4>
+                      </div>
+                      
+                      {/* Developer Mode switch */}
+                      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-2xl ${isDev ? "bg-rose-500/10 text-rose-500" : "bg-slate-500/10 text-slate-500"}`}>
+                              <ShieldAlert size={24} />
+                            </div>
+                            <div className="text-left">
+                              <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Developer Mode</h3>
+                              <p className="text-xs text-slate-400 font-medium tracking-wide leading-relaxed mt-0.5 font-sans">Kích hoạt chế độ nhà phát triển và hiển thị menu 'Dev'</p>
+                            </div>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const nextVal = !isDev;
+                              setIsDev(nextVal);
+                              localStorage.setItem("vplay_dev_mode", nextVal.toString());
+                              if (onAlert) {
+                                onAlert(
+                                  "Developer Mode", 
+                                  nextVal ? "Chế độ nhà phát triển đã được KÍCH HOẠT. Hãy kiểm tra thanh bên Board tiện ích." : "Chế độ nhà phát triển đã bị vô hiệu hóa."
+                                );
+                              }
+                            }}
+                            className={`w-12 h-6 rounded-full relative p-1 transition-colors shrink-0 ${isDev ? "bg-rose-600" : "bg-slate-400"}`}
+                          >
+                            <span className="sr-only">Toggle Dev Mode</span>
+                            <div className={`w-4 h-4 rounded-full bg-white transition-all shadow-sm ${isDev ? "translate-x-6" : "translate-x-0"}`} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Force Launch and Factory Reset (only if Dev is on) */}
+                      {isDev && (
+                        <div className={`p-8 rounded-[32px] border transition-all ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"}`}>
+                          <div className="flex items-center gap-4 mb-6 text-left">
+                            <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
+                              <ShieldAlert size={24} />
+                            </div>
+                            <div>
+                              <h3 className={`font-semibold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>Developer & System Settings</h3>
+                              <p className="text-xs text-slate-500">Special tools to debug or factory reset Vplay</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const newFlags = { ...featureFlags, xaml_oobe_force: !featureFlags.xaml_oobe_force };
+                                setFeatureFlags(newFlags);
+                                localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
+                              }}
+                              className={`p-4 rounded-[24px] border flex items-center justify-between gap-4 transition-all ${isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}
+                            >
+                               <div className="text-left font-sans">
+                                  <span className="font-bold text-xs">Force Launch OOBE</span>
+                                  <p className="text-[10px] opacity-40">Bật OOBE khi khởi động</p>
+                               </div>
+                               <div className={`w-10 h-5 rounded-full relative transition-all ${featureFlags.xaml_oobe_force ? "bg-red-500" : "bg-slate-700"}`}>
+                                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags.xaml_oobe_force ? "left-5.5" : "left-0.5"}`} />
+                               </div>
+                            </button>
+
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                onAlert("Resetting", "All settings and local data will be wiped.");
+                                const wasDev = localStorage.getItem("vplay_dev_mode") === "true";
+                                localStorage.clear();
+                                if (wasDev) localStorage.setItem("vplay_dev_mode", "true");
+                                window.location.reload();
+                              }}
+                              className={`p-4 rounded-[24px] border border-red-500/10 bg-red-500/5 hover:bg-red-500/10 text-red-500 flex items-center justify-between gap-4 transition-all`}
+                            >
+                               <div className="text-left">
+                                  <span className="font-bold text-xs text-red-500">Factory Reset</span>
+                                  <p className="text-[10px] opacity-60">Xóa sạch toàn bộ dữ liệu</p>
+                                </div>
+                               <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* SECTION 3: THEME & PERSONALIZATION */}
+                  {(matchesSearch("giao diện sáng tối liquid glass theme") || matchesSearch("giao diện & chủ đề")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <Palette className="text-purple-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Giao diện & Cá nhân hóa</h4>
+                      </div>
+
+                      {/* Theme selection */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <div className="text-left mb-6">
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Chủ đề hệ thống</span>
+                          <p className="text-xs text-slate-400 font-medium font-sans">Thay đổi tông màu của trình phát nhạc và giao diện tổng thể</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            type="button"
+                            onClick={() => setIsDark(false)}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${!isDark ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Sun size={18} className="text-amber-500" />
+                              <span className="text-xs font-bold">Chế độ Sáng (Light)</span>
+                            </div>
+                            {!isDark && <CheckCircle2 size={16} className="text-white" />}
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setIsDark(true)}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${isDark ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Moon size={18} className="text-blue-500" />
+                              <span className="text-xs font-bold">Chế độ Tối (Dark)</span>
+                            </div>
+                            {isDark && <CheckCircle2 size={16} className="text-white" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Liquid Glass select */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <div className="text-left mb-6">
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1 font-sans">Liquid Glass Effect</span>
+                          <p className="text-xs text-slate-400 font-medium">Sử dụng bộ lọc mờ kính thủy tinh động ảo diệu cho Floatbar</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            type="button"
+                            onClick={() => setLiquidGlass("glassy")}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${liquidGlass === "glassy" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Droplet size={18} className="text-purple-400" />
+                              <span className="text-xs font-bold">Glassy (Kính mờ)</span>
+                            </div>
+                            {liquidGlass === "glassy" && <CheckCircle2 size={16} className="text-white" />}
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setLiquidGlass("tinted")}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${liquidGlass === "tinted" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-5 h-5 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                                <div className="w-2 h-2 rounded-full bg-teal-500" />
+                              </div>
+                              <span className="text-xs font-bold">Tinted (Điểm màu)</span>
+                            </div>
+                            {liquidGlass === "tinted" && <CheckCircle2 size={16} className="text-white" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 4: DESKTOP WALLPAPER */}
+                  {(matchesSearch("hình nền background desktop wallpaper flow light dark canary solid color gradient cosmic sunset") || matchesSearch("desktop wallpaper")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <ImageIcon className="text-amber-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Hình nền không gian làm việc (Wallpaper)</h4>
+                      </div>
+
+                      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"}`}>
+                        <div className="flex gap-2 p-1 bg-black/5 rounded-2xl w-fit mb-8">
+                          {[
+                            { id: 'preset', name: 'Preset Wallpapers' },
+                            { id: 'solid', name: 'Solid Color' },
+                            { id: 'gradient', name: 'Gradient Color' }
+                          ].map(type => (
+                            <button
+                              key={type.id}
+                              type="button"
+                              onClick={() => {
+                                setWallpaperType(type.id as any);
+                                localStorage.setItem("vplay_wallpaper_type", type.id);
+                              }}
+                              className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${wallpaperType === type.id ? "bg-white text-black shadow-lg" : "text-slate-400 hover:text-white"}`}
+                            >
+                              {type.name}
+                            </button>
+                          ))}
+                        </div>
+
+                        {wallpaperType === 'preset' && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[
+                              { id: 'flow_light', name: 'Flow Light', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=2000&auto=format&fit=crop' },
+                              { id: 'flow_dark', name: 'Material Blue', url: 'https://images.unsplash.com/photo-1635776062127-d379bfcba9f8?q=80&w=2000&auto=format&fit=crop' },
+                              { id: 'canary_lake', name: 'Canary Lake', url: 'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2000&auto=format&fit=crop' }
+                            ].map(p => (
+                              <button 
+                                key={p.id}
+                                type="button"
+                                onClick={() => {
+                                  setDesktopWallpaper(p.url);
+                                  localStorage.setItem("vplay_desktop_wallpaper", p.url);
+                                }}
+                                className={`group relative p-2 rounded-2xl border overflow-hidden transition-all hover:scale-[1.02] text-left ${desktopWallpaper === p.url ? "border-blue-500 bg-blue-500/5 ring-4 ring-blue-500/10" : "border-white/5 bg-white/5 hover:bg-white/10"}`}
+                              >
+                                <div className="aspect-video w-full rounded-xl overflow-hidden mb-2 relative">
+                                  <img src={p.url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                  {desktopWallpaper === p.url && (
+                                    <div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center backdrop-blur-sm">
+                                      <CheckCircle2 className="text-white" size={32} />
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="text-[11px] font-bold block text-center truncate">{p.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {wallpaperType === 'solid' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-4 bg-black/20 p-4 rounded-2xl">
+                              <input 
+                                type="color" 
+                                value={solidColor}
+                                onChange={(e) => {
+                                  setSolidColor(e.target.value);
+                                  localStorage.setItem("vplay_wallpaper_solid_color", e.target.value);
+                                }}
+                                className="w-12 h-12 rounded-xl border-2 border-white/10 bg-transparent cursor-pointer"
+                              />
+                              <div className="text-left">
+                                <p className="font-mono text-sm font-bold uppercase">{solidColor}</p>
+                                <p className="text-[10px] opacity-40">Pick a custom solid color</p>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 flex-row">
+                              {['#0b0b0b', '#1a1a1a', '#2d3436', '#0984e3', '#6c5ce7', '#d63031', '#e17055', '#f8fafc'].map(c => (
+                                <button 
+                                  key={c}
+                                  type="button"
+                                  onClick={() => {
+                                    setSolidColor(c);
+                                    localStorage.setItem("vplay_wallpaper_solid_color", c);
+                                  }}
+                                  className="w-8 h-8 rounded-full border border-white/20 transition-all hover:scale-110"
+                                  style={{ backgroundColor: c }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {wallpaperType === 'gradient' && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex items-center gap-3 bg-black/20 p-3 rounded-2xl text-left">
+                                <input 
+                                  type="color" 
+                                  value={gradientColors[0]}
+                                  onChange={(e) => {
+                                    const next: [string, string] = [e.target.value, gradientColors[1]];
+                                    setGradientColors(next);
+                                    localStorage.setItem("vplay_wallpaper_gradient_colors", JSON.stringify(next));
+                                  }}
+                                  className="w-10 h-10 rounded-xl"
+                                />
+                                <span className="font-mono text-xs font-bold uppercase">{gradientColors[0]}</span>
+                              </div>
+                              <div className="flex items-center gap-3 bg-black/20 p-3 rounded-2xl text-left">
+                                <input 
+                                  type="color" 
+                                  value={gradientColors[1]}
+                                  onChange={(e) => {
+                                    const next: [string, string] = [gradientColors[0], e.target.value];
+                                    setGradientColors(next);
+                                    localStorage.setItem("vplay_wallpaper_gradient_colors", JSON.stringify(next));
+                                  }}
+                                  className="w-10 h-10 rounded-xl"
+                                />
+                                <span className="font-mono text-xs font-bold uppercase">{gradientColors[1]}</span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { n: 'Cosmic', c: ['#2d0b3b', '#1a0525'] },
+                                { n: 'Ocean', c: ['#00d2ff', '#3a7bd5'] },
+                                { n: 'Sunset', c: ['#f83600', '#f9d423'] }
+                              ].map(g => (
+                                <button
+                                  key={g.n}
+                                  type="button"
+                                  onClick={() => {
+                                    const next: [string, string] = [g.c[0], g.c[1]];
+                                    setGradientColors(next);
+                                    localStorage.setItem("vplay_wallpaper_gradient_colors", JSON.stringify(next));
+                                  }}
+                                  className="flex items-center gap-2 p-2 rounded-xl bg-black/25 hover:bg-black/40 transition-all text-left"
+                                >
+                                  <div className="w-6 h-6 rounded-full shadow-lg shrink-0" style={{ background: `linear-gradient(135deg, ${g.c[0]} 0%, ${g.c[1]} 100%)` }} />
+                                  <span className="text-[10px] font-bold uppercase truncate">{g.n}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 5: TOPBAR & SEARCH BOX */}
+                  {(matchesSearch("vị trí topbar sidebar search box position thanh điều hướng trên") || matchesSearch("topbar search")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <PanelTop className="text-cyan-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Topbar (Desktop mode only)</h4>
+                      </div>
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <div className="text-left mb-6 font-sans">
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Search box position</span>
+                          <p className="text-xs text-slate-400 font-medium">Chọn nơi hiển thị thanh tìm kiếm kênh trên giao diện Desktop</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 pb-2">
+                          <button 
+                            type="button"
+                            onClick={() => setSearchBoxPosition("sidebar")}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${searchBoxPosition === "sidebar" ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <LayoutDashboard size={20} className={searchBoxPosition === "sidebar" ? "text-white" : "text-slate-400"} />
+                            <span className="text-xs font-bold">Show inside sidebar</span>
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setSearchBoxPosition("top")}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${searchBoxPosition === "top" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <div className="h-4 w-12 rounded border border-current opacity-60 flex items-center justify-center text-[8px] uppercase font-black">TOP</div>
+                            <span className="text-xs font-bold">Show inside Top bar</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 6: SIDEBAR CONFIGURATION */}
+                  {(matchesSearch("sidebar trái phải pinned channel shortcuts sidebar positioning pin") || matchesSearch("sidebar pinning")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <Columns className="text-purple-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Sidebar (Desktop mode only)</h4>
+                      </div>
+
+                      {/* Side positioning */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3 text-left font-sans">Sidebar Positioning (LTR/RTL)</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            type="button"
+                            onClick={() => setIsSidebarRight(false)}
+                            className={`p-4 rounded-xl border transition-all flex items-center justify-center gap-3 ${!isSidebarRight ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <span className="text-xs font-bold">Trái (Left-side)</span>
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setIsSidebarRight(true)}
+                            className={`p-4 rounded-xl border transition-all flex items-center justify-center gap-3 ${isSidebarRight ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <span className="text-xs font-bold">Phải (Right-side)</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Pin shortcut */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3 text-left font-sans">Channel Pinning on Sidebar</span>
+                        <button 
+                          type="button"
+                          onClick={() => setIsPinningEnabled(!isPinningEnabled)}
+                          className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${isPinningEnabled ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Pin size={18} className={isPinningEnabled ? "text-white" : "text-slate-400"} />
+                            <span className="text-xs font-bold text-left">Hiện lối tắt kênh yêu thích trên sidebar</span>
+                          </div>
+                          <div className={`w-10 h-5 rounded-full relative transition-[background-color] ${isPinningEnabled ? "bg-white/20" : "bg-slate-700"}`}>
+                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${isPinningEnabled ? "left-5.5" : "left-0.5"}`} />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 7: NAVIGATION SHORTCUTS & INTERACTION */}
+                  {(matchesSearch("touch floatbar navigation music control bảng phát nhạc") || matchesSearch("navigation shortcuts")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <LayoutGrid className="text-pink-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Floatbar (Touch mode only)</h4>
+                      </div>
+
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <div className="text-left font-sans">
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Layout Platform Integration</span>
+                          <p className="text-xs text-slate-400 font-medium mb-3">Chọn giữa các mô hình bố cục đáp ứng cho các kích thước màn hình</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                          <button 
+                            type="button"
+                            onClick={() => setUseSidebar(true)}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${useSidebar ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <Monitor size={20} />
+                            <span className="text-xs font-bold">Desktop style (Sidebar)</span>
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setUseSidebar(false)}
+                            className={`p-4 rounded-xl border transition-all flex flex-col gap-2 text-left ${!useSidebar ? "bg-blue-600 border-blue-500 text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-400"}`}
+                          >
+                            <MousePointer2 size={20} />
+                            <span className="text-xs font-bold">Touch style (Floatbar)</span>
+                          </button>
+                        </div>
+                        
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3 text-left font-sans">Quick Navigation Shortcut</span>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setActiveTab("Phát nhạc");
+                            setShowWidgets(false);
+                          }}
+                          className={`w-full p-6 rounded-2xl border transition-all flex flex-col items-center justify-center gap-3 ${isDark ? "bg-white/5 border-white/10 hover:bg-white/20" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}
+                        >
+                          <Music className="text-purple-500 animate-bounce" size={24} />
+                          <span className="text-xs font-bold uppercase tracking-widest">Mở bảng điều khiển phát nhạc</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 8: WIDGET BOARD OPTIONS */}
+                  {(matchesSearch("widgets theme board feed treatment hover badges calendar clock pin button đồng hồ") || matchesSearch("widgets board preferences")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <Pizza className="text-amber-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Bảng điều khiển tiện ích (Widgets board)</h4>
+                      </div>
+
+                      {/* Feed theme */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-semibold uppercase tracking-widest opacity-40 block mb-4 text-left font-sans">Widgets Feed Theme</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setWidgetsTheme('light');
+                              localStorage.setItem("vplay_widgets_theme", "light");
+                            }}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${widgetsTheme === 'light' ? "border-blue-500 bg-blue-500/5 ring-2 ring-blue-500/10" : "border-white/10"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Sun size={18} className="text-orange-500" />
+                              <span className="text-xs font-semibold">Light mode widgets</span>
+                            </div>
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setWidgetsTheme('dark');
+                              localStorage.setItem("vplay_widgets_theme", "dark");
+                            }}
+                            className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${widgetsTheme === 'dark' ? "border-blue-500 bg-blue-500/5 ring-2 ring-blue-500/10" : "border-white/10"}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Moon size={18} className="text-blue-500" />
+                              <span className="text-xs font-semibold">Dark mode widgets</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Treatments selector */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <div className="text-left mb-4 font-sans">
+                          <span className="text-[10px] font-semibold uppercase tracking-widest opacity-40 block mb-1">Widgets Feed Treatments</span>
+                          <p className="text-xs text-slate-400 font-medium">Bố cục và độ cong đường bo viền của các widgets tương tác</p>
+                        </div>
+                        <div className="relative group text-left">
+                          <select 
+                            value={widgetsFeedTreatment}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setWidgetsFeedTreatment(val);
+                              localStorage.setItem("vplay_widgets_feed_treatment", val.toString());
+                            }}
+                            className={`w-full p-4 pr-10 rounded-2xl border appearance-none transition-all cursor-pointer font-semibold text-sm ${
+                              isDark ? "bg-black/45 border-white/10 text-white focus:ring-blue-500" : "bg-white border-black/10 text-slate-800 focus:ring-blue-500 shadow-sm"
+                            }`}
+                          >
+                            <option value={1}>Treatment 1: Navigation sidebar (Default)</option>
+                            <option value={2}>Treatment 2: Top navigation</option>
+                            <option value={3}>Treatment 3: Float sidebar (Layout giống hình 1)</option>
+                            <option value={4}>Treatment 4: More collapse (Hẹp hơn giống hình 2)</option>
+                            <option value={5}>Treatment 5: Extremely rounded (Bo cong giống hình 3)</option>
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                            <ChevronDown size={16} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Interactions lists */}
+                      <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
+                        <span className="text-[10px] font-semibold uppercase tracking-widest opacity-40 block mb-4 text-left font-sans">Dashboard Interactions</span>
+                        <div className="space-y-4">
+                          {[
+                            {
+                              label: "Open feed on hover",
+                              desc: "Tự động mở khi hover chuột qua nút",
+                              val: widgetSettings.openFeedOnHover,
+                              action: () => setWidgetSettings({ ...widgetSettings, openFeedOnHover: !widgetSettings.openFeedOnHover })
+                            },
+                            {
+                              label: "Show feed badges",
+                              desc: "Hiển thị bong bóng chấm thông báo đỏ chưa đọc",
+                              val: widgetSettings.showFeedBadges,
+                              action: () => setWidgetSettings({ ...widgetSettings, showFeedBadges: !widgetSettings.showFeedBadges })
+                            },
+                            {
+                              label: "Hide feed sidebar",
+                              desc: "Ẩn các tabs danh mục dẹt cạnh lời chào trên board",
+                              val: widgetSettings.hideFeedSidebar,
+                              action: () => setWidgetSettings({ ...widgetSettings, hideFeedSidebar: !widgetSettings.hideFeedSidebar })
+                            },
+                            {
+                              label: "Hiển thị lịch",
+                              desc: "Hiện đồng bộ ngày tháng dương lịch dưới thanh tiêu đề chào",
+                              val: widgetSettings.showCalendarInWidgets,
+                              action: () => setWidgetSettings({ ...widgetSettings, showCalendarInWidgets: !widgetSettings.showCalendarInWidgets })
+                            },
+                            {
+                              label: "Thu gọn nút 'Pin widgets'",
+                              desc: "Tự động đổi icon ghim to thành biểu tượng '+' nhỏ thời trang",
+                              val: widgetSettings.collapsePinButton,
+                              action: () => setWidgetSettings({ ...widgetSettings, collapsePinButton: !widgetSettings.collapsePinButton })
+                            },
+                            {
+                              label: "Hiển thị đồng hồ",
+                              desc: "Hiển thị đồng hồ số tích tắc tự động chạy thời gian thực",
+                              val: widgetSettings.showClockInWidgets,
+                              action: () => setWidgetSettings({ ...widgetSettings, showClockInWidgets: !widgetSettings.showClockInWidgets })
+                            }
+                          ].map(item => (
+                            <div key={item.label} className="flex items-center justify-between border-b border-white/5 last:border-0 pb-3 last:pb-0">
+                               <div className="text-left">
+                                  <span className="text-xs font-semibold block">{item.label}</span>
+                                  <span className="text-[10px] opacity-50 block font-sans">{item.desc}</span>
+                               </div>
+                               <div 
+                                 onClick={item.action}
+                                 className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 transition-all shrink-0 ${item.val ? "bg-blue-600" : "bg-slate-700"}`}
+                               >
+                                 <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${item.val ? "left-5.5" : "left-0.5"}`} />
+                               </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 9: LABS & EXPERIMENTS */}
+                  {(matchesSearch("experimental features app game experiments labs pixel") || matchesSearch("experiments")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <Flask className="text-teal-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Tính năng thử nghiệm & Labs</h4>
+                      </div>
+
+                      {/* App labs */}
+                      <div className="space-y-4 text-left">
+                        <h3 className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest px-2 font-sans">App experiments</h3>
+                        <div className={`p-6 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"} space-y-4`}>
+                          {PIZZA_EXPERIMENTS.app.map(exp => (
+                            <div key={exp.id} className="flex items-center justify-between border-b border-white/5 last:border-0 last:pb-0 pb-4">
+                               <div className="flex-1 pr-6 text-left">
+                                  <span className="text-sm font-semibold block">{exp.name}</span>
+                                  <span className="text-[11px] opacity-50 block mt-0.5 font-sans">{exp.desc}</span>
+                               </div>
+                               <div 
+                                  onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
+                                  className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 shrink-0 transition-colors ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-700"}`}
+                                >
+                                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags[exp.id] ? "left-5.5" : "left-0.5"}`} />
+                               </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Widgets board labs */}
+                      <div className="space-y-4 text-left">
+                        <h3 className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest px-2 font-sans">Widgets feed experiments</h3>
+                        <div className={`p-6 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"} space-y-4`}>
+                          {PIZZA_EXPERIMENTS.widgets.map(exp => (
+                            <div key={exp.id} className="flex items-center justify-between border-b border-white/5 last:border-0 last:pb-0 pb-4">
+                               <div className="flex-1 pr-6 text-left">
+                                  <span className="text-sm font-semibold block">{exp.name}</span>
+                                  <span className="text-[11px] opacity-50 block mt-0.5 font-sans">{exp.desc}</span>
+                               </div>
+                               <div 
+                                  onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
+                                  className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 shrink-0 transition-colors ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-700"}`}
+                               >
+                                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags[exp.id] ? "left-5.5" : "left-0.5"}`} />
+                               </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SECTION 10: ERASE DATA & factory reset */}
+                  {(matchesSearch("erase data clear reset nhà máy") || matchesSearch("factory reset")) && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 px-2">
+                        <Trash2 className="text-red-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Nguy hiểm & Khôi phục cài đặt gốc</h4>
+                      </div>
+
+                      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full border-red-500/10 ${isDark ? "bg-red-500/5" : "bg-red-500/2 shadow-xl shadow-red-100/30"}`}>
+                        <div className="flex items-center gap-4 mb-6 text-left">
+                          <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
+                            <Trash2 size={24} />
+                          </div>
+                          <div>
+                            <h3 className={`font-bold text-xl tracking-tight text-red-500`}>Erase Vplay Canary</h3>
+                            <p className="text-xs text-slate-400 leading-relaxed font-medium mt-0.5 font-sans">Reset all local settings, preferences, and data to their system defaults.</p>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end pt-2">
+                          <button 
+                            type="button"
+                            onClick={onEraseClick}
+                            className="px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                          >
+                            <Trash2 size={14} />
+                            Erase data
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty State */}
+                  {settingSearchQuery && 
+                   !matchesSearch("about vplay feedback") && 
+                   !matchesSearch("hồ sơ tài khoản đăng nhập guest khách cloud sync account user profile") && 
+                   !matchesSearch("developer mode nhà phát triển menu dev keypass") && 
+                   !matchesSearch("giao diện sáng tối liquid glass theme") && 
+                   !matchesSearch("hình nền background desktop wallpaper flow light dark canary solid color gradient cosmic sunset") && 
+                   !matchesSearch("vị trí topbar sidebar search box position thanh điều hướng trên") && 
+                   !matchesSearch("sidebar trái phải pinned channel shortcuts sidebar positioning pin") && 
+                   !matchesSearch("touch floatbar navigation music control bảng phát nhạc") && 
+                   !matchesSearch("widgets theme board feed treatment hover badges calendar clock pin button đồng hồ") && 
+                   !matchesSearch("experimental features app game experiments labs pixel") && 
+                   !matchesSearch("erase data clear reset nhà máy") && (
+                     <div className="text-center py-24 text-slate-500 font-bold font-sans">
+                       Không tìm thấy cấu hình cài đặt phù hợp với từ khóa tìm kiếm.
+                     </div>
+                  )}
+
+                </div>
+              );
+            };
+
+            const renderSelectedCategoryContentOld = () => {
               switch (selectedSettingCategory) {
                 case 'account':
                   return (
@@ -8586,32 +9356,6 @@ function WidgetsDashboard({
                           </div>
                         </div>
 
-                        <div className={`p-8 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
-                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Forced Fonts (Vietnamese Support)</span>
-                          <div className="relative group">
-                            <select 
-                              value={forcedFont}
-                              onChange={(e) => {
-                                setForcedFont(e.target.value);
-                                localStorage.setItem("vplay_forced_font", e.target.value);
-                              }}
-                              className={`w-full p-3 pr-10 rounded-xl border appearance-none transition-all cursor-pointer font-bold text-sm ${
-                                isDark ? "bg-black/30 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700"
-                              }`}
-                            >
-                              <option value="">Mặc định (Default)</option>
-                              <option value="google-sans-flex">Google Sans Flex</option>
-                              <option value="google-sans">Google Sans</option>
-                              <option value="josefin-sans">Josefin Sans</option>
-                              <option value="montserrat">Montserrat</option>
-                              <option value="playfair-display">Playfair Display</option>
-                              <option value="league-spartan">League Spartan</option>
-                            </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                              <ChevronDown size={14} />
-                            </div>
-                          </div>
-                        </div>
                       </div>
 
                       {/* Background Wallpaper */}
@@ -9115,7 +9859,7 @@ function WidgetsDashboard({
                        selectedSettingCategory === 'sidebar' ? 'Sidebar' :
                        selectedSettingCategory === 'floatbar' ? 'Floatbar' :
                        selectedSettingCategory === 'widgets_board' ? 'Widgets Board' :
-                       selectedSettingCategory === 'system_settings' ? 'Cài đặt hệ thống' :
+                       selectedSettingCategory === 'system_settings' ? 'Show more options' :
                        selectedSettingCategory === 'experiments' ? 'Labs & Experiments' :
                        'Settings'}
                     </h3>
@@ -9156,7 +9900,7 @@ function WidgetsDashboard({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar">
-                  {selectedSettingCategory ? (
+                  {true ? (
                     renderSelectedCategoryContent()
                   ) : (
                     <>
@@ -9231,7 +9975,7 @@ function WidgetsDashboard({
                           )}
 
                           {/* Keep original widgets theme shortcut card below if search query is empty */}
-                          {!settingSearchQuery && (
+                          {!settingSearchQuery && false && (
                             <>
                               <div className={`w-full p-8 rounded-[32px] border mt-12 transition-all ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/5 shadow-xl shadow-slate-100"}`}>
                                 <div className="flex items-center gap-4 mb-8 text-left">
@@ -9313,6 +10057,56 @@ function WidgetsDashboard({
             );
           })()}
 
+           {!isTabTransitioning && activeBoardTab === 'dev' && isDev && false && (
+              <motion.div 
+                key="dev"
+                initial={false}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0 }}
+                className="flex-1 flex flex-col min-h-0 bg-[#0c0c0e] text-white rounded-none overflow-hidden border border-white/5 shadow-2xl"
+              >
+               <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/30">
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight text-rose-500 uppercase font-mono">Dev Options Console</h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Canary Build Platform Settings</p>
+                  </div>
+               </div>
+
+               <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-[#0c0c0e]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                    {[
+                      { id: 'trigger_oobe', label: 'Trigger OOBE', desc: 'Khởi chạy lại màn hình cấu hình OOBE thiết lập đầu.' },
+                      { id: 'unlimited_vpoints', label: 'Unlimited Vpoints', desc: 'Bật Vpoints vô hạn (hiển thị biểu tượng vô cực ∞).' },
+                      { id: 'custom_vpoints', label: 'Custom Vpoints', desc: 'Điều chỉnh số lượng Vpoints tùy ý không giới hạn.' },
+                      { id: 'purchase_all_store_widgets', label: 'Purchase all store widgets', desc: 'Có đầy đủ mọi tiện ích Vstore không cần trả phí.' },
+                      { id: 'pin_all_widgets_to_feed', label: 'Pin all widgets to feed', desc: 'Ghim sạch mọi widgets có sẵn vào trang Feed hiện tại.' },
+                      { id: 'unpin_all_widgets_from_feed', label: 'Unpin all widgets from feed', desc: 'Gỡ ghim toàn bộ tất cả widgets khỏi trang Feed.' },
+                      { id: 'reset_vstore', label: 'Reset Vstore', desc: 'Đặt lại Vstore về mặc định (Lịch sử thanh toán & 100 VP).' },
+                      { id: 'reset_widgets_feed', label: 'Reset Widgets Feed', desc: 'Trở lại danh sách ghim Feed setup mặc định nhà máy.' },
+                      { id: 'respring_data', label: 'Respring Data', desc: 'Dẫn tới màn hình chờ please wait vĩnh viễn (bypass qua mã 3667).' },
+                      { id: 'erase_data', label: 'Erase Data', desc: 'Mở tiến trình xóa sạch dữ liệu hệ thống (Erase/Backup UI).' }
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => handleDevOptionClick(opt.id, opt.label)}
+                        className="p-6 rounded-[24px] border text-left flex flex-col justify-between h-40 transition-all bg-[#141416] border-white/5 hover:bg-[#1c1c1e] hover:border-rose-500/30 hover:-translate-y-0.5 active:scale-95 group shadow-lg"
+                      >
+                        <div className="space-y-1.5">
+                          <span className="font-bold text-sm tracking-tight text-white group-hover:text-rose-400 transition-colors">{opt.label}</span>
+                          <p className="text-xs text-slate-400 leading-relaxed font-medium">{opt.desc}</p>
+                        </div>
+                        <div className="text-[10px] font-black tracking-widest uppercase text-rose-500/70 group-hover:opacity-100 flex items-center gap-1.5 self-end transition-colors group-hover:text-rose-400">
+                          <span>Activate</span>
+                          <ArrowRight size={12} />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+               </div>
+              </motion.div>
+           )}
+
            {!isTabTransitioning && activeBoardTab === 'vstore' && (
               <motion.div 
                 key="vstore"
@@ -9389,8 +10183,10 @@ function WidgetsDashboard({
                               className={`w-full py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${isPurchased ? "bg-white/5 text-slate-500 cursor-default" : "bg-white text-black hover:bg-slate-100"}`}
                               onClick={() => {
                                  if (!isPurchased) {
-                                    if (vpoints >= item.price) {
-                                       setVpoints((v: number) => v - item.price);
+                                    if (isUnlimitedVpoints || vpoints >= item.price) {
+                                       if (!isUnlimitedVpoints) {
+                                          setVpoints((v: number) => v - item.price);
+                                       }
                                        setPurchasedWidgets((prev: string[]) => [...prev, item.id]);
                                        addNotification("Store", `Đã mua thành công ${item.name}!`, "success");
                                     } else {
@@ -11601,7 +12397,7 @@ export default function App() {
   });
 
   const [forcedFont, setForcedFont] = useState(() => {
-    return localStorage.getItem("vplay_forced_font") || "montserrat";
+    return "";
   });
 
   const [desktopWallpaper, setDesktopWallpaper] = useState(() => {
@@ -11671,6 +12467,106 @@ export default function App() {
   const [isDev, setIsDev] = useState(() => {
     return localStorage.getItem("vplay_dev_mode") === "true";
   });
+
+  const [isUnlimitedVpoints, setIsUnlimitedVpoints] = useState(() => {
+    return localStorage.getItem("vplay_unlimited_vpoints") === "true";
+  });
+  const [isRespring, setIsRespring] = useState(() => {
+    return localStorage.getItem("vplay_respring") === "true";
+  });
+  const [isRespringBypassing, setIsRespringBypassing] = useState(false);
+  const [respringKeypassInput, setRespringKeypassInput] = useState("");
+
+  const [pendingDevOption, setPendingDevOption] = useState<string | null>(null);
+  const [pendingDevOptionLabel, setPendingDevOptionLabel] = useState<string>("");
+  const [devKeypassInput, setDevKeypassInput] = useState("");
+  const [showDevModal, setShowDevModal] = useState(false);
+  const [devCustomPointsInput, setDevCustomPointsInput] = useState("");
+  const [showCustomPointsStep, setShowCustomPointsStep] = useState(false);
+
+  const handleDevOptionClick = (id: string, label: string) => {
+    setPendingDevOption(id);
+    setPendingDevOptionLabel(label);
+    setDevKeypassInput("");
+    setDevCustomPointsInput("");
+    setShowCustomPointsStep(false);
+    setShowDevModal(true);
+  };
+
+  const executeDevOption = (id: string) => {
+    if (id === 'trigger_oobe') {
+      localStorage.removeItem("vplay_seen_oobe");
+      setShowOOBE(true);
+      setShowWidgets(false);
+      addNotification("Dev", "Triggered setup OOBE.", "info");
+    } else if (id === 'unlimited_vpoints') {
+      const nextVal = !isUnlimitedVpoints;
+      setIsUnlimitedVpoints(nextVal);
+      localStorage.setItem("vplay_unlimited_vpoints", nextVal.toString());
+      addNotification("Dev", `Unlimited Vpoints: ${nextVal ? "ENABLED" : "DISABLED"}`, "info");
+    } else if (id === 'purchase_all_store_widgets') {
+      const allWidgets = [
+        'music_player', 'weather_extended', 'stocks_pro', 'calendar', 'todo_list', 
+        'ai_for_me', 'v_assistant', 'theme_pack_retro', 'system_monitor', 
+        'crypto_tracker', 'calculator_pro', 'image_gen', 'email_client', 'news_reader', 'browser_lite'
+      ];
+      setPurchasedWidgets(allWidgets);
+      localStorage.setItem("vplay_purchased_widgets", JSON.stringify(allWidgets));
+      addNotification("Dev", "Tất cả tiện ích đã được đăng ký sở hữu trên Vstore!", 'success');
+    } else if (id === 'pin_all_widgets_to_feed') {
+      const allPins = [
+        { id: 'weather', type: 'weather', size: 'medium' },
+        { id: 'clock_date', type: 'clock_date', size: 'medium' },
+        { id: 'vtv6_countdown', type: 'vtv6_countdown', size: 'medium' },
+        { id: 'stocks', type: 'stocks', size: 'small' },
+        { id: 'notify', type: 'notify', size: 'medium' },
+        { id: 'music_player', type: 'music_player', size: 'medium' },
+        { id: 'weather_extended', type: 'weather_extended', size: 'medium' },
+        { id: 'stocks_pro', type: 'stocks_pro', size: 'medium' },
+        { id: 'calendar', type: 'calendar', size: 'medium' },
+        { id: 'todo_list', type: 'todo_list', size: 'medium' },
+        { id: 'ai_for_me', type: 'ai_for_me', size: 'medium' },
+        { id: 'system_monitor', type: 'system_monitor', size: 'medium' },
+        { id: 'crypto_tracker', type: 'crypto_tracker', size: 'medium' },
+        { id: 'calculator_pro', type: 'calculator_pro', size: 'medium' },
+        { id: 'theme_pack_retro', type: 'theme_pack_retro', size: 'medium' }
+      ];
+      setPinnedWidgets(allPins);
+      localStorage.setItem("vplay_widget_board_pins", JSON.stringify(allPins));
+      addNotification("Dev", "Đã ghim toàn bộ tiện ích vào Board!", 'success');
+    } else if (id === 'unpin_all_widgets_from_feed') {
+      setPinnedWidgets([]);
+      localStorage.setItem("vplay_widget_board_pins", JSON.stringify([]));
+      addNotification("Dev", "Đã gỡ ghim toàn bộ các tiện ích ra khỏi Board!", 'info');
+    } else if (id === 'reset_vstore') {
+      setVpoints(100);
+      setPurchasedWidgets([]);
+      localStorage.removeItem("vplay_vpoints");
+      localStorage.removeItem("vplay_purchased_widgets");
+      addNotification("Dev", "Vstore đã được reset về trạng thái ban đầu.", 'warning');
+    } else if (id === 'reset_widgets_feed') {
+      const defaultWidgets = [
+        { id: 'weather', type: 'weather', size: 'medium' },
+        { id: 'stocks', type: 'stocks', size: 'small' },
+        { id: 'clock_date', type: 'clock_date', size: 'medium' },
+        { id: 'vtv6_countdown', type: 'vtv6_countdown', size: 'medium' }
+      ];
+      setPinnedWidgets(defaultWidgets);
+      localStorage.setItem("vplay_widget_board_pins", JSON.stringify(defaultWidgets));
+      addNotification("Dev", "Board tiện ích khôi phục về cấu hình mặc định.", 'info');
+    } else if (id === 'respring_data') {
+      localStorage.setItem("vplay_respring", "true");
+      setIsRespring(true);
+      addNotification("Dev", "Respring mode activated. Reloading...", 'warning');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else if (id === 'erase_data') {
+      setShowEraseModal(true);
+      setShowWidgets(false);
+    }
+  };
+
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userData, setUserData] = useState<any>(null);
   const [showSplash, setShowSplash] = useState(true);
@@ -12759,7 +13655,7 @@ export default function App() {
                <div className="flex items-center gap-6 px-6 select-none shrink-0">
                   <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 bg-amber-400 rounded-full text-white shadow-lg shadow-amber-400/20 active:scale-95 transition-all cursor-pointer" onClick={() => { setShowWidgets(true); setActiveBoardTab('vstore'); }}>
                      <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-black italic">V</div>
-                     <span className="text-xs font-black tracking-tight">{vpoints} <span className="opacity-60 font-medium">VP</span></span>
+                     <span className="text-xs font-black tracking-tight">{isUnlimitedVpoints ? "∞" : vpoints} <span className="opacity-60 font-medium">VP</span></span>
                   </div>
                   <div 
                     onClick={() => setShowWidgets(true)}
@@ -15071,6 +15967,9 @@ export default function App() {
             setIsDark={setIsDark}
             isDev={isDev}
             setIsDev={setIsDev}
+            isUnlimitedVpoints={isUnlimitedVpoints}
+            setIsUnlimitedVpoints={setIsUnlimitedVpoints}
+            handleDevOptionClick={handleDevOptionClick}
             user={user}
             userData={userData}
             setUserData={setUserData}
@@ -15354,6 +16253,220 @@ export default function App() {
           />
         )}
 
+        {/* Developer Setting Activate Modal Overlay */}
+        <AnimatePresence>
+          {showDevModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center font-light leading-relaxed select-none overflow-hidden"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
+                <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 text-left font-light leading-relaxed">
+                  <div className="space-y-3 w-full">
+                    <h2 className="text-3xl md:text-3xl text-white font-light leading-tight tracking-wide uppercase font-mono">
+                      This option cannot be activated normally
+                    </h2>
+                    <p className="text-sm md:text-base text-white/80 font-light leading-relaxed">
+                      You are accessing a developer exclusive setting. To activate, you will need to type a developer keypass (unless you are a regular user)
+                    </p>
+                  </div>
+
+                  {!showCustomPointsStep ? (
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (devKeypassInput === "3667") {
+                          if (pendingDevOption === "custom_vpoints") {
+                            setShowCustomPointsStep(true);
+                          } else {
+                            executeDevOption(pendingDevOption!);
+                            setShowDevModal(false);
+                          }
+                        } else {
+                          addNotification("Dev Error", "Mật mã nhà phát triển không chính xác!", "warning");
+                        }
+                      }} 
+                      className="space-y-4 max-w-sm w-full"
+                    >
+                      <input 
+                        type="password"
+                        placeholder="Enter developer keypass..."
+                        autoFocus
+                        required
+                        className="w-full px-4 py-3 bg-white text-black border-none outline-none text-xs rounded-none font-mono"
+                        value={devKeypassInput}
+                        onChange={(e) => setDevKeypassInput(e.target.value)}
+                      />
+                      <div className="flex gap-4">
+                        <button
+                          type="submit"
+                          className="border border-white text-white font-light text-xs px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Verify & Run
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowDevModal(false);
+                            setPendingDevOption(null);
+                          }}
+                          className="border border-white/40 text-white/70 font-light text-xs px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Hủy
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const val = parseInt(devCustomPointsInput);
+                        if (!isNaN(val)) {
+                          setVpoints(val);
+                          addNotification("Dev", `Đã đặt số lượng Vpoints thành ${val}!`, "success");
+                          setShowDevModal(false);
+                          setPendingDevOption(null);
+                          setShowCustomPointsStep(false);
+                        } else {
+                          addNotification("Dev Error", "Vui lòng nhập một số hợp lệ!", "warning");
+                        }
+                      }} 
+                      className="space-y-4 max-w-sm w-full"
+                    >
+                      <p className="text-xs text-rose-300 font-bold uppercase tracking-wider font-mono">Mật mã đúng! Hãy nhập số lượng Vpoints mong muốn (ko giới hạn):</p>
+                      <input 
+                        type="number"
+                        placeholder="Nhập số lượng Vpoints..."
+                        autoFocus
+                        required
+                        className="w-full px-4 py-3 bg-white text-black border-none outline-none text-xs rounded-none font-mono"
+                        value={devCustomPointsInput}
+                        onChange={(e) => setDevCustomPointsInput(e.target.value)}
+                      />
+                      <div className="flex gap-4">
+                        <button
+                          type="submit"
+                          className="border border-white text-white font-light text-xs px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Xác nhận
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowDevModal(false);
+                            setPendingDevOption(null);
+                            setShowCustomPointsStep(false);
+                          }}
+                          className="border border-white/40 text-white/70 font-light text-xs px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Hủy
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Global Respring Permanent Overlay */}
+        {isRespring && (
+          <div className="fixed inset-0 z-[200000] bg-black/60 backdrop-blur-sm flex items-center justify-center font-light leading-relaxed select-none overflow-hidden text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
+              <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 text-left font-light leading-relaxed">
+                {!isRespringBypassing ? (
+                  <div className="flex flex-col gap-6 animate-fade-in w-full">
+                    <div className="space-y-3 w-full">
+                      <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+                        Please wait...
+                      </h2>
+                      <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+                        System components are refreshing. Do not close or restart. Vplay is updating its options and rebuilding caches.
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 pt-4">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
+                        alt="Loading" 
+                        className="w-7 h-7 object-contain shrink-0 filter brightness-200 opacity-60"
+                        referrerPolicy="no-referrer"
+                      />
+                      <span className="text-xl font-light text-white/90">
+                        Refreshing system state...
+                      </span>
+                    </div>
+                    
+                    <div className="pt-4 flex">
+                      <button 
+                        onClick={() => setIsRespringBypassing(true)}
+                        className="border border-white text-white font-light text-xs px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                      >
+                        Bypass Respring
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-6 animate-fade-in w-full max-w-xl">
+                    <div className="space-y-3">
+                      <h3 className="text-3xl font-light uppercase tracking-wide text-white">Bypass Verification</h3>
+                      <p className="text-sm text-white/90">This system option can only be bypassed by typing the developer keypass.</p>
+                    </div>
+                    
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (respringKeypassInput === "3667") {
+                          setIsRespring(false);
+                          setIsRespringBypassing(false);
+                          setRespringKeypassInput("");
+                          localStorage.removeItem("vplay_respring");
+                          addNotification("Dev", "Bypassed respring mode successfully.", "success");
+                        } else {
+                          addNotification("Dev Error", "Mật mã không đúng!", "warning");
+                        }
+                      }}
+                      className="space-y-4"
+                    >
+                      <input 
+                        type="password"
+                        placeholder="Enter developer keypass..."
+                        autoFocus
+                        required
+                        className="w-full px-4 py-3 bg-white text-black border-none outline-none text-xs rounded-none font-mono"
+                        value={respringKeypassInput}
+                        onChange={(e) => setRespringKeypassInput(e.target.value)}
+                      />
+                      <div className="flex gap-4">
+                        <button
+                          type="submit"
+                          className="border border-white text-white font-light text-xs px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Verify & Resume
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsRespringBypassing(false);
+                            setRespringKeypassInput("");
+                          }}
+                          className="border border-white/40 text-white/70 font-light text-xs px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Global Erase Modal Overlay */}
         <AnimatePresence>
           {showEraseModal && (
@@ -15361,24 +16474,24 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center font-light leading-relaxed select-none overflow-hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center font-sans font-light leading-relaxed select-none overflow-hidden"
             >
               <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-                <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
+                <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-sans font-light leading-relaxed">
                   {!isErasing ? (
                     <>
                       <div className="space-y-3 w-full">
-                        <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+                        <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
                           Ready to erase Vplay Canary?
                         </h2>
-                        <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+                        <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full">
                           This mean we will restore all of the settings and accounts back to their defaults. You can create and download a data backup file in case (that includes all your current options, UI layout and account settings). The erase process will take around 30 seconds to a minute.
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center justify-start gap-4">
                         <button
                           onClick={() => setIsErasing(true)}
-                          className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                          className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                         >
                           Erase now
                         </button>
@@ -15399,7 +16512,7 @@ export default function App() {
                             a.click();
                             URL.revokeObjectURL(url);
                           }}
-                          className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                          className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                         >
                           Download backup file
                         </button>
@@ -15407,7 +16520,7 @@ export default function App() {
                           onClick={() => {
                             setShowEraseModal(false);
                           }}
-                          className="border border-white text-white font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                          className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                         >
                           Close
                         </button>
@@ -15415,10 +16528,10 @@ export default function App() {
                     </>
                   ) : (
                     <div className="space-y-3 w-full">
-                      <h2 className="text-3xl md:text-4xl text-white font-light leading-tight tracking-wide">
+                      <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
                         Please wait
                       </h2>
-                      <p className="text-sm md:text-base text-white/95 font-light leading-relaxed w-full">
+                      <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full">
                         We are erasing Vplay Canary for you. This might take a several minutes (about 30 seconds to a minute)...<br />
                         All of the settings will be reset to their defaults. that includes all your current options, UI layout and account settings
                       </p>
@@ -15430,7 +16543,7 @@ export default function App() {
                           className="w-7 h-7 object-contain shrink-0" 
                           referrerPolicy="no-referrer"
                         />
-                        <span className="text-xl font-light text-white/90">
+                        <span className="text-xl font-sans font-light text-white/90">
                           {eraseProgress}% complete
                         </span>
                       </div>

@@ -1,25 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Josefin+Sans:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700&family=League+Spartan:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-minecraft: "Silkscreen", "Press Start 2P", cursive;
-  --font-google-sans-flex: "Google Sans Flex", sans-serif;
-  --font-google-sans: "Google Sans", sans-serif;
-  --font-josefin-sans: "Josefin Sans", sans-serif;
-  --font-montserrat: "Montserrat", sans-serif;
-  --font-playfair-display: "Playfair Display", serif;
-  --font-league-spartan: "League Spartan", sans-serif;
+  --font-google-sans-flex: "Inter", sans-serif;
+  --font-google-sans: "Inter", sans-serif;
+  --font-josefin-sans: "Inter", sans-serif;
+  --font-montserrat: "Inter", sans-serif;
+  --font-playfair-display: "Inter", sans-serif;
+  --font-league-spartan: "Inter", sans-serif;
   --color-primary: var(--primary-color, #9333ea);
 }
 
 @layer base {
-  .font-forced-google-sans-flex { font-family: "Google Sans Flex", sans-serif !important; }
-  .font-forced-google-sans { font-family: "Google Sans", sans-serif !important; }
-  .font-forced-josefin-sans { font-family: "Josefin Sans", sans-serif !important; }
-  .font-forced-montserrat { font-family: "Montserrat", sans-serif !important; }
-  .font-forced-playfair-display { font-family: "Playfair Display", serif !important; }
-  .font-forced-league-spartan { font-family: "League Spartan", sans-serif !important; }
+  .font-forced-google-sans-flex { font-family: "Inter", sans-serif !important; }
+  .font-forced-google-sans { font-family: "Inter", sans-serif !important; }
+  .font-forced-josefin-sans { font-family: "Inter", sans-serif !important; }
+  .font-forced-montserrat { font-family: "Inter", sans-serif !important; }
+  .font-forced-playfair-display { font-family: "Inter", sans-serif !important; }
+  .font-forced-league-spartan { font-family: "Inter", sans-serif !important; }
 
   .minecraft-mode {
     font-family: var(--font-minecraft);
