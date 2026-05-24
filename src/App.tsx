@@ -47,7 +47,8 @@ const PIZZA_EXPERIMENTS = {
     { id: 'disable_animation', name: 'Reduce Animation', status: 'Stable', desc: 'Giảm hiệu ứng chuyển động, tiết kiệm tài nguyên.' },
     { id: 'settings_vertical', name: 'List Settings', status: 'Beta', desc: 'Chuyển layout cài đặt về dạng danh sách (yêu cầu XAML View).' },
     { id: 'xaml_home', name: 'XAML Home Page', status: 'Internal', desc: 'Sử dụng trang chủ thế hệ mới dựa trên XAML system.' },
-    { id: 'xaml_experience', name: 'Vplay Symphony UI', status: 'Active', desc: 'Trải nghiệm giao diện hoàn toàn mới được tái thiết kế.' }
+    { id: 'xaml_experience', name: 'Vplay Symphony UI', status: 'Active', desc: 'Trải nghiệm giao diện hoàn toàn mới được tái thiết kế.' },
+    { id: 'cobalt_scrollbar', name: 'Cobalt UI 3 Scrollbar', status: 'Experimental', desc: 'Replaces the default browser scrollbar to the new scrollbar of Cobalt UI version 3' }
   ],
   widgets: [
     { id: 'settings_on_widgets', name: 'Settings on Widgets', status: 'Experimental', desc: 'Moves the app settings in the Widgets Dashboard.' },
@@ -104,16 +105,16 @@ const SplashView = ({ text, subtext, featureFlags }: { key?: string, text: strin
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-sans font-light leading-relaxed select-none overflow-hidden"
+    className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-forced-montserrat font-light leading-relaxed select-none overflow-hidden"
   >
     <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-      <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-sans font-light leading-relaxed">
+      <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-forced-montserrat font-light leading-relaxed">
         <div className="space-y-3 w-full">
-          <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
+          <h2 className="text-3xl md:text-4xl text-white font-forced-montserrat font-light leading-tight tracking-wide">
             {text || "Just a moment"}
           </h2>
           {subtext && (
-            <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full font-sans font-light">
+            <p className="text-sm md:text-base text-white/95 font-forced-montserrat font-light leading-relaxed w-full font-forced-montserrat font-light">
               {subtext}
             </p>
           )}
@@ -229,15 +230,15 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
-      className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-sans font-light leading-relaxed select-none overflow-hidden"
+      className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-forced-montserrat font-light leading-relaxed select-none overflow-hidden"
     >
       <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-        <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-sans font-light leading-relaxed">
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-forced-montserrat font-light leading-relaxed">
           <div className="space-y-3 w-full animate-fade-in">
-            <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
+            <h2 className="text-3xl md:text-4xl text-white font-forced-montserrat font-light leading-tight tracking-wide">
               Just a moment
             </h2>
-            <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full">
+            <p className="text-sm md:text-base text-white/95 font-forced-montserrat font-light leading-relaxed w-full">
               Loading {currentFilename}...
             </p>
           </div>
@@ -250,7 +251,7 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
                 className="w-7 h-7 object-contain shrink-0" 
                 referrerPolicy="no-referrer"
               />
-              <span className="text-xl font-sans font-light text-white/90">
+              <span className="text-xl font-forced-montserrat font-light text-white/90">
                 {filesLoadedCount} files loaded ({Math.floor(progress)}%)
               </span>
             </div>
@@ -266,7 +267,7 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
                       onEnter();
                     }
                   }}
-                  className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                  className="border border-white text-white font-forced-montserrat font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                 >
                   Bypass Splash
                 </button>
@@ -276,28 +277,28 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
             {showPassPrompt && (
               <form
                 onSubmit={handleBypass}
-                className="flex flex-col items-start gap-4 bg-black/40 backdrop-blur-2xl p-6 border border-white/10 shadow-2xl max-w-md w-full font-sans font-light mt-4"
+                className="flex flex-col items-start gap-4 bg-black/40 backdrop-blur-2xl p-6 border border-white/10 shadow-2xl max-w-md w-full font-forced-montserrat font-light mt-4"
               >
-                <span className="text-sm text-white/90 font-sans font-light">Enter bypass password:</span>
+                <span className="text-sm text-white/90 font-forced-montserrat font-light">Enter bypass password:</span>
                 <input
                   type="password"
                   value={passInput}
                   onChange={(e) => setPassInput(e.target.value)}
                   placeholder="Password"
-                  className="w-full bg-white/10 border border-white/20 text-white px-4 py-2 font-sans font-light focus:outline-none focus:border-white/40 animate-fade-in"
+                  className="w-full bg-white/10 border border-white/20 text-white px-4 py-2 font-forced-montserrat font-light focus:outline-none focus:border-white/40 animate-fade-in"
                 />
-                {passError && <span className="text-red-400 text-xs font-sans font-light">Incorrect password!</span>}
+                {passError && <span className="text-red-400 text-xs font-forced-montserrat font-light">Incorrect password!</span>}
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="border border-white text-white font-sans font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/10 cursor-pointer"
+                    className="border border-white text-white font-forced-montserrat font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/10 cursor-pointer"
                   >
                     Submit
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowPassPrompt(false)}
-                    className="border border-white/40 text-white/80 font-sans font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/5 cursor-pointer"
+                    className="border border-white/40 text-white/80 font-forced-montserrat font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/5 cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1165,7 +1166,7 @@ function CustomTabModal({ isOpen, onClose, onSave, isDark, initialData }: { isOp
   );
 }
 
-function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags, activeSearchPlaceholder, setShowWidgets }: { isDark: boolean, onAction: (a: string, data?: any) => void, onNavigate: (t: string) => void, liquidGlass: "glassy" | "tinted", featureFlags?: any, activeSearchPlaceholder: string, setShowWidgets: (s: boolean) => void }) {
+function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags, activeSearchPlaceholder, setShowWidgets, setActiveBoardTab }: { isDark: boolean, onAction: (a: string, data?: any) => void, onNavigate: (t: string) => void, liquidGlass: "glassy" | "tinted", featureFlags?: any, activeSearchPlaceholder: string, setShowWidgets: (s: boolean) => void, setActiveBoardTab?: (val: any) => void }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [time, setTime] = useState(new Date());
 
@@ -1255,7 +1256,7 @@ function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags
               </div>
               <p className="text-2xl font-black tracking-tighter italic">Cá nhân hóa bảng tin của bạn với các widgets thông minh.</p>
               <button 
-                onClick={() => setShowWidgets(true)}
+                onClick={() => { setShowWidgets(true); if (setActiveBoardTab) setActiveBoardTab('widgets'); }}
                 className="mt-4 py-3 px-6 rounded-2xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all self-start shadow-xl active:scale-95"
               >
                 Mở bảng tiện ích
@@ -6792,14 +6793,14 @@ function SettingsContent({
       )}
 
       {/* Erase Data Section */}
-      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full mt-8 border-red-500/10 ${isDark ? "bg-red-500/5" : "bg-red-500/2 shadow-xl shadow-red-100/30"}`}>
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full mt-8 border-blue-500/10 ${isDark ? "bg-blue-500/5" : "bg-blue-500/2 shadow-xl shadow-blue-100/30"}`}>
         <div className="flex items-center gap-4 mb-6">
-          <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
-            <Trash2 size={24} />
+          <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
+            <RefreshCw size={24} className="animate-spin-slow" />
           </div>
           <div>
-            <h3 className={`font-bold text-xl tracking-tight text-red-500`}>Erase Vplay Canary</h3>
-            <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} font-medium`}>Reset all local settings, preferences, and data to their system defaults.</p>
+            <h3 className={`font-bold text-xl tracking-tight text-blue-500`}>Respring Vplay Canary</h3>
+            <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} font-medium`}>Khởi động lại môi trường và khôi phục cài đặt gốc hệ thống Vplay Canary.</p>
           </div>
         </div>
 
@@ -6808,10 +6809,10 @@ function SettingsContent({
             onClick={() => {
               if (onEraseClick) onEraseClick();
             }}
-            className="px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
+            className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
           >
-            <Trash2 size={14} />
-            Erase data
+            <RefreshCw size={14} />
+            Respring now
           </button>
         </div>
       </div>
@@ -7559,26 +7560,28 @@ function WidgetsDashboard({
 
   const shouldHideSidebar = widgetSettings?.hideFeedSidebar || widgetsFeedTreatment === 2;
 
-  const isFullPageTab = ['vstore', 'pizza', 'settings', 'doforme', 'update_widgets_feed', 'erase_data', 'dev'].includes(activeBoardTab);
+  const isFullPageTab = ['vstore', 'settings', 'doforme', 'update_widgets_feed', 'erase_data', 'dev'].includes(activeBoardTab);
 
   const isCollapsedSidebar = widgetsFeedTreatment === 4;
+
+  const isUpdated = isWidgetsUpdated;
 
   let sidebarClassName = "";
   if (isFullPageTab) {
     if (widgetsFeedTreatment === 3) {
-      sidebarClassName = `${isCollapsedSidebar ? "w-11" : "w-24"} h-[calc(100%-32px)] my-4 ml-4 mr-2 rounded-[28px] border flex flex-col items-center py-6 gap-5 shadow-xl backdrop-blur-xl bg-black/45 border-white/10 text-white`;
+      sidebarClassName = `${isCollapsedSidebar ? "w-11" : "w-24"} h-[calc(100%-32px)] my-4 ml-4 mr-2 rounded-[28px] border flex flex-col items-center py-6 gap-5 shadow-xl ${isUpdated ? "bg-white/5 border-white/10 select-none backdrop-blur-2xl backdrop-saturate-150" : "bg-black/45 border-white/10"} text-white`;
     } else if (isCollapsedSidebar) {
-      sidebarClassName = `w-11 h-full flex flex-col items-center py-6 gap-4 border-r backdrop-blur-xl bg-black/20 border-white/5 text-white`;
+      sidebarClassName = `w-11 h-full flex flex-col items-center py-6 gap-4 ${isUpdated ? "bg-transparent border-none text-white select-none" : "border-r bg-black/20 border-white/5 text-white"}`;
     } else {
-      sidebarClassName = `w-24 h-full flex flex-col items-center py-6 gap-5 border-r backdrop-blur-xl bg-black/20 border-white/5 text-white`;
+      sidebarClassName = `w-24 h-full flex flex-col items-center py-6 gap-5 ${isUpdated ? "bg-transparent border-none text-white select-none" : "border-r bg-black/20 border-white/5 text-white"}`;
     }
   } else {
     if (widgetsFeedTreatment === 3) {
-      sidebarClassName = `${isCollapsedSidebar ? "w-11" : "w-24"} h-[calc(100%-32px)] my-4 ml-4 mr-2 rounded-[28px] border flex flex-col items-center py-6 gap-5 shadow-xl backdrop-blur-xl ${isDark ? "bg-black/45 border-white/10 text-white" : "bg-white/80 border-black/10 text-slate-900 shadow-slate-200"}`;
+      sidebarClassName = `${isCollapsedSidebar ? "w-11" : "w-24"} h-[calc(100%-32px)] my-4 ml-4 mr-2 rounded-[28px] border flex flex-col items-center py-6 gap-5 shadow-xl ${isUpdated ? "bg-white/5 border-white/10 select-none backdrop-blur-2xl backdrop-saturate-150" : (isDark ? "bg-black/45 border-white/10" : "bg-white/80 border-black/10")} ${isDark || isUpdated ? "text-white" : "text-slate-900 shadow-slate-200"}`;
     } else if (isCollapsedSidebar) { // Collapse
-      sidebarClassName = `w-11 h-full flex flex-col items-center py-6 gap-4 border-r backdrop-blur-xl ${isDark ? "bg-black/20 border-white/5 text-white" : "bg-black/5 border-black/5 text-slate-800"}`;
+      sidebarClassName = `w-11 h-full flex flex-col items-center py-6 gap-4 ${isUpdated ? "bg-transparent border-none text-white font-sans select-none" : (isDark ? "border-r backdrop-blur-xl bg-black/20 border-white/5 text-white" : "border-r backdrop-blur-xl bg-black/5 border-black/5 text-slate-800")}`;
     } else { // Default Treatment 1 or 5
-      sidebarClassName = `w-24 h-full flex flex-col items-center py-6 gap-5 border-r backdrop-blur-xl ${isDark ? "bg-black/20 border-white/5 text-white" : "bg-black/5 border-black/5 text-slate-800"}`;
+      sidebarClassName = `w-24 h-full flex flex-col items-center py-6 gap-5 ${isUpdated ? "bg-transparent border-none text-white font-sans select-none" : (isDark ? "border-r backdrop-blur-xl bg-black/20 border-white/5 text-white" : "border-r backdrop-blur-xl bg-black/5 border-black/5 text-slate-800")}`;
     }
   }
 
@@ -7595,16 +7598,16 @@ function WidgetsDashboard({
     height: isWidgetsFullScreen ? "100%" : (isMobile ? "100%" : "calc(100% - 32px)"),
     top: isWidgetsFullScreen ? 0 : 16,
     left: isWidgetsFullScreen ? 0 : 16,
-    borderRadius: isWidgetsFullScreen ? 0 : (widgetsFeedTreatment === 5 ? 40 : 12),
-    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-    backdropFilter: "none"
+    borderRadius: isWidgetsFullScreen ? 0 : (widgetsFeedTreatment === 5 ? 40 : (isUpdated ? 32 : 12)),
+    boxShadow: isUpdated ? "0 32px 64px -12px rgba(0, 0, 0, 0.6)" : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+    backdropFilter: isUpdated ? "blur(50px) saturate(240%)" : "none"
   }}
   exit={{ opacity: 0, x: -100 }}
   transition={{ duration: 0.1 }}
-  className={`fixed z-[10002] flex shadow-2xl border overflow-hidden bg-[#1c1c1c] text-white ${
-    isFullPageTab
-      ? "border-white/5"
-      : "border-white/10 shadow-2xl"
+  className={`fixed z-[10002] flex shadow-2xl border overflow-hidden text-white transition-all duration-300 ${
+    isUpdated 
+      ? "bg-black/35 border-white/15 select-none font-sans" 
+      : `bg-[#1c1c1c] ${isFullPageTab ? "border-white/5" : "border-white/10"}`
   }`}
   onClick={(e) => e.stopPropagation()}
 >
@@ -7766,30 +7769,29 @@ function WidgetsDashboard({
   {!shouldHideSidebar && (
     <div className={sidebarClassName}>
       {[
-        { id: 'widgets', label: 'My feed', icon: LayoutDashboard, color: 'text-blue-400', lightColor: 'text-blue-600' },
+        { id: 'widgets', label: 'My widgets', icon: LayoutDashboard, color: 'text-[#00d2ff]', lightColor: 'text-blue-600' },
         { id: 'vstore', label: 'Vstore', icon: ShoppingBag, color: 'text-amber-500', lightColor: 'text-amber-600' },
-        ...(widgetSettings.showFeed ? [{ id: 'feed', label: 'Feed', icon: Newspaper, color: 'text-blue-400', lightColor: 'text-blue-600' }] : []),
-        { id: 'pizza', label: 'Labs', icon: Pizza, color: 'text-purple-400', lightColor: 'text-purple-600' },
-        { id: 'doforme', label: 'Operate', icon: Sparkles, color: 'text-purple-400', lightColor: 'text-purple-600' }
+        ...(widgetSettings.showFeed ? [{ id: 'feed', label: 'My feed', icon: Newspaper, color: 'text-blue-400', lightColor: 'text-blue-600' }] : []),
+        { id: 'doforme', label: 'Operate', icon: Sparkles, color: 'text-purple-400', lightColor: 'text-purple-600' },
+        ...(isDev ? [{ id: 'dev', label: 'Dev', icon: Terminal, color: 'text-rose-400', lightColor: 'text-rose-600' }] : [])
       ].map(tab => {
         const isActive = activeBoardTab === tab.id;
         const Icon = tab.icon;
         
+        let customActiveStyle = "";
+        if (isActive) {
+          customActiveStyle = "bg-[#2d2d2d] text-[#00d2ff]";
+        } else {
+          customActiveStyle = "opacity-40 hover:opacity-100 text-current";
+        }
+
         let btnClassName = "";
         if (isCollapsedSidebar) {
-          const roundedClass = widgetsFeedTreatment === 5 ? "rounded-full" : "rounded-xl";
-          btnClassName = `p-2 ${roundedClass} transition-all ${
-            isActive 
-              ? (isDark ? "bg-white/10 " + tab.color : "bg-white shadow-sm " + tab.lightColor) 
-              : "opacity-40 hover:opacity-100 text-current"
-          }`;
+          const roundedClass = isActive ? "rounded-lg" : (widgetsFeedTreatment === 5 ? "rounded-full" : "rounded-xl");
+          btnClassName = `p-2 ${roundedClass} transition-all relative ${customActiveStyle}`;
         } else {
-          const roundedClass = widgetsFeedTreatment === 5 ? "rounded-[24px]" : "rounded-2xl";
-          btnClassName = `w-[84px] h-[68px] flex flex-col items-center justify-center gap-1 p-1 ${roundedClass} transition-all ${
-            isActive 
-              ? (isDark ? "bg-white/10 " + tab.color : "bg-white shadow-sm " + tab.lightColor) 
-              : "opacity-40 hover:opacity-100 text-current"
-          }`;
+          const roundedClass = isActive ? "rounded-lg" : (widgetsFeedTreatment === 5 ? "rounded-[24px]" : "rounded-2xl");
+          btnClassName = `w-[84px] h-[68px] flex flex-col items-center justify-center gap-1 p-1 ${roundedClass} transition-all relative ${customActiveStyle}`;
         }
 
         return (
@@ -7799,8 +7801,11 @@ function WidgetsDashboard({
             className={btnClassName}
             title={tab.label}
           >
-            <Icon size={isCollapsedSidebar ? 18 : 22} />
-            {!isCollapsedSidebar && (
+            {isActive && (
+              <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-[3px] h-[24px] rounded-full bg-[#00d2ff]" />
+            )}
+            <Icon size={isCollapsedSidebar ? 18 : 22} className={isActive ? "text-[#00d2ff]" : ""} />
+            {!isCollapsedSidebar && !isActive && (
               <span className="text-[10px] font-semibold tracking-tight select-none truncate w-full px-0.5">
                 {tab.label}
               </span>
@@ -7835,20 +7840,27 @@ function WidgetsDashboard({
         onClick={() => setActiveBoardTab('settings')}
         className={
           isCollapsedSidebar
-            ? `p-2 ${widgetsFeedTreatment === 5 ? "rounded-full" : "rounded-xl"} transition-all ${activeBoardTab === 'settings' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`
-            : `w-[84px] h-[68px] flex flex-col items-center justify-center gap-1 p-1 ${widgetsFeedTreatment === 5 ? "rounded-[24px]" : "rounded-2xl"} transition-all ${activeBoardTab === 'settings' ? (isDark ? "bg-white/10 text-blue-400" : "bg-white text-blue-600 shadow-sm") : "opacity-40 hover:opacity-100"}`
+            ? `p-2 transition-all relative ${activeBoardTab === 'settings' ? "bg-[#2d2d2d] text-[#00d2ff] rounded-lg" : (widgetsFeedTreatment === 5 ? "rounded-full opacity-40 hover:opacity-100" : "rounded-xl opacity-40 hover:opacity-100")}`
+            : `w-[84px] h-[68px] flex flex-col items-center justify-center gap-1 p-1 transition-all relative ${activeBoardTab === 'settings' ? "bg-[#2d2d2d] text-[#00d2ff] rounded-lg" : (widgetsFeedTreatment === 5 ? "rounded-[24px] opacity-40 hover:opacity-100" : "rounded-2xl opacity-40 hover:opacity-100")}`
         }
         title="Settings"
       >
-        <Settings size={isCollapsedSidebar ? 18 : 22} />
-        {!isCollapsedSidebar && (
+        {activeBoardTab === 'settings' && (
+          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-[3px] h-[24px] rounded-full bg-[#00d2ff]" />
+        )}
+        <Settings size={isCollapsedSidebar ? 18 : 22} className={activeBoardTab === 'settings' ? "text-[#00d2ff]" : ""} />
+        {!isCollapsedSidebar && activeBoardTab !== 'settings' && (
           <span className="text-[10px] font-semibold tracking-tight select-none">Settings</span>
         )}
       </button>
     </div>
   )}
 
-  <div className={`flex-1 flex flex-col min-w-0 ${isFullPageTab ? "p-0 bg-[#1c1c1c] text-white full-page-tab h-full overflow-hidden" : "p-8 bg-[#1c1c1c] text-white rounded-r-2xl h-full overflow-y-auto custom-scrollbar"}`}>
+  <div className={`flex-1 flex flex-col min-w-0 transition-colors duration-300 ${
+    isUpdated 
+      ? (isFullPageTab ? "p-0 bg-transparent text-white full-page-tab h-full overflow-hidden" : "p-8 bg-transparent text-white h-full overflow-y-auto custom-scrollbar")
+      : (isFullPageTab ? "p-0 bg-[#1c1c1c] text-white full-page-tab h-full overflow-hidden" : "p-8 bg-[#1c1c1c] text-white rounded-r-2xl h-full overflow-y-auto custom-scrollbar")
+  }`}>
      {!isFullPageTab && (
        <div className="flex items-center justify-between mb-8">
           <div>
@@ -7861,7 +7873,7 @@ function WidgetsDashboard({
             {/* Tab Title (just like the image) */}
             <div className="flex items-center gap-2 mt-4">
               <span className="text-lg font-semibold tracking-tight text-white leading-none">
-                {activeBoardTab === 'widgets' ? 'Widgets' : 'Feed'}
+                {activeBoardTab === 'widgets' ? 'My widgets' : 'My feed'}
               </span>
               {activeBoardTab === 'widgets' && (
                 <button 
@@ -7892,10 +7904,10 @@ function WidgetsDashboard({
             {shouldHideSidebar && (
               <div className="flex items-center gap-4 mt-6">
                 {[
-                  { id: 'widgets', icon: LayoutDashboard, label: 'Widgets' },
+                  { id: 'widgets', icon: LayoutDashboard, label: 'My widgets' },
                   { id: 'vstore', icon: ShoppingBag, label: 'Vstore' },
-                  { id: 'feed', icon: Newspaper, label: 'Feed' },
-                  { id: 'pizza', icon: Pizza, label: 'Labs' },
+                  { id: 'feed', icon: Newspaper, label: 'My feed' },
+                  ...(isDev ? [{ id: 'dev', icon: Terminal, label: 'Dev' }] : []),
                   { id: 'doforme', icon: Sparkles, label: 'AI' }
                 ].filter(t => t.id !== 'feed' || widgetSettings.showFeed).map(tab => (
                   <button 
@@ -7922,18 +7934,18 @@ function WidgetsDashboard({
              {!widgetSettings.collapsePinButton ? (
                <button 
                  onClick={() => { setShowWidgetGallery(true); setActiveBoardTab('widgets'); }}
-                 className="flex items-center gap-2 px-6 py-2.5 bg-[#0078d4] hover:bg-[#0078d4]/90 text-white rounded-2xl transition-all shadow-lg active:scale-95"
+                 className="flex items-center gap-2 px-6 py-2.5 bg-[#00d2ff] hover:bg-[#00d2ff]/90 text-black rounded-lg transition-all shadow-lg active:scale-95"
                >
-                 <Pin size={18} fill="currentColor" />
-                 <span className="text-sm font-semibold tracking-tight">Pin widgets</span>
+                 <Plus size={20} className="stroke-[3] text-black" />
+                 <span className="text-sm font-bold tracking-tight">Add widgets</span>
                </button>
              ) : (
                <button 
                  onClick={() => { setShowWidgetGallery(true); setActiveBoardTab('widgets'); }}
-                 className={`p-2.5 rounded-xl bg-[#0078d4]/10 hover:bg-[#0078d4]/20 text-[#0078d4] transition-all active:scale-95 flex items-center justify-center`}
-                 title="Pin widgets"
+                 className="p-2.5 rounded-lg bg-[#00d2ff]/10 hover:bg-[#00d2ff]/20 text-[#00d2ff] transition-all active:scale-95 flex items-center justify-center"
+                 title="Add widgets"
                >
-                 <Plus size={20} />
+                 <Plus size={22} className="stroke-[3]" />
                </button>
              )}
              <button 
@@ -7993,26 +8005,8 @@ function WidgetsDashboard({
                initial={false}
                animate={{ opacity: 1 }}
                transition={{ duration: 0 }}
-               className="space-y-6"
+               className="space-y-6 pt-4"
              >
-                <div className="mb-10 text-center md:text-left">
-                   <h3 className="text-3xl font-semibold tracking-tight text-white mb-2">What are Widgets Dashboard?</h3>
-                   <p className="text-slate-400 font-medium max-w-2xl leading-relaxed">Widgets Dashboard is a place to use handful widgets, create shortcuts, play games, spending Vpoints, using commands and more!</p>
-                </div>
-
-                {widgetSettings.allowWebSearches && (
-                  <div className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-white/5 transition-all bg-white/5 focus-within:bg-white/10 focus-within:border-blue-500/50">
-                     <Search size={18} className="text-blue-500" />
-                     <input 
-                       type="text" 
-                       placeholder="Search the web" 
-                       className="bg-transparent border-none outline-none text-sm w-full font-semibold placeholder:opacity-30 text-current"
-                       value={searchQuery}
-                       onChange={(e) => setSearchQuery(e.target.value)}
-                     />
-                  </div>
-                )}
-
                 <div className="grid grid-cols-12 gap-6 auto-rows-max">
                   {pinnedWidgets.length === 0 ? (
                     <div className="col-span-12 flex flex-col items-center justify-center py-20 text-center">
@@ -8020,15 +8014,16 @@ function WidgetsDashboard({
                         <LayoutDashboard size={48} className="text-blue-500 opacity-20" />
                       </div>
                       <h3 className="text-2xl font-semibold tracking-tight text-slate-200">Whoops! Chưa có tiện ích nào ở đây :(</h3>
-                      <p className="text-slate-400 mt-2 max-w-sm font-medium">Bấm chọn "Pin widgets" để bắt đầu thêm các tiện ích vào bảng tiện ích</p>
+                      <p className="text-slate-400 mt-2 max-w-sm font-medium">Bấm chọn "Add widgets" để bắt đầu thêm các tiện ích vào bảng tiện ích</p>
                       <button 
                         onClick={() => {
                           setShowWidgetGallery(true);
                           localStorage.setItem("vplay_widgets_ever_opened", "true");
                         }}
-                        className="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold tracking-tight shadow-xl shadow-blue-500/20 active:scale-95 transition-all"
+                        className="mt-8 px-8 py-3 bg-[#00d2ff] hover:bg-[#00d2ff]/90 text-black rounded-lg font-bold tracking-tight shadow-xl shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2"
                       >
-                        Pin widgets
+                        <Plus size={18} className="stroke-[3] text-black" />
+                        Add widgets
                       </button>
                     </div>
                   ) : (
@@ -8130,7 +8125,7 @@ function WidgetsDashboard({
                initial={false}
                animate={{ opacity: 1 }}
                transition={{ duration: 0 }}
-               className="flex-1 flex flex-col min-h-0 bg-[#1c1c1c] text-white rounded-none overflow-hidden border border-white/5 shadow-2xl full-page-tab"
+               className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#1c1c1c] border border-white/5 shadow-2xl"} full-page-tab`}
              >
                <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/20">
                   <div className="flex items-center gap-3">
@@ -8208,7 +8203,7 @@ function WidgetsDashboard({
                                 { id: 'reset_vstore', label: 'Reset Vstore', desc: 'Đặt lại Vstore về mặc định (Lịch sử thanh toán & 100 VP).' },
                                 { id: 'reset_widgets_feed', label: 'Reset Widgets Feed', desc: 'Trở lại danh sách ghim Feed setup mặc định nhà máy.' },
                                 { id: 'respring_data', label: 'Respring Data', desc: 'Dẫn tới màn hình chờ please wait vĩnh viễn (bypass qua mã 3667).' },
-                                { id: 'erase_data', label: 'Erase Data', desc: 'Mở tiến trình xóa sạch dữ liệu hệ thống (Erase/Backup UI).' }
+                                { id: 'erase_data', label: 'Respring Canary', desc: 'Mở tiến trình respring khôi phục dữ liệu hệ thống (Respring/Backup UI).' }
                               ].map(opt => (
                                 <button
                                   key={opt.id}
@@ -8324,7 +8319,7 @@ function WidgetsDashboard({
               </motion.div>
            )}
 
-           {!isTabTransitioning && activeBoardTab === 'pizza' && (
+           {false && (
               <motion.div 
                 key="pizza"
                 initial={false}
@@ -8419,7 +8414,7 @@ function WidgetsDashboard({
                       {!isTabTransitioning && activeBoardTab === 'settings' && (() => {
             const isDark = true;
             const filteredCategories = [
-              { id: 'system_settings', name: 'Show more options', desc: 'Xem danh sách đầy đủ tất cả các tùy chỉnh cài đặt ứng dụng', icon: Settings },
+              { id: 'system_settings', name: 'System and Developer Settings', desc: 'Cài đặt hệ thống nâng cao và cấu hình chế độ nhà phát triển', icon: Settings },
               { id: 'account', name: 'Tài khoản', desc: 'Quản lý hồ sơ và tài khoản Vplay', icon: User },
               { id: 'appearance', name: 'Chủ đề và Giao diện', desc: 'Tùy biến giao diện và trải nghiệm người dùng theo ý thích', icon: Palette },
               { id: 'topbar', name: 'Topbar (Desktop mode only)', desc: 'Tùy chỉnh các tính năng và hành vi của thanh điều hướng trên', icon: PanelTop },
@@ -9081,8 +9076,8 @@ function WidgetsDashboard({
                               action: () => setWidgetSettings({ ...widgetSettings, showCalendarInWidgets: !widgetSettings.showCalendarInWidgets })
                             },
                             {
-                              label: "Thu gọn nút 'Pin widgets'",
-                              desc: "Tự động đổi icon ghim to thành biểu tượng '+' nhỏ thời trang",
+                              label: "Thu gọn nút 'Add widgets'",
+                              desc: "Tự động đổi nút thêm to thành biểu tượng '+' nhỏ thời trang",
                               val: widgetSettings.collapsePinButton,
                               action: () => setWidgetSettings({ ...widgetSettings, collapsePinButton: !widgetSettings.collapsePinButton })
                             },
@@ -9164,21 +9159,21 @@ function WidgetsDashboard({
                   )}
 
                   {/* SECTION 10: ERASE DATA & factory reset */}
-                  {(matchesSearch("erase data clear reset nhà máy") || matchesSearch("factory reset")) && (
+                  {(matchesSearch("respring erase data clear reset nhà máy") || matchesSearch("factory reset")) && (
                     <div className="space-y-4">
                       <div className="flex items-center gap-3 px-2">
-                        <Trash2 className="text-red-500" size={20} />
-                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Nguy hiểm & Khôi phục cài đặt gốc</h4>
+                        <RefreshCw className="text-blue-500" size={20} />
+                        <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Respring & Khôi phục cài đặt</h4>
                       </div>
 
-                      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full border-red-500/10 ${isDark ? "bg-red-500/5" : "bg-red-500/2 shadow-xl shadow-red-100/30"}`}>
+                      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full border-blue-500/10 ${isDark ? "bg-blue-500/5" : "bg-blue-500/2 shadow-xl shadow-blue-100/30"}`}>
                         <div className="flex items-center gap-4 mb-6 text-left">
-                          <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
-                            <Trash2 size={24} />
+                          <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
+                            <RefreshCw size={24} />
                           </div>
                           <div>
-                            <h3 className={`font-bold text-xl tracking-tight text-red-500`}>Erase Vplay Canary</h3>
-                            <p className="text-xs text-slate-400 leading-relaxed font-medium mt-0.5 font-sans">Reset all local settings, preferences, and data to their system defaults.</p>
+                            <h3 className={`font-bold text-xl tracking-tight text-blue-500`}>Respring Vplay Canary</h3>
+                            <p className="text-xs text-slate-400 leading-relaxed font-medium mt-0.5 font-sans">Khởi động lại môi trường và khôi phục cài đặt gốc hệ thống Vplay Canary về mặc định.</p>
                           </div>
                         </div>
 
@@ -9186,10 +9181,10 @@ function WidgetsDashboard({
                           <button 
                             type="button"
                             onClick={onEraseClick}
-                            className="px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                            className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
                           >
-                            <Trash2 size={14} />
-                            Erase data
+                            <RefreshCw size={14} />
+                            Respring now
                           </button>
                         </div>
                       </div>
@@ -9706,8 +9701,8 @@ function WidgetsDashboard({
                           </div>
                           <div className="flex items-center justify-between border-b border-black/5 pb-3">
                              <div>
-                                <span className="text-xs font-semibold block text-left font-sans">Thu gọn nút "Pin widgets"</span>
-                                <span className="text-[10px] opacity-50 block text-left">Thu gọn nút Pin widgets thành icon dấu '+' cạnh nút full screen</span>
+                                <span className="text-xs font-semibold block text-left font-sans">Thu gọn nút "Add widgets"</span>
+                                <span className="text-[10px] opacity-50 block text-left">Thu gọn nút Add widgets thành icon dấu '+' cạnh nút full screen</span>
                              </div>
                              <div 
                                onClick={() => setWidgetSettings({ ...widgetSettings, collapsePinButton: !widgetSettings.collapsePinButton })}
@@ -9734,48 +9729,87 @@ function WidgetsDashboard({
                   );
                 case 'experiments':
                   return (
-                    <div className="space-y-6 pb-16">
-                      {/* Two experiments groupings requested */}
-                      <div className="space-y-8">
-                        <div className="space-y-4">
-                          <h3 className="text-[10px] font-semibold uppercase tracking-widest opacity-40 px-2 text-left">App experiment</h3>
-                          <div className={`p-6 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"} space-y-4`}>
-                            {PIZZA_EXPERIMENTS.app.map(exp => (
-                              <div key={exp.id} className="flex items-center justify-between border-b border-black/5 last:border-0 last:pb-0 pb-4">
-                                 <div className="flex-1 pr-6 text-left">
-                                    <span className="text-sm font-semibold block">{exp.name}</span>
-                                    <span className="text-[11px] opacity-50 block mt-0.5">{exp.desc}</span>
-                                 </div>
-                                 <div 
-                                    onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
-                                    className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 shrink-0 transition-colors ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-300"}`}
-                                  >
-                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags[exp.id] ? "left-5.5" : "left-0.5"}`} />
-                                 </div>
-                              </div>
-                            ))}
-                          </div>
+                    <div className="space-y-6 pb-16 font-forced-montserrat">
+                      <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-600/10 text-purple-600 flex items-center justify-center">
+                          <Pizza size={24} />
                         </div>
+                        <div>
+                          <h3 className={`font-bold text-xl ${isDark ? "text-white" : "text-slate-900"}`}>Pizza Experiments</h3>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Beta features & Experimental labs</p>
+                        </div>
+                      </div>
 
-                        <div className="space-y-4">
-                          <h3 className="text-[10px] font-semibold uppercase tracking-widest opacity-40 px-2 text-left">Widgets feed experiment</h3>
-                          <div className={`p-6 rounded-[32px] border ${isDark ? "bg-white/5 border-white/5" : "bg-white border-black/5 shadow-xl shadow-slate-100"} space-y-4`}>
-                            {PIZZA_EXPERIMENTS.widgets.map(exp => (
-                              <div key={exp.id} className="flex items-center justify-between border-b border-black/5 last:border-0 last:pb-0 pb-4">
-                                 <div className="flex-1 pr-6 text-left">
-                                    <span className="text-sm font-semibold block">{exp.name}</span>
-                                    <span className="text-[11px] opacity-50 block mt-0.5">{exp.desc}</span>
-                                 </div>
-                                 <div 
-                                    onClick={() => setFeatureFlags({ ...featureFlags, [exp.id]: !featureFlags[exp.id] })}
-                                    className={`w-10 h-5 rounded-full relative cursor-pointer p-0.5 shrink-0 transition-colors ${featureFlags[exp.id] ? "bg-blue-600" : "bg-slate-300"}`}
-                                 >
-                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${featureFlags[exp.id] ? "left-5.5" : "left-0.5"}`} />
-                                 </div>
-                              </div>
-                            ))}
-                          </div>
+                      <div className={`p-6 rounded-3xl border mb-6 ${isDark ? "bg-red-500/5 border-red-500/10" : "bg-red-50 border-red-200"} flex flex-col sm:flex-row items-center justify-between gap-4`}>
+                        <div className="flex items-center gap-3">
+                           <div className="p-2 w-10 h-10 rounded-xl bg-red-400/10 text-red-400 flex items-center justify-center">
+                              <RefreshCw size={18} />
+                           </div>
+                           <div>
+                              <h4 className="font-bold text-sm text-left text-white leading-none">Canary Reset Option</h4>
+                              <p className="text-[10px] text-red-400/80 font-semibold mt-1">Simulate or reset widgets feed update onboarding</p>
+                           </div>
                         </div>
+                        <button
+                          onClick={() => {
+                            localStorage.removeItem("vplay_widgets_updated_canary");
+                            setIsWidgetsUpdated(false);
+                            addNotification?.("Canary Lab", "Reset widgets update state! Re-open widgets board to see the update screen.", "success");
+                          }}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 duration-100 shrink-0 cursor-pointer animate-fade-in"
+                        >
+                          Reset Board Update
+                        </button>
+                      </div>
+                      
+                      <ExperimentalContent 
+                        isDark={isDark} 
+                        featureFlags={featureFlags} 
+                        hideHeader={true}
+                        setFeatureFlags={(f: any, id: string, name: string, val: boolean) => {
+                          setFeatureFlags(f);
+                          localStorage.setItem("vplay_feature_flags", JSON.stringify(f));
+                          if (name) {
+                            addNotification?.("Thử nghiệm", `${val ? 'Bật' : 'Tắt'} flag: ${name}`, 'success');
+                          }
+                        }} 
+                      />
+                      
+                      <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
+                         <div className={`p-8 rounded-[32px] border ${isDark ? "bg-amber-500/5 border-amber-500/10" : "bg-amber-50 border-amber-200 shadow-xl shadow-amber-100/10"}`}>
+                           <div className="flex items-center gap-3 mb-4">
+                              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+                                 <LayoutGrid size={20} />
+                              </div>
+                              <div>
+                                 <h4 className={`font-bold text-sm text-left ${isDark ? "text-white" : "text-slate-900"}`}>Widgets Feed Treatments</h4>
+                                 <p className="text-[10px] text-amber-600/70 font-bold uppercase mt-0.5">Custom layout rendering variants</p>
+                              </div>
+                           </div>
+
+                           <div className="relative group text-white">
+                             <select 
+                               value={widgetsFeedTreatment}
+                               onChange={(e) => {
+                                 const val = parseInt(e.target.value);
+                                 setWidgetsFeedTreatment(val);
+                                 localStorage.setItem("vplay_widgets_feed_treatment", val.toString());
+                               }}
+                               className={`w-full p-4 pr-10 rounded-2xl border appearance-none transition-all cursor-pointer font-bold text-sm ${
+                                 isDark ? "bg-black/40 border-amber-500/25 text-white focus:ring-amber-500" : "bg-white border-amber-200 text-slate-800 focus:ring-amber-500"
+                               }`}
+                             >
+                               <option value={1} className="text-black">Treatment 1: Navigation sidebar (Default)</option>
+                               <option value={2} className="text-black">Treatment 2: Top navigation (Giống với option hide widgets sidebar)</option>
+                               <option value={3} className="text-black">Treatment 3: Float sidebar (Layout giống hình 1)</option>
+                               <option value={4} className="text-black">Treatment 4: More collapse (Hẹp hơn giống hình 2)</option>
+                               <option value={5} className="text-black">Treatment 5: Extremely rounded (Bo cong giống hình 3)</option>
+                             </select>
+                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                               <ChevronDown size={16} />
+                             </div>
+                           </div>
+                         </div>
                       </div>
                     </div>
                   );
@@ -9838,7 +9872,7 @@ function WidgetsDashboard({
                 initial={false}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0 }}
-                className="flex-1 flex flex-col min-h-0 bg-[#1c1c1c] text-white rounded-none overflow-hidden border border-white/5 shadow-2xl full-page-tab"
+                className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#1c1c1c] border border-white/5 shadow-2xl"} full-page-tab`}
               >
                 {/* Header */}
                 <div className="h-20 px-8 flex items-center justify-between border-b border-black/5">
@@ -9859,7 +9893,7 @@ function WidgetsDashboard({
                        selectedSettingCategory === 'sidebar' ? 'Sidebar' :
                        selectedSettingCategory === 'floatbar' ? 'Floatbar' :
                        selectedSettingCategory === 'widgets_board' ? 'Widgets Board' :
-                       selectedSettingCategory === 'system_settings' ? 'Show more options' :
+                       selectedSettingCategory === 'system_settings' ? 'System and Developer Settings' :
                        selectedSettingCategory === 'experiments' ? 'Labs & Experiments' :
                        'Settings'}
                     </h3>
@@ -10057,13 +10091,13 @@ function WidgetsDashboard({
             );
           })()}
 
-           {!isTabTransitioning && activeBoardTab === 'dev' && isDev && false && (
+           {!isTabTransitioning && activeBoardTab === 'dev' && isDev && (
               <motion.div 
                 key="dev"
                 initial={false}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0 }}
-                className="flex-1 flex flex-col min-h-0 bg-[#0c0c0e] text-white rounded-none overflow-hidden border border-white/5 shadow-2xl"
+                className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#0c0c0e] border border-white/5 shadow-2xl"}`}
               >
                <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/30">
                   <div>
@@ -10072,7 +10106,7 @@ function WidgetsDashboard({
                   </div>
                </div>
 
-               <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-[#0c0c0e]">
+               <div className={`flex-1 p-8 overflow-y-auto custom-scrollbar ${isUpdated ? "bg-transparent" : "bg-[#0c0c0e]"}`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                     {[
                       { id: 'trigger_oobe', label: 'Trigger OOBE', desc: 'Khởi chạy lại màn hình cấu hình OOBE thiết lập đầu.' },
@@ -10084,7 +10118,7 @@ function WidgetsDashboard({
                       { id: 'reset_vstore', label: 'Reset Vstore', desc: 'Đặt lại Vstore về mặc định (Lịch sử thanh toán & 100 VP).' },
                       { id: 'reset_widgets_feed', label: 'Reset Widgets Feed', desc: 'Trở lại danh sách ghim Feed setup mặc định nhà máy.' },
                       { id: 'respring_data', label: 'Respring Data', desc: 'Dẫn tới màn hình chờ please wait vĩnh viễn (bypass qua mã 3667).' },
-                      { id: 'erase_data', label: 'Erase Data', desc: 'Mở tiến trình xóa sạch dữ liệu hệ thống (Erase/Backup UI).' }
+                      { id: 'erase_data', label: 'Respring Canary', desc: 'Mở tiến trình respring khôi phục dữ liệu hệ thống (Respring/Backup UI).' }
                     ].map(opt => (
                       <button
                         key={opt.id}
@@ -10113,7 +10147,7 @@ function WidgetsDashboard({
                 initial={false}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0 }}
-                className="flex-1 flex flex-col min-h-0 bg-[#1c1c1c] text-white rounded-none overflow-hidden border border-white/5 shadow-2xl"
+                className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#1c1c1c] border border-white/5 shadow-2xl"}`}
               >
                <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/10">
                   <div>
@@ -10146,7 +10180,7 @@ function WidgetsDashboard({
                   </div>
                </div>
 
-               <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-[#1c1c1c]">
+               <div className={`flex-1 p-8 overflow-y-auto custom-scrollbar ${isUpdated ? "bg-transparent" : "bg-[#1c1c1c]"}`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {[
                       { id: 'music_player', name: 'Music Pro', icon: Music, price: 50, desc: 'Trình phát nhạc Material Design.', cat: 'Utility' },
@@ -12080,7 +12114,7 @@ export default function App() {
   }, [isErasing]);
 
   const [showWidgets, setShowWidgets] = useState(false);
-  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'pizza' | 'doforme' | 'vstore' | 'update_widgets_feed' | 'erase_data'>('widgets');
+  const [activeBoardTab, setActiveBoardTab] = useState<'widgets' | 'feed' | 'settings' | 'dev' | 'doforme' | 'vstore' | 'update_widgets_feed' | 'erase_data'>('widgets');
   const [widgetsTheme, setWidgetsTheme] = useState<"light" | "dark">(() => (localStorage.getItem("vplay_widgets_theme") as "light" | "dark") || "light");
   const [activeDoForMeSubView, setActiveDoForMeSubView] = useState<string | null>(null);
   const [pinnedDoForMeFeatures, setPinnedDoForMeFeatures] = useState<string[]>(() => {
@@ -12254,8 +12288,9 @@ export default function App() {
         ai_tools: false,
         ai_sidebar: false,
         taskbar_experimental: false,
-        top_bar: false,
+        top_bar: true,
         cobalt_ui: false,
+        cobalt_scrollbar: false,
         xaml_experience: true
       };
       if (!saved) return defaults;
@@ -12286,7 +12321,8 @@ export default function App() {
         search_placeholder_treatment_id: 1,
         ai_tools: false,
         ai_sidebar: false,
-        top_bar: false,
+        top_bar: true,
+        cobalt_scrollbar: false,
         xaml_experience: false
       };
     }
@@ -13236,6 +13272,35 @@ export default function App() {
 
   return (
     <div className={`flex flex-col h-screen overflow-hidden`}>
+      {featureFlags?.cobalt_scrollbar && (
+        <style dangerouslySetInnerHTML={{ __html: `
+          /* CSS for Cobalt UI 3 Scrollbar */
+          ::-webkit-scrollbar {
+            width: 8px !important;
+            height: 8px !important;
+          }
+          ::-webkit-scrollbar-track {
+            background: rgba(10, 10, 25, 0.4) !important;
+            border-radius: 9999px !important;
+          }
+          ::-webkit-scrollbar-thumb {
+            background: rgba(0, 210, 255, 0.6) !important;
+            border-radius: 9999px !important;
+            border: 2px solid rgba(10, 10, 25, 0.4) !important;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2) !important;
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 210, 255, 0.95) !important;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5) !important;
+          }
+          
+          /* Firefox support */
+          * {
+            scrollbar-width: thin !important;
+            scrollbar-color: rgba(0, 210, 255, 0.6) rgba(10, 10, 25, 0.4) !important;
+          }
+        `}} />
+      )}
       <MotionConfig 
       transition={featureFlags?.disable_animation ? { duration: 0 } : undefined}
       reducedMotion={featureFlags?.disable_animation ? "always" : "user"}
@@ -13658,7 +13723,7 @@ export default function App() {
                      <span className="text-xs font-black tracking-tight">{isUnlimitedVpoints ? "∞" : vpoints} <span className="opacity-60 font-medium">VP</span></span>
                   </div>
                   <div 
-                    onClick={() => setShowWidgets(true)}
+                    onClick={() => { setShowWidgets(true); setActiveBoardTab('widgets'); }}
                     className="hidden sm:flex items-center gap-3 pr-6 border-r border-white/5 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-all"
                   >
                      <Sun size={14} className="text-amber-400" />
@@ -13668,7 +13733,7 @@ export default function App() {
                      </div>
                   </div>
                   <div 
-                    onClick={() => setShowWidgets(true)}
+                    onClick={() => { setShowWidgets(true); setActiveBoardTab('widgets'); }}
                     className="flex flex-col items-end leading-none cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-all"
                   >
                      <span className="text-[13px] font-black tracking-tight uppercase leading-none">{currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
@@ -14720,6 +14785,7 @@ export default function App() {
                           }
                           if (tab.id === "Widgets") {
                             setShowWidgets(true);
+                            setActiveBoardTab('widgets');
                             return;
                           }
                           if (tab.id === "Search") {
@@ -16474,26 +16540,26 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center font-sans font-light leading-relaxed select-none overflow-hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999999] flex items-center justify-center font-forced-montserrat font-light leading-relaxed select-none overflow-hidden"
             >
               <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-                <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-sans font-light leading-relaxed">
+                <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-forced-montserrat font-light leading-relaxed">
                   {!isErasing ? (
                     <>
                       <div className="space-y-3 w-full">
-                        <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
-                          Ready to erase Vplay Canary?
+                        <h2 className="text-3xl md:text-4xl text-white font-forced-montserrat font-light leading-tight tracking-wide">
+                          Ready to respring Vplay Canary?
                         </h2>
-                        <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full">
-                          This mean we will restore all of the settings and accounts back to their defaults. You can create and download a data backup file in case (that includes all your current options, UI layout and account settings). The erase process will take around 30 seconds to a minute.
+                        <p className="text-sm md:text-base text-white/95 font-forced-montserrat font-light leading-relaxed w-full">
+                          This will reload the environment and restore the settings and accounts back to their defaults. You can create and download a data backup file (includes all your current options, UI layout and configurations) before proceeding. The respring process will take around 30 seconds to a minute.
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center justify-start gap-4">
                         <button
                           onClick={() => setIsErasing(true)}
-                          className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                          className="border border-white text-white font-forced-montserrat font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                         >
-                          Erase now
+                          Respring now
                         </button>
                         <button
                           onClick={() => {
@@ -16512,7 +16578,7 @@ export default function App() {
                             a.click();
                             URL.revokeObjectURL(url);
                           }}
-                          className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                          className="border border-white text-white font-forced-montserrat font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                         >
                           Download backup file
                         </button>
@@ -16520,7 +16586,7 @@ export default function App() {
                           onClick={() => {
                             setShowEraseModal(false);
                           }}
-                          className="border border-white text-white font-sans font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
+                          className="border border-white text-white font-forced-montserrat font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
                         >
                           Close
                         </button>
@@ -16528,12 +16594,12 @@ export default function App() {
                     </>
                   ) : (
                     <div className="space-y-3 w-full">
-                      <h2 className="text-3xl md:text-4xl text-white font-sans font-light leading-tight tracking-wide">
+                      <h2 className="text-3xl md:text-4xl text-white font-forced-montserrat font-light leading-tight tracking-wide">
                         Please wait
                       </h2>
-                      <p className="text-sm md:text-base text-white/95 font-sans font-light leading-relaxed w-full">
-                        We are erasing Vplay Canary for you. This might take a several minutes (about 30 seconds to a minute)...<br />
-                        All of the settings will be reset to their defaults. that includes all your current options, UI layout and account settings
+                      <p className="text-sm md:text-base text-white/95 font-forced-montserrat font-light leading-relaxed w-full">
+                        We are respringing Vplay Canary for you. This might take about 30 seconds to a minute...<br />
+                        All of the settings will be reset to their defaults, including all your options, UI layout and account configurations.
                       </p>
                       
                       <div className="flex items-center gap-4 pt-4">
@@ -16543,7 +16609,7 @@ export default function App() {
                           className="w-7 h-7 object-contain shrink-0" 
                           referrerPolicy="no-referrer"
                         />
-                        <span className="text-xl font-sans font-light text-white/90">
+                        <span className="text-xl font-forced-montserrat font-light text-white/90">
                           {eraseProgress}% complete
                         </span>
                       </div>
