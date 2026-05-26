@@ -9,9 +9,10 @@ import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig, Reorder } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail, User as FirebaseUser, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, updateDoc, arrayUnion, getDocFromServer } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, updateDoc, arrayUnion, getDocFromServer, addDoc } from "firebase/firestore";
 
 import { channels, Channel } from "./channels";
+import { VconnectContent } from "./components/VconnectContent";
 
 // Test connection as per critical directive
 // Test connection removed
@@ -48,7 +49,8 @@ const PIZZA_EXPERIMENTS = {
     { id: 'settings_vertical', name: 'List Settings', status: 'Beta', desc: 'Chuyển layout cài đặt về dạng danh sách (yêu cầu XAML View).' },
     { id: 'xaml_home', name: 'XAML Home Page', status: 'Internal', desc: 'Sử dụng trang chủ thế hệ mới dựa trên XAML system.' },
     { id: 'xaml_experience', name: 'Vplay Symphony UI', status: 'Active', desc: 'Trải nghiệm giao diện hoàn toàn mới được tái thiết kế.' },
-    { id: 'cobalt_scrollbar', name: 'Cobalt UI 3 Scrollbar', status: 'Experimental', desc: 'Replaces the default browser scrollbar to the new scrollbar of Cobalt UI version 3' }
+    { id: 'cobalt_scrollbar', name: 'Cobalt UI 3 Scrollbar', status: 'Experimental', desc: 'Replaces the default browser scrollbar to the new scrollbar of Cobalt UI version 3' },
+    { id: 'vids_feature', name: 'Vids Feature', status: 'Experimental', desc: 'Kích hoạt tính năng Vids đăng tải post, blog, polls, ảnh/video dưới 1GB.' }
   ],
   widgets: [
     { id: 'settings_on_widgets', name: 'Settings on Widgets', status: 'Experimental', desc: 'Moves the app settings in the Widgets Dashboard.' },
@@ -359,6 +361,7 @@ const baseTabs = [
   { name: "Widgets", icon: LayoutDashboard, id: "Widgets" },
   { name: "Vstore", icon: ShoppingBag, id: "Vstore", isExtra: true },
   { name: "Live", icon: Tv, id: "Phát sóng" },
+  { name: "Vconnect", icon: Users, id: "Vconnect" },
   { name: "Labs", icon: Pizza, id: "Pizza" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
 ];
@@ -4598,337 +4601,875 @@ function SearchPopup({
   );
 }
 
-function EventsContent({ isDark, liquidGlass }: { isDark: boolean, liquidGlass: "glassy" | "tinted" }) {
-  return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className={`p-6 rounded-full ${isDark ? "bg-white/5" : "bg-black/5"}`}
-      >
-        <Sparkles className="w-12 h-12 text-purple-500 opacity-20 animate-pulse" />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h2 className={`text-2xl font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>Lưu trữ</h2>
-        <p className={`text-sm opacity-50 max-w-xs mx-auto ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-          Hiện tại chưa có sự kiện nào được lưu trữ. Các sự kiện trực tiếp sẽ xuất hiện tại đây sau khi kết thúc.
-        </p>
-      </motion.div>
-    </div>
-  );
-}
-
-function VidsContent({ isDark, user, liquidGlass, onLogin, featureFlags }: { isDark: boolean, user: FirebaseUser | null, liquidGlass: "glassy" | "tinted", onLogin: () => void, featureFlags?: any }) {
+function VidsContent({ isDark, user, liquidGlass, onLogin, featureFlags, lite = false, addNotification }: { 
+  isDark: boolean, 
+  user: FirebaseUser | null, 
+  liquidGlass: "glassy" | "tinted", 
+  onLogin: () => void, 
+  featureFlags?: any,
+  lite?: boolean,
+  addNotification?: (title: string, msg: string, type?: "info" | "success" | "warning" | "error") => void
+}) {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [showUpload, setShowUpload] = useState(false);
-  const [showCreatePost, setShowCreatePost] = useState(false);
-  
-  // Video form
-  const [title, setTitle] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
-  const [description, setDescription] = useState("");
+  const [filter, setFilter] = useState<"all" | "media" | "post_blog" | "poll">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Post form
-  const [postContent, setPostContent] = useState("");
+  // Creation Modals
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createType, setCreateType] = useState<"post" | "blog" | "poll">("post");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [blogCategory, setBlogCategory] = useState("Technology");
+  const [blogCoverUrl, setBlogCoverUrl] = useState("");
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
+  
+  // Media uploads
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mediaUrl, setMediaUrl] = useState("");
-  const [mediaType, setMediaType] = useState<"image" | "video" | "none">("none");
-  const [pollOptions, setPollOptions] = useState<string[]>([]);
-  const [pollQuestion, setPollQuestion] = useState("");
+  const [mediaType, setMediaType] = useState<"image" | "video" | "">("");
+
+  // Blog Reader Modal
+  const [readingBlog, setReadingBlog] = useState<any | null>(null);
+
+  const defaultLiteItems = [
+    {
+      id: "mock-1",
+      type: "blog",
+      title: "Chào mừng bạn đến với Vids Lite!",
+      content: "Đây là chế độ Vids Lite ngoại tuyến & riêng tư tuyệt đối dành cho người dùng chưa đăng nhập. Bạn có thể tự do đăng các bài viết, bài blog cá nhân, tạo các cuộc khảo sát ý kiến hoặc thậm chí tải lên ảnh và video nặng dưới 1GB.\n\nMọi dữ liệu được lưu cục bộ ngay trên trình duyệt của bạn (Local Storage) và không thể chia sẻ ra ngoài, đảm bảo tính bảo mật và riêng tư tối đa. Khi đã sẵn sàng đăng nhập, bạn có thể chuyển qua tab Vids tiêu chuẩn để tương tác công khai với cộng đồng vPlay trên toàn cầu!",
+      category: "Cộng Đồng vPlay",
+      coverUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80",
+      createdAt: new Date().toISOString(),
+      likes: 12,
+      userEmail: "guest@vplay.local",
+      likesVoted: false
+    },
+    {
+      id: "mock-2",
+      type: "poll",
+      title: "Bạn có thích phong cách thiết kế giao diện vPlay Cobalt UI 3 mới không?",
+      pollOptions: ["Cực kỳ yêu thích", "Rất tốt & Hiện đại", "Cần bổ sung thêm widgets", "Chưa quen mắt lắm"],
+      pollVotes: [42, 28, 11, 4],
+      votedOption: null,
+      createdAt: new Date().toISOString(),
+      userEmail: "system_poll@vplay.local"
+    },
+    {
+      id: "mock-3",
+      type: "post",
+      content: "Hôm nay mình vừa tối ưu hóa trình đa nhiệm Windows 11 Mode trên vPlay, cảm giác thực sự mượt mà! Thêm cả hiệu ứng mờ nhòe acrylic cực kỳ nịnh mắt luôn.",
+      mediaUrl: "https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=800&q=80",
+      mediaType: "image",
+      createdAt: new Date().toISOString(),
+      likes: 5,
+      userEmail: "developer@vplay.local",
+      likesVoted: false
+    }
+  ];
 
   const fetchData = async () => {
-    try {
-      const vidQ = collection(db, "videos");
-      const postQ = collection(db, "posts");
-      const [vidsSnap, postsSnap] = await Promise.all([getDocs(vidQ), getDocs(postQ)]);
-      
-      const vids = vidsSnap.docs.map(doc => ({ ...doc.data(), type: 'video' }));
-      const posts = postsSnap.docs.map(doc => ({ ...doc.data(), type: 'post' }));
-      
-      const combined = [...vids, ...posts].sort((a: any, b: any) => 
-        (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-      );
-      setItems(combined);
-    } catch (err) {
-      console.error("Error fetching items:", err);
-    } finally {
+    setLoading(true);
+    if (lite) {
+      const saved = localStorage.getItem("vplay_vids_lite_items");
+      if (saved) {
+        setItems(JSON.parse(saved));
+      } else {
+        setItems(defaultLiteItems);
+        localStorage.setItem("vplay_vids_lite_items", JSON.stringify(defaultLiteItems));
+      }
       setLoading(false);
+    } else {
+      try {
+        const vidQ = collection(db, "vplay_community_vids");
+        const querySnapshot = await getDocs(vidQ);
+        const fbItems: any[] = [];
+        querySnapshot.forEach((doc) => {
+          fbItems.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Sort items by date descending
+        fbItems.sort((a, b) => {
+          const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || '').getTime();
+          const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || '').getTime();
+          return tB - tA;
+        });
+
+        // Fallback placeholder items for online mode if database is empty
+        if (fbItems.length === 0) {
+          setItems([
+            {
+              id: "online-default-1",
+              type: "blog",
+              title: "Khởi tạo Không gian Vids Community vPlay",
+              content: "Chúc mừng! Bạn đã đăng nhập và truy cập thành công vào Vids Community công khai.\n\nĐây là nơi toàn bộ cộng đồng vPlay có thể đăng tải những khoảnh khắc tuyệt vời nhất của họ. Hãy tạo ngay bài viết, blog hay một cuộc thăm dò ý kiến và bắt đầu chia sẻ ý tưởng của bạn ngay hôm nay!",
+              category: "Tin Tức",
+              coverUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
+              createdAt: new Date().toISOString(),
+              likes: 15,
+              userEmail: "admin@vplay.com"
+            }
+          ]);
+        } else {
+          setItems(fbItems);
+        }
+      } catch (err) {
+        console.error("Firestore error loading vids:", err);
+        const saved = localStorage.getItem("vplay_vids_lite_items") || "[]";
+        setItems(JSON.parse(saved).length > 0 ? JSON.parse(saved) : defaultLiteItems);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [lite, user]);
 
-  const handleUploadVideo = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!user) return onLogin();
-    if (!title || !videoUrl) return;
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setUploading(true);
-    try {
-      const videoId = `vid_${Date.now()}`;
-      const videoData = {
-        id: videoId,
-        title,
-        url: videoUrl,
-        thumbnail: thumbnailUrl || "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=400",
-        description,
-        userId: user.uid,
-        userName: user.displayName || user.email?.split('@')[0] || "User",
-        createdAt: serverTimestamp()
-      };
-      await setDoc(doc(db, "videos", videoId), videoData);
-      setShowUpload(false);
-      resetVideoForm();
-      fetchData();
-    } catch (err) {
-      console.error("Upload failed:", err);
-    } finally {
-      setUploading(false);
+    if (file.size > 1024 * 1024 * 1024) { // 1GB limit check
+      if (addNotification) {
+        addNotification("Cảnh báo dung lượng", "Kích thước tệp tin vượt quá 1GB giới hạn tối đa!", "warning");
+      } else {
+        alert("Tệp của bạn vượt quá giới hạn 1GB! Vui lòng chọn tệp tin nhẹ hơn.");
+      }
+      return;
+    }
+
+    setSelectedFile(file);
+    const localUrl = URL.createObjectURL(file);
+    setMediaUrl(localUrl);
+    
+    const type = file.type.startsWith("video/") ? "video" : "image";
+    setMediaType(type);
+  };
+
+  const addPollOptionField = () => {
+    if (pollOptions.length < 4) {
+      setPollOptions([...pollOptions, ""]);
     }
   };
 
-  const handleCreatePost = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!user) return onLogin();
-    if (!postContent) return;
-
-    setUploading(true);
-    try {
-      const postId = `post_${Date.now()}`;
-      const postData = {
-        id: postId,
-        content: postContent,
-        mediaUrl,
-        mediaType,
-        poll: pollQuestion ? {
-          question: pollQuestion,
-          options: pollOptions.filter(o => o.trim()).map(text => ({ text, votes: 0 }))
-        } : null,
-        userId: user.uid,
-        userName: user.displayName || user.email?.split('@')[0] || "User",
-        createdAt: serverTimestamp()
-      };
-      await setDoc(doc(db, "posts", postId), postData);
-      setShowCreatePost(false);
-      resetPostForm();
-      fetchData();
-    } catch (err) {
-      console.error("Post creation failed:", err);
-    } finally {
-      setUploading(false);
+  const removePollOptionField = (index: number) => {
+    if (pollOptions.length > 2) {
+      setPollOptions(pollOptions.filter((_, idx) => idx !== index));
     }
   };
 
-  const resetVideoForm = () => {
+  const resetForm = () => {
     setTitle("");
-    setVideoUrl("");
-    setThumbnailUrl("");
-    setDescription("");
+    setContent("");
+    setBlogCategory("Technology");
+    setBlogCoverUrl("");
+    setPollOptions(["", ""]);
+    setSelectedFile(null);
+    setMediaUrl("");
+    setMediaType("");
   };
 
-  const resetPostForm = () => {
-    setPostContent("");
-    setMediaUrl("");
-    setMediaType("none");
-    setPollOptions([]);
-    setPollQuestion("");
+  const handlePublish = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!content.trim() && createType !== "poll" && createType !== "blog") {
+      if (addNotification) addNotification("Tạo bài", "Vui lòng nhập nội dung bài đăng!", "warning");
+      return;
+    }
+    if (createType === "blog" && (!title.trim() || !content.trim())) {
+      if (addNotification) addNotification("Tạo bài", "Vui lòng nhập đầy đủ tiêu đề và nội dung blog!", "warning");
+      return;
+    }
+    if (createType === "poll" && (!title.trim() || pollOptions.some(opt => !opt.trim()))) {
+      if (addNotification) addNotification("Tạo bài", "Vui lòng điền tiêu đề cuộc bình chọn và tất cả các tùy chọn!", "warning");
+      return;
+    }
+
+    const newItem: any = {
+      id: "vid-" + Date.now(),
+      type: createType,
+      createdAt: new Date().toISOString(),
+      userEmail: user?.email || "guest@vplay.local",
+      likes: 0,
+    };
+
+    if (createType === "post") {
+      newItem.content = content;
+      if (mediaUrl) {
+        newItem.mediaUrl = mediaUrl;
+        newItem.mediaType = mediaType;
+        newItem.fileName = selectedFile?.name || "Local Attachment";
+      }
+    } else if (createType === "blog") {
+      newItem.title = title;
+      newItem.content = content;
+      newItem.category = blogCategory;
+      newItem.coverUrl = blogCoverUrl || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80";
+    } else if (createType === "poll") {
+      newItem.title = title;
+      newItem.pollOptions = pollOptions.filter(o => o.trim() !== "");
+      newItem.pollVotes = new Array(newItem.pollOptions.filter(o => o.trim() !== "").length).fill(0);
+      newItem.votedOption = null;
+    }
+
+    if (lite) {
+      const saved = localStorage.getItem("vplay_vids_lite_items");
+      const currentLiteItems = saved ? JSON.parse(saved) : defaultLiteItems;
+      const updatedList = [newItem, ...currentLiteItems];
+      localStorage.setItem("vplay_vids_lite_items", JSON.stringify(updatedList));
+      setItems(updatedList);
+      
+      if (addNotification) {
+        addNotification("Đăng tải Vids Lite", "Đã lưu cục bộ tin riêng tư thành công của bạn!", "success");
+      }
+    } else {
+      if (!user) {
+        onLogin();
+        return;
+      }
+      try {
+        await addDoc(collection(db, "vplay_community_vids"), {
+          ...newItem,
+          createdAt: serverTimestamp()
+        });
+        if (addNotification) {
+          addNotification("Vids Community", "Bài đăng của bạn đã được cập nhật thành công lên bảng tin công đồng!", "success");
+        }
+        fetchData();
+      } catch (err) {
+        console.error("Firestore save error:", err);
+        setItems(p => [newItem, ...p]);
+        if (addNotification) {
+          addNotification("Vids", "Không thể ghi lên máy chủ, bài đăng tạm hiển thị trên thiết bị của bạn.", "warning");
+        }
+      }
+    }
+
+    resetForm();
+    setShowCreateModal(false);
   };
+
+  const handleVote = async (itemId: string, optIdx: number) => {
+    const updated = items.map(item => {
+      if (item.id === itemId) {
+        if (item.votedOption !== undefined && item.votedOption !== null) {
+          return item;
+        }
+        const votes = [...(item.pollVotes || [])];
+        votes[optIdx] = (votes[optIdx] || 0) + 1;
+        return {
+          ...item,
+          pollVotes: votes,
+          votedOption: optIdx
+        };
+      }
+      return item;
+    });
+
+    setItems(updated);
+
+    if (lite) {
+      localStorage.setItem("vplay_vids_lite_items", JSON.stringify(updated));
+    } else {
+      try {
+        const item = items.find(i => i.id === itemId);
+        if (item && item.votedOption === undefined) {
+          const docRef = doc(db, "vplay_community_vids", itemId);
+          await updateDoc(docRef, {
+            pollVotes: updated.find(i => i.id === itemId).pollVotes
+          });
+        }
+      } catch (err) {
+        console.error("Failed to commit vote to cloud:", err);
+      }
+    }
+
+    if (addNotification) {
+      addNotification("Bình chọn", "Nhận ý kiến bình chọn của bạn thành công!", "success");
+    }
+  };
+
+  const handleLike = async (itemId: string) => {
+    const updated = items.map(item => {
+      if (item.id === itemId) {
+        const alreadyLiked = item.likesVoted;
+        return {
+          ...item,
+          likes: (item.likes || 0) + (alreadyLiked ? -1 : 1),
+          likesVoted: !alreadyLiked
+        };
+      }
+      return item;
+    });
+    setItems(updated);
+
+    if (lite) {
+      localStorage.setItem("vplay_vids_lite_items", JSON.stringify(updated));
+    } else {
+      try {
+        const target = updated.find(i => i.id === itemId);
+        const docRef = doc(db, "vplay_community_vids", itemId);
+        await updateDoc(docRef, {
+          likes: target.likes
+        });
+      } catch (err) {
+        console.error("Cloud reaction update error:", err);
+      }
+    }
+  };
+
+  const filteredItems = items.filter(item => {
+    const matchesSearch = searchQuery.trim() === "" || 
+      (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.content && item.content.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    if (!matchesSearch) return false;
+
+    if (filter === "all") return true;
+    if (filter === "media") return item.mediaUrl !== undefined;
+    if (filter === "post_blog") return item.type === "post" || item.type === "blog";
+    if (filter === "poll") return item.type === "poll";
+    return true;
+  });
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12 pb-32">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-500">
-            <Layers size={32} />
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#101012] font-sans">
+      {/* Vids Header */}
+      <div className="px-8 py-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-black/40 backdrop-blur-3xl">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-bold tracking-tight text-white">
+              {lite ? "Vids Lite" : "Vids Community"}
+            </h3>
+            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${lite ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse"}`}>
+              {lite ? "Offline & Private" : "Live Community"}
+            </span>
           </div>
-          <div>
-            <h1 className={`text-4xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Cộng đồng</h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Share videos and moments</p>
-          </div>
+          <p className="text-xs text-slate-400 font-medium">
+            {lite 
+              ? "Bảng tin cá nhân tiện dụng của riêng bạn. Thiết lập bài viết, blog hay file đa phương tiện dưới 1GB hoàn toàn bí mật."
+              : "Khám phá các vids ngắn, câu hỏi bốc thăm bỏ phiếu, sản phẩm thiết kế và blog dài của cộng đồng vPlay toàn cầu."}
+          </p>
         </div>
-        
-        <div className="flex flex-wrap gap-4">
+
+        <div className="flex items-center gap-3">
           <button 
-            onClick={() => user ? setShowUpload(true) : onLogin()}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
+            onClick={() => {
+              if (!lite && !user) {
+                onLogin();
+              } else {
+                setShowCreateModal(true);
+              }
+            }}
+            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-2xl transition-all shadow-lg active:scale-95 flex items-center gap-2"
           >
-            <Play size={18} fill="currentColor" />
-            UPLOAD VIDS
-          </button>
-          <button 
-            onClick={() => user ? setShowCreatePost(true) : onLogin()}
-            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-black rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
-          >
-            <MessageSquare size={18} />
-            CREATE POST
+            <Plus size={16} />
+            Đăng bài mới
           </button>
         </div>
       </div>
 
-      {/* Video Modal */}
-      <LiquidModal isOpen={showUpload} onClose={() => setShowUpload(false)} isDark={isDark} liquidGlass={liquidGlass} title="Upload Video" featureFlags={featureFlags}>
-        <form onSubmit={handleUploadVideo} className="space-y-4 text-left p-2">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">Tiêu đề</label>
-            <div className="relative group overflow-hidden rounded-full">
-              <input required value={title} onChange={e => setTitle(e.target.value)} placeholder="Tiêu đề video..." className={`w-full px-5 py-3 border focus:outline-none transition-all ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-black/5 border-black/5"}`} />
-              <div className={`absolute bottom-0 left-0 h-[2.5px] w-full transition-all duration-300 ${isDark ? "bg-white/20" : "bg-black/10"} group-focus-within:bg-purple-500`} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">URL Video (HLS/MP4)</label>
-            <div className="relative group overflow-hidden rounded-full">
-              <input required value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://example.com/video.m3u8" className={`w-full px-5 py-3 border focus:outline-none transition-all ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-black/5 border-black/5"}`} />
-              <div className={`absolute bottom-0 left-0 h-[2.5px] w-full transition-all duration-300 ${isDark ? "bg-white/20" : "bg-black/10"} group-focus-within:bg-purple-500`} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">Mô tả</label>
-            <div className="relative group overflow-hidden rounded-[24px]">
-              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Mô tả..." className={`w-full px-5 py-3 border focus:outline-none h-24 resize-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-black/5 border-black/5"}`} />
-              <div className={`absolute bottom-0 left-0 h-[2.5px] w-full transition-all duration-300 ${isDark ? "bg-white/20" : "bg-black/10"} group-focus-within:bg-purple-500`} />
-            </div>
-          </div>
-          <button type="submit" disabled={uploading} className="w-full py-4 bg-purple-600 text-white font-bold rounded-3xl shadow-lg active:scale-95 disabled:opacity-50">
-            {uploading ? "UPLOADING..." : "UPLOAD VIDEO"}
-          </button>
-        </form>
-      </LiquidModal>
-
-      {/* Post Modal */}
-      <LiquidModal isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} isDark={isDark} liquidGlass={liquidGlass} title="Create Post" featureFlags={featureFlags}>
-        <form onSubmit={handleCreatePost} className="space-y-4 text-left p-2">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">Nội dung</label>
-            <textarea required value={postContent} onChange={e => setPostContent(e.target.value)} placeholder="Hôm nay bạn thế nào?" className={`w-full px-5 py-3 rounded-3xl border focus:outline-none h-32 resize-none ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-black/5 border-black/5"}`} />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">Media URL</label>
-              <input value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} placeholder="https://..." className={`w-full px-4 py-2 rounded-2xl border text-sm ${isDark ? "bg-white/5 border-white/10" : "bg-black/5"}`} />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-4">Loại Media</label>
-              <select value={mediaType} onChange={(e: any) => setMediaType(e.target.value)} className={`w-full px-4 py-2 rounded-2xl border text-sm ${isDark ? "bg-slate-800 border-white/10 text-white" : "bg-white border-black/5"}`}>
-                <option value="none">Không có</option>
-                <option value="image">Hình ảnh</option>
-                <option value="video">Video</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="bg-slate-500/5 p-4 rounded-3xl space-y-3">
-             <div className="flex items-center gap-2 mb-2">
-                <Filter size={14} className="text-purple-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Thăm dò ý kiến (Tùy chọn)</span>
-             </div>
-             <input value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} placeholder="Câu hỏi thăm dò..." className={`w-full px-4 py-2 rounded-2xl border text-sm ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/5"}`} />
-             <div className="grid grid-cols-2 gap-2">
-               {[0,1,2,3].map(i => (
-                 <input 
-                   key={i}
-                   placeholder={`Lựa chọn ${i+1}`}
-                   value={pollOptions[i] || ""}
-                   onChange={e => {
-                     const updated = [...pollOptions];
-                     updated[i] = e.target.value;
-                     setPollOptions(updated);
-                   }}
-                   className={`px-4 py-2 rounded-2xl border text-[11px] ${isDark ? "bg-white/5 border-white/10" : "bg-white border-black/5"}`}
-                 />
-               ))}
-             </div>
-          </div>
-
-          <button type="submit" disabled={uploading} className="w-full py-4 bg-slate-900 text-white font-bold rounded-3xl shadow-lg active:scale-95 disabled:opacity-50">
-            {uploading ? "CREATING..." : "POST NOW"}
-          </button>
-        </form>
-      </LiquidModal>
-
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-            <LoadingAnimation featureFlags={featureFlags} isDark={isDark} className="w-12 h-12 mb-4" />
-            <p className="font-black text-xs tracking-widest uppercase opacity-40">Loading items...</p>
-        </div>
-      ) : items.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {items.map(item => (
-            <motion.div 
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`group overflow-hidden transition-all duration-300 border ${isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-xl"} rounded-[32px] flex flex-col`}
+      {/* Tools row (Filters & Search) */}
+      <div className="px-8 py-4 border-b border-white/5 bg-[#121214]/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: "all", label: "Tất cả" },
+            { id: "media", label: "Đa phương tiện" },
+            { id: "post_blog", label: "Bài viết & Blog" },
+            { id: "poll", label: "Bình chọn" }
+          ].map(btn => (
+            <button
+              key={btn.id}
+              onClick={() => setFilter(btn.id as any)}
+              className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all ${filter === btn.id ? "bg-purple-500 text-white" : "bg-white/5 hover:bg-white/10 text-slate-300"}`}
             >
-              {item.type === 'video' ? (
-                <>
-                  <div className="aspect-video relative overflow-hidden">
-                    <img src={item.thumbnail} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-2 top-auto flex">
-                      <div className="px-3 py-1 rounded-full bg-purple-600 text-white text-[9px] font-black uppercase tracking-widest">Video</div>
-                    </div>
-                  </div>
-                  <div className="p-6 space-y-3">
-                    <div className="flex items-center gap-2">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{item.userName}</span>
-                    </div>
-                    <h3 className={`text-lg font-bold line-clamp-1 ${isDark ? "text-white" : "text-slate-900"}`}>{item.title}</h3>
-                  </div>
-                </>
-              ) : (
-                <div className="p-6 space-y-4 flex-1 flex flex-col">
-                   <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-500/20 flex items-center justify-center text-slate-500">
-                          <User size={12} />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{item.userName}</span>
-                     </div>
-                     <div className="px-3 py-1 rounded-full bg-slate-200 text-slate-600 text-[9px] font-black uppercase tracking-widest">Post</div>
-                   </div>
-                   
-                   <p className={`text-sm leading-relaxed flex-1 ${isDark ? "text-white/80" : "text-slate-700"}`}>
-                     {item.content}
-                   </p>
-
-                   {item.mediaUrl && item.mediaType === 'image' && (
-                     <div className="rounded-2xl overflow-hidden aspect-video border border-slate-500/10">
-                        <img src={item.mediaUrl} className="w-full h-full object-cover" />
-                     </div>
-                   )}
-
-                   {item.poll && (
-                     <div className="p-4 rounded-2xl bg-slate-500/5 space-y-3">
-                        <p className="text-[11px] font-black uppercase opacity-60">{item.poll.question}</p>
-                        <div className="space-y-2">
-                           {item.poll.options.map((opt: any, idx: number) => (
-                             <button key={idx} className="w-full p-3 rounded-xl border border-slate-500/10 text-xs font-bold text-left hover:bg-white/10 transition-colors flex justify-between">
-                               <span>{opt.text}</span>
-                               <span className="opacity-40">{opt.votes}</span>
-                             </button>
-                           ))}
-                        </div>
-                     </div>
-                   )}
-                </div>
-              )}
-            </motion.div>
+              {btn.label}
+            </button>
           ))}
         </div>
-      ) : (
-        <div className="text-center py-32 space-y-4">
-           <h3 className="text-xl font-black uppercase text-slate-500 tracking-tighter">Chưa có hoạt động nào</h3>
+
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-black/20 border border-white/5 rounded-xl w-full sm:w-64">
+          <Search size={14} className="text-slate-500" />
+          <input 
+            type="text"
+            placeholder="Tìm kiếm bài viết..."
+            className="bg-transparent border-none outline-none text-xs text-white placeholder-slate-500 w-full"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="text-slate-500 hover:text-white">
+              <X size={12} />
+            </button>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Main Stream list scroll area */}
+      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-6">
+        {loading ? (
+          <div className="py-24 flex flex-col items-center justify-center gap-3">
+            <div className="w-10 h-10 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin" />
+            <span className="text-xs text-slate-400 font-bold">Đang tải bảng tin Vids...</span>
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="py-24 text-center text-slate-500 flex flex-col items-center justify-center gap-4 max-w-md mx-auto">
+            <Filter size={48} className="opacity-25 text-purple-400" />
+            <div>
+              <span className="text-sm font-bold text-slate-300 block">Hiện tại hòm thư rỗng!</span>
+              <p className="text-xs text-slate-500 leading-relaxed mt-1">
+                Không tìm thấy bài đăng nào phù hợp với bộ lọc hoặc tìm kiếm hiện tại của bạn. Hãy tạo mới một tin tức để làm sống động bảng tin nhé.
+              </p>
+            </div>
+            <button 
+              onClick={() => {
+                if (!lite && !user) onLogin();
+                else setShowCreateModal(true);
+              }}
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold transition-all border border-white/10"
+            >
+              Bắt đầu tạo bài đầu tiên
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 max-w-3xl mx-auto gap-6 pb-24">
+            {filteredItems.map((item) => {
+              const actsVoted = item.votedOption !== undefined && item.votedOption !== null;
+              
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-3xl border border-white/5 bg-[#161619] p-6 shadow-xl space-y-4 hover:border-white/10 transition-all flex flex-col hover:shadow-2xl hover:shadow-purple-900/5 relative group"
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-black text-xs uppercase">
+                        {item.userEmail ? item.userEmail.charAt(0) : "G"}
+                      </div>
+                      <div>
+                        <span className="text-xs font-extrabold text-white block col-span-1 leading-tight mb-0.5">
+                          {item.userEmail || "guest@vplay.local"}
+                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[9px] text-slate-400 font-semibold font-mono">
+                            {new Date(item.createdAt?.seconds ? item.createdAt.seconds * 1000 : item.createdAt || '').toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
+                        item.type === "blog" ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" :
+                        item.type === "poll" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                        "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                      }`}>
+                        {item.type}
+                      </span>
+                    </div>
+                  </div>
+
+                  {item.type === "blog" ? (
+                    <div className="space-y-3 cursor-pointer" onClick={() => setReadingBlog(item)}>
+                      {item.coverUrl && (
+                        <div className="relative aspect-video w-full rounded-2xl overflow-hidden mt-1 border border-white/5 bg-black/45">
+                          <img 
+                            src={item.coverUrl} 
+                            alt={item.title} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-4 flex flex-col justify-end">
+                            <span className="text-[9px] uppercase font-black text-purple-400 tracking-widest">{item.category || "General"}</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="space-y-1.5">
+                        <h4 className="font-bold text-lg text-white group-hover:text-purple-300 transition-colors leading-tight">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">
+                          {item.content}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-all flex items-center gap-1.5">
+                        Đọc toàn bộ blog
+                        <ArrowRight size={12} />
+                      </div>
+                    </div>
+                  ) : item.type === "poll" ? (
+                    <div className="space-y-4">
+                      <h4 className="font-mono font-semibold text-sm text-white leading-relaxed">
+                        📊 {item.title}
+                      </h4>
+
+                      <div className="space-y-2.5">
+                        {item.pollOptions?.map((option: string, idx: number) => {
+                          const votesList = item.pollVotes || [];
+                          const totalVotes = votesList.reduce((a: number, b: number) => a + b, 0);
+                          const currentOptionVotes = votesList[idx] || 0;
+                          
+                          const percentage = totalVotes > 0 
+                            ? Math.round((currentOptionVotes / totalVotes) * 100) 
+                            : 0;
+
+                          const isThisOptionVoted = item.votedOption === idx;
+
+                          return (
+                            <button
+                              key={option + idx}
+                              disabled={actsVoted}
+                              type="button"
+                              onClick={() => handleVote(item.id, idx)}
+                              className={`w-full text-left relative overflow-hidden p-3.5 rounded-2xl transition-all border ${
+                                isThisOptionVoted 
+                                  ? "bg-purple-500/25 border-purple-500/40 text-purple-300 ring-1 ring-purple-500/25" 
+                                  : actsVoted 
+                                    ? "bg-white/5 border-white/5 text-slate-400" 
+                                    : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10 text-white"
+                              }`}
+                            >
+                              {actsVoted && (
+                                <div 
+                                  className="absolute left-0 top-0 bottom-0 bg-purple-500/10 transition-all duration-1000"
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              )}
+                              
+                              <div className="relative flex items-center justify-between font-medium text-xs">
+                                <span className="flex items-center gap-2 truncate">
+                                  {isThisOptionVoted && <Check size={14} className="text-purple-400" />}
+                                  {option}
+                                </span>
+                                {actsVoted && (
+                                  <span className="font-mono font-bold text-[10px] bg-black/40 px-2 py-0.5 rounded border border-white/5 text-purple-400">
+                                    {percentage}% ({currentOptionVotes} vote)
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {actsVoted && (
+                        <p className="text-[10px] text-slate-500 font-medium">
+                          Tổng số phiếu bầu: {item.pollVotes?.reduce((a: number, b: number) => a + b, 0) || 0} lượt. Cảm ơn bạn đã tham gia bình chọn!
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-xs text-white leading-relaxed whitespace-pre-line font-medium">
+                        {item.content}
+                      </p>
+
+                      {item.mediaUrl && (
+                        <div className="rounded-2xl overflow-hidden border border-white/5 bg-black/45 mt-2 max-h-96">
+                          {item.mediaType === "video" ? (
+                            <video 
+                              src={item.mediaUrl} 
+                              controls 
+                              playsInline
+                              preload="metadata"
+                              className="w-full h-full object-contain mx-auto max-h-96"
+                            />
+                          ) : (
+                            <img 
+                              src={item.mediaUrl} 
+                              alt="Media attachment" 
+                              className="w-[100%] max-h-96 object-contain pointer-events-auto block mx-auto"
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-4 pt-3 mt-1 border-t border-white/5 text-xs text-slate-400">
+                    <button 
+                      onClick={() => handleLike(item.id)}
+                      className={`flex items-center gap-1.5 transition-colors p-1.5 rounded-lg ${item.likesVoted ? "text-pink-400 bg-pink-500/10" : "hover:text-pink-400 hover:bg-white/5"}`}
+                    >
+                      <Heart size={14} fill={item.likesVoted ? "currentColor" : "none"} />
+                      <span className="font-mono text-xs font-bold">{item.likes || 0}</span>
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        if (navigator.clipboard) {
+                          const shareText = item.type === "blog" ? `[vPlay Blog] ${item.title}` : item.content || "vPlay Vids";
+                          navigator.clipboard.writeText(`${shareText}\nĐược viết bởi ${item.userEmail}`);
+                          if (addNotification) addNotification("Hệ thống", "Đã sao chép liên kết chia sẻ của bài viết bài bản!", "success");
+                        }
+                      }}
+                      className="flex items-center gap-1.5 hover:text-purple-400 transition-colors p-1.5 rounded-lg hover:bg-white/5 ml-auto"
+                    >
+                      <Share2 size={14} />
+                      <span className="text-[10px] font-bold">Chia sẻ</span>
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {readingBlog && (
+          <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 overflow-hidden">
+            <div className="absolute inset-0 bg-black/85 backdrop-blur-md" onClick={() => setReadingBlog(null)} />
+            
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              className="relative w-full max-w-2xl bg-[#141416] border border-white/10 rounded-3xl overflow-hidden flex flex-col max-h-[85vh] shadow-2xl"
+            >
+              {readingBlog.coverUrl && (
+                <div className="relative h-48 w-full shrink-0 border-b border-white/5">
+                  <img src={readingBlog.coverUrl} className="w-full h-full object-cover" alt="Blog header" referrerPolicy="no-referrer" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 to-transparent flex flex-col justify-end p-6">
+                    <span className="text-[9px] uppercase font-black text-purple-400 tracking-widest">{readingBlog.category || "General"}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-6 pb-2 shrink-0 border-b border-white/5 bg-black/20 flex items-start justify-between">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold tracking-tight text-white leading-tight">
+                    {readingBlog.title}
+                  </h3>
+                  <p className="text-[10px] uppercase font-mono tracking-wider text-slate-500">
+                    Đăng bởi {readingBlog.userEmail || "Guest"}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setReadingBlog(null)}
+                  className="p-1 px-3 bg-white/5 border border-white/10 text-slate-400 hover:text-white rounded-xl text-xs font-bold transition-all"
+                >
+                  Đóng
+                </button>
+              </div>
+
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-4 text-slate-350 text-xs font-medium leading-relaxed">
+                <div className="whitespace-pre-wrap">
+                  {readingBlog.content}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <LiquidModal
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          resetForm();
+        }}
+        isDark={isDark}
+        title={lite ? "Đăng Vids Lite (Riêng tư)" : "Tạo bài viết Vids mới"}
+        description={lite ? "Bài viết, hình ảnh, video này của bạn sẽ chỉ lưu trữ an toàn trong trình duyệt này." : "Đưa sản phẩm của bạn xuất bản công khai lên máy chủ bảng toàn cầu."}
+        liquidGlass={liquidGlass}
+        featureFlags={featureFlags}
+      >
+        <form onSubmit={handlePublish} className="space-y-5 p-1 text-left text-xs text-white">
+          <div className="flex gap-2.5 p-1 bg-black/35 rounded-2xl border border-white/5">
+            {[
+              { id: "post", label: "Bài viết thường" },
+              { id: "blog", label: "Bài viết Blog" },
+              { id: "poll", label: "Bình chọn ý kiến" }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setCreateType(tab.id as any)}
+                className={`flex-1 py-1.5 text-center text-[10px] font-black uppercase tracking-wider rounded-xl transition-all ${createType === tab.id ? "bg-purple-600 text-white" : "text-slate-405 hover:text-white"}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {createType === "blog" ? (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Tiêu đề Blog</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Tiêu đề bài viết..."
+                  className="w-full h-11 px-4 rounded-xl bg-black/35 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-purple-500 font-bold"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Chủ đề</label>
+                  <select 
+                    className="w-full h-11 px-3 rounded-xl bg-black/35 border border-white/5 text-white outline-none focus:border-purple-500 font-bold"
+                    value={blogCategory}
+                    onChange={(e) => setBlogCategory(e.target.value)}
+                  >
+                    <option value="Technology">Công nghệ</option>
+                    <option value="Entertainment">Giải trí</option>
+                    <option value="Cộng Đồng">Cộng đồng</option>
+                    <option value="Design">Thiết kế</option>
+                    <option value="News">Tin tức mới</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Ảnh nền (Cover URL)</label>
+                  <input 
+                    type="url"
+                    placeholder="https://example.com/cover.jpg"
+                    className="w-full h-11 px-4 rounded-xl bg-black/35 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-purple-500"
+                    value={blogCoverUrl}
+                    onChange={(e) => setBlogCoverUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Nội dung Blog</label>
+                <textarea 
+                  required
+                  rows={4}
+                  placeholder="Hãy viết nội dung tại đây..."
+                  className="w-full p-4 rounded-xl bg-black/35 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-purple-500 resize-none font-medium leading-relaxed"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                />
+              </div>
+            </div>
+          ) : createType === "poll" ? (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Câu hỏi bình chọn</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Ví dụ: Bạn thích tính năng nào của vPlay nhất?"
+                  className="w-full h-11 px-4 rounded-xl bg-black/35 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-purple-500 font-bold"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Các tùy lựa chọn</label>
+                  {pollOptions.length < 4 && (
+                    <button 
+                      type="button" 
+                      onClick={addPollOptionField}
+                      className="text-[10px] font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                    >
+                      + Thêm lựa chọn
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {pollOptions.map((option, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-600 font-mono">#{idx + 1}</span>
+                      <input 
+                        type="text"
+                        required
+                        placeholder={`Lựa chọn #${idx + 1}...`}
+                        className="w-full h-[40px] px-3 rounded-xl bg-black/35 border border-white/5 text-white outline-none focus:border-purple-500"
+                        value={option}
+                        onChange={(e) => {
+                          const updated = [...pollOptions];
+                          updated[idx] = e.target.value;
+                          setPollOptions(updated);
+                        }}
+                      />
+                      {pollOptions.length > 2 && (
+                        <button 
+                          type="button"
+                          onClick={() => removePollOptionField(idx)}
+                          className="p-2 hover:bg-white/5 hover:text-red-400 rounded-lg transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Nội dung chia sẻ</label>
+                <textarea 
+                  required
+                  rows={4}
+                  placeholder="Chia sẻ bài viết hoặc trạng thái mới của bạn..."
+                  className="w-full p-4 rounded-xl bg-black/35 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-purple-500 resize-none leading-relaxed font-semibold animate-none"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Ảnh / Video (Tải tệp dưới 1GB)</label>
+                <div className="border-2 border-dashed border-white/5 rounded-2xl p-6 text-center hover:border-purple-500/30 transition-colors relative cursor-pointer group">
+                  <input 
+                    type="file" 
+                    accept="image/*,video/*" 
+                    onChange={handleFileSelect}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="p-3 bg-white/5 text-purple-400 rounded-full group-hover:scale-105 transition-transform">
+                      <Upload size={20} />
+                    </div>
+                    <p className="text-[11px] font-bold">Kéo thả hoặc Click để tải ảnh, video nhẹ dưới 1GB</p>
+                    {selectedFile && (
+                      <div className="mt-1 px-3 py-1 bg-purple-500/10 text-purple-300 rounded-lg text-[10px] font-mono max-w-xs truncate font-semibold border border-purple-500/15">
+                        {selectedFile.name} ({(selectedFile.size / (1024 * 1024)).toFixed(1)} MB)
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/5">
+            <button 
+              type="button" 
+              onClick={() => {
+                setShowCreateModal(false);
+                resetForm();
+              }}
+              className="px-5 py-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 text-white font-bold transition-all"
+            >
+              Hủy
+            </button>
+            <button 
+              type="submit"
+              className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold transition-all shadow-md active:scale-95"
+            >
+              {lite ? "Lưu cục bộ" : "Đăng công khai"}
+            </button>
+          </div>
+        </form>
+      </LiquidModal>
     </div>
   );
 }
@@ -7587,7 +8128,7 @@ function WidgetsDashboard({
 
   const shouldHideSidebar = widgetSettings?.hideFeedSidebar || widgetsFeedTreatment === 2;
 
-  const isFullPageTab = ['vstore', 'settings', 'doforme', 'update_widgets_feed', 'erase_data', 'dev', 'history', 'notifications_board'].includes(activeBoardTab);
+  const isFullPageTab = ['vstore', 'settings', 'doforme', 'update_widgets_feed', 'erase_data', 'dev', 'vids', 'vids_lite'].includes(activeBoardTab);
 
   const isCollapsedSidebar = widgetsFeedTreatment === 4;
 
@@ -7799,6 +8340,11 @@ function WidgetsDashboard({
         { id: 'widgets', label: 'My widgets', icon: LayoutDashboard, color: 'text-[#00d2ff]', lightColor: 'text-blue-600' },
         { id: 'vstore', label: 'Vstore', icon: ShoppingBag, color: 'text-amber-500', lightColor: 'text-amber-600' },
         ...(widgetSettings.showFeed ? [{ id: 'feed', label: 'My feed', icon: Newspaper, color: 'text-blue-400', lightColor: 'text-blue-600' }] : []),
+        ...(featureFlags?.vids_feature ? [
+          user 
+            ? { id: 'vids', label: 'Vids', icon: Film, color: 'text-purple-400', lightColor: 'text-purple-600' }
+            : { id: 'vids_lite', label: 'Vids Lite', icon: Film, color: 'text-purple-400', lightColor: 'text-purple-600' }
+        ] : []),
         { id: 'doforme', label: 'Operate', icon: Sparkles, color: 'text-purple-400', lightColor: 'text-purple-600' },
         ...(isDev ? [{ id: 'dev', label: 'Dev', icon: Terminal, color: 'text-rose-400', lightColor: 'text-rose-600' }] : [])
       ].map(tab => {
@@ -7908,10 +8454,15 @@ function WidgetsDashboard({
             )}
             {shouldHideSidebar && (
               <div className="flex items-center gap-4 mt-6 overflow-x-auto pb-2 scrollbar-none">
-                {[
+                 {[
                   { id: 'widgets', icon: LayoutDashboard, label: 'My widgets' },
                   { id: 'vstore', icon: ShoppingBag, label: 'Vstore' },
                   { id: 'feed', icon: Newspaper, label: 'My feed' },
+                  ...(featureFlags?.vids_feature ? [
+                    user 
+                      ? { id: 'vids', icon: Film, label: 'Vids' }
+                      : { id: 'vids_lite', icon: Film, label: 'Vids Lite' }
+                  ] : []),
                   ...(isDev ? [{ id: 'dev', icon: Terminal, label: 'Dev' }] : []),
                   { id: 'doforme', icon: Sparkles, label: 'AI' }
                 ].filter(t => t.id !== 'feed' || widgetSettings.showFeed).map(tab => (
@@ -10152,12 +10703,12 @@ function WidgetsDashboard({
                 initial={false}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0 }}
-                className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#1c1c1c] border border-white/5 shadow-2xl"}`}
+                className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#1c1c1c]"}`}
               >
                <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/10">
                   <div>
                     <h3 className="text-xl font-bold tracking-tight text-white">Vplay Store</h3>
-                    <p className="text-xs text-slate-400 font-medium">Khám phá và ghim tiện ích vào Board</p>
+                    <p className="text-xs text-slate-400 font-medium font-sans">Khám phá và ghim tiện ích vào Board</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-xl border bg-black/20 border-white/10 text-white">
@@ -10179,23 +10730,23 @@ function WidgetsDashboard({
                        }}
                        disabled={isVstorePinned}
                        className="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-gradient-to-r from-amber-400 to-orange-600 text-white shadow-xl shadow-orange-500/20 active:scale-95"
-                    >
-                       {isVstorePinned ? "Pinned" : "Go to Vstore"}
-                    </button>
-                  </div>
-               </div>
+                     >
+                        {isVstorePinned ? "Pinned" : "Go to Vstore"}
+                     </button>
+                   </div>
+                </div>
 
-               <div className={`flex-1 p-8 overflow-y-auto custom-scrollbar ${isUpdated ? "bg-transparent" : "bg-[#1c1c1c]"}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {[
-                      { id: 'music_player', name: 'Music Pro', icon: Music, price: 50, desc: 'Trình phát nhạc Material Design.', cat: 'Utility' },
-                      { id: 'weather_extended', name: 'Weather Pro', icon: Cloud, price: 75, desc: 'Dự báo thời tiết chuyên sâu.', cat: 'Utility' },
-                      { id: 'stocks_pro', name: 'Stocks Pro', icon: TrendingUp, price: 120, desc: 'Theo dõi chứng khoán thời gian thực.', cat: 'Finance' },
-                      { id: 'calendar', name: 'Calendar', icon: Calendar, price: 40, desc: 'Lịch biểu tối giản.', cat: 'Productivity' },
-                      { id: 'todo_list', name: 'To-Do List', icon: List, price: 30, desc: 'Quản lý công việc hiệu quả.', cat: 'Productivity' },
-                      { id: 'ai_for_me', name: 'Do For Me Pro', icon: Sparkles, price: 150, desc: 'Gói AI nâng cao Gemini API.', cat: 'AI' },
-                      { id: 'v_assistant', name: 'V-Assistant Premium', icon: User, price: 300, desc: 'Trợ lý ảo cao cấp.', cat: 'AI' },
-                      { id: 'theme_pack_retro', name: 'Retro Theme Pack', icon: Palette, price: 120, desc: 'Giao diện hoài niệm VTV.', cat: 'Design' },
+                <div className={`flex-1 p-8 overflow-y-auto custom-scrollbar ${isUpdated ? "bg-transparent" : "bg-[#1c1c1c]"}`}>
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                     {[
+                       { id: 'music_player', name: 'Music Pro', icon: Music, price: 50, desc: 'Trình phát nhạc Material Design.', cat: 'Utility' },
+                       { id: 'weather_extended', name: 'Weather Pro', icon: Cloud, price: 75, desc: 'Dự báo thời tiết chuyên sâu.', cat: 'Utility' },
+                       { id: 'stocks_pro', name: 'Stocks Pro', icon: TrendingUp, price: 120, desc: 'Theo dõi chứng khoán thời gian thực.', cat: 'Finance' },
+                       { id: 'calendar', name: 'Calendar', icon: Calendar, price: 40, desc: 'Lịch biểu tối giản.', cat: 'Productivity' },
+                       { id: 'todo_list', name: 'To-Do List', icon: List, price: 30, desc: 'Quản lý công việc hiệu quả.', cat: 'Productivity' },
+                       { id: 'ai_for_me', name: 'Do For Me Pro', icon: Sparkles, price: 150, desc: 'Gói AI nâng cao Gemini API.', cat: 'AI' },
+                       { id: 'v_assistant', name: 'V-Assistant Premium', icon: User, price: 300, desc: 'Trợ lý ảo cao cấp.', cat: 'AI' },
+                       { id: 'theme_pack_retro', name: 'Retro Theme Pack', icon: Palette, price: 120, desc: 'Giao diện hoài niệm VTV.', cat: 'Design' },
                       { id: 'system_monitor', name: 'System Monitor', icon: Activity, price: 60, desc: 'Theo dõi tài nguyên phần cứng.', cat: 'Utility' },
                       { id: 'crypto_tracker', name: 'Crypto Live', icon: Bitcoin, price: 90, desc: 'Giá tiền ảo cập nhật mỗi giây.', cat: 'Finance' },
                       { id: 'calculator_pro', name: 'Calc Pro', icon: Hash, price: 20, desc: 'Máy tính đa năng.', cat: 'Utility' },
@@ -10244,303 +10795,6 @@ function WidgetsDashboard({
               </motion.div>
            )}
 
-            {!isTabTransitioning && activeBoardTab === 'history' && (
-              <motion.div
-                key="history_tab"
-                initial={false}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0 }}
-                className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#1c1c1c] border border-white/5 shadow-2xl"}`}
-              >
-                {/* Header */}
-                <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/10">
-                  <div>
-                    <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                      <Clock className="text-emerald-400" size={20} />
-                      Lịch sử hoạt động
-                    </h3>
-                    <p className="text-xs text-slate-400 font-medium font-sans">Theo dõi hoạt động, cài đặt, tương tác và hiệu năng ứng dụng</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        localStorage.setItem("vplay_history", "[]");
-                        setHistory([]);
-                        addNotification("Hệ thống", "Đã xóa toàn bộ lịch sử hoạt động", "success");
-                      }}
-                      className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold transition-all"
-                    >
-                      Xóa lịch sử
-                    </button>
-                    <button
-                      onClick={() => {
-                        const resetStats = {
-                          buttonClicks: 0,
-                          switchesToggled: 0,
-                          popupsOpened: 0,
-                          channelsWatched: 0,
-                          lastVisit: new Date().toISOString()
-                        };
-                        setHistoryStats(resetStats);
-                        localStorage.setItem("vplay_history_stats", JSON.stringify(resetStats));
-                        addNotification("Hệ thống", "Đã reset mọi số liệu thống kê", "success");
-                      }}
-                      className="px-4 py-2 bg-slate-800 text-slate-300 border border-white/5 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all"
-                    >
-                      Reset thống kê
-                    </button>
-                  </div>
-                </div>
-
-                {/* Main scrollable body */}
-                <div className={`flex-1 p-8 overflow-y-auto custom-scrollbar ${isUpdated ? "bg-transparent" : "bg-black/10"} flex flex-col gap-6`}>
-                  
-                  {/* Stats Cards Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex flex-col gap-1.5 shadow-lg">
-                      <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider flex items-center gap-1">
-                        <MousePointer size={12} />
-                        Số lượt click
-                      </span>
-                      <p className="text-2xl font-black italic font-mono">{historyStats.buttonClicks}</p>
-                      <span className="text-[9px] text-slate-400">Các nút và mảng điều hướng</span>
-                    </div>
-
-                    <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex flex-col gap-1.5 shadow-lg">
-                      <span className="text-[10px] uppercase font-bold text-purple-400 tracking-wider flex items-center gap-1">
-                        <Sliders size={12} />
-                        Mở/tắt công tắc
-                      </span>
-                      <p className="text-2xl font-black italic font-mono">{historyStats.switchesToggled}</p>
-                      <span className="text-[9px] text-slate-400">Các tùy chỉnh Toggle Switches</span>
-                    </div>
-
-                    <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex flex-col gap-1.5 shadow-lg">
-                      <span className="text-[10px] uppercase font-bold text-pink-400 tracking-wider flex items-center gap-1">
-                        <Layers size={12} />
-                        Mở hộp thoại
-                      </span>
-                      <p className="text-2xl font-black italic font-mono">{historyStats.popupsOpened}</p>
-                      <span className="text-[9px] text-slate-400">Mở dialog popup & modal</span>
-                    </div>
-
-                    <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex flex-col gap-1.5 shadow-lg">
-                      <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1">
-                        <Tv size={12} />
-                        Kênh truyền hình
-                      </span>
-                      <p className="text-2xl font-black italic font-mono">{historyStats.channelsWatched}</p>
-                      <span className="text-[9px] text-slate-400">Số kênh truyền hình đã mở xem</span>
-                    </div>
-                  </div>
-
-                  {/* Log list section */}
-                  <div className="bg-[#141416]/40 border border-white/5 rounded-2xl p-6 shadow-xl">
-                    <h4 className="font-bold text-sm text-slate-200 mb-4 flex items-center gap-2">
-                      <Activity size={14} className="text-emerald-500 animate-pulse" />
-                      Chi tiết dòng sự kiện gần đây
-                    </h4>
-
-                    {history.length === 0 ? (
-                      <div className="py-12 text-center text-slate-500 flex flex-col items-center gap-3">
-                        <Clock size={36} className="opacity-25" />
-                        <span className="text-xs font-semibold text-slate-300">Hiện tại chưa phát hiện sự kiện mới nào từ bạn.</span>
-                        <p className="text-[10px] text-slate-400 max-w-xs leading-relaxed">Hãy thử tương tác với giao diện (ví dụ như thay đổi cài đặt, chuyển kênh truyền hình, ghim tiện ích) để cập nhật dòng lịch sử động.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {history.map((item, idx) => {
-                          let typeBadgeColor = "bg-blue-500/10 text-blue-400 border border-blue-500/20";
-                          let IconComp = MousePointer;
-
-                          if (item.type === 'channel') {
-                            typeBadgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                            IconComp = Tv;
-                          } else if (item.type === 'toggle') {
-                            typeBadgeColor = "bg-purple-500/10 text-purple-400 border border-purple-500/20";
-                            IconComp = Sliders;
-                          } else if (item.type === 'setting') {
-                            typeBadgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                            IconComp = Settings;
-                          } else if (item.type === 'modal_load') {
-                            typeBadgeColor = "bg-pink-500/10 text-pink-400 border border-pink-500/20";
-                            IconComp = Layers;
-                          } else if (item.type === 'action') {
-                            typeBadgeColor = "bg-teal-500/10 text-teal-400 border border-teal-500/20";
-                            IconComp = Zap;
-                          }
-
-                          return (
-                            <motion.div
-                              key={item.id || idx}
-                              initial={{ opacity: 0, y: 5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: idx * 0.01, duration: 0.1 }}
-                              className="flex items-start md:items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all gap-4 text-xs group"
-                            >
-                              <div className="flex items-center gap-3 min-w-0">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${typeBadgeColor}`}>
-                                  <IconComp size={14} />
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="font-semibold text-white truncate leading-snug">{item.content}</p>
-                                  <span className="text-[9px] text-slate-400 uppercase tracking-wider block mt-0.5">Phân loại: {item.type}</span>
-                                </div>
-                              </div>
-                              <span className="text-[10px] text-slate-500 font-mono shrink-0 whitespace-nowrap bg-black/30 px-2 py-0.5 rounded border border-white/5 self-center group-hover:text-emerald-400 group-hover:border-emerald-500/20 transition-colors">
-                                {new Date(item.time).toLocaleTimeString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                              </span>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {!isTabTransitioning && activeBoardTab === 'notifications_board' && (
-              <motion.div
-                key="notifications_board_tab"
-                initial={false}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0 }}
-                className={`flex-1 flex flex-col min-h-0 text-white rounded-none overflow-hidden ${isUpdated ? "bg-transparent border-none" : "bg-[#1c1c1c] border border-white/5 shadow-2xl"}`}
-              >
-                {/* Header */}
-                <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/10">
-                  <div>
-                    <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                      <Bell className="text-pink-400" size={20} />
-                      Trung tâm thông báo
-                    </h3>
-                    <p className="text-xs text-slate-400 font-medium font-sans font-sans">Thông báo tin tức, trạng thái cập nhật & reboot (respring) của hệ thống</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-                        addNotification("Hệ thống", "Đã đánh dấu đọc tất cả thông báo", "success");
-                      }}
-                      className="px-4 py-2 bg-pink-500/10 text-pink-400 border border-pink-500/15 hover:bg-pink-500/25 rounded-xl text-xs font-bold transition-all"
-                    >
-                      Đọc tất cả
-                    </button>
-                    <button
-                      onClick={() => {
-                        clearNotifications();
-                        addNotification("Hệ thống", "Đã xóa tất cả thông báo", "success");
-                      }}
-                      className="px-4 py-2 bg-slate-800 text-slate-300 border border-white/5 hover:bg-slate-700 rounded-xl text-xs font-bold transition-all"
-                    >
-                      Xóa tất cả
-                    </button>
-                  </div>
-                </div>
-
-                {/* Main scrollable body */}
-                <div className={`flex-1 p-8 overflow-y-auto custom-scrollbar ${isUpdated ? "bg-transparent" : "bg-black/10"} flex flex-col gap-4`}>
-                  {notifications.length === 0 ? (
-                    <div className="py-24 text-center text-slate-500 flex flex-col items-center justify-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
-                        <Bell size={28} className="opacity-30" />
-                      </div>
-                      <div>
-                        <span className="text-sm font-semibold text-slate-300 block">Không có thông báo mới diễn ra</span>
-                        <p className="text-[10px] text-slate-500 max-w-xs mt-1 leading-relaxed">Khi có thông tin cập nhật hệ điều hành hoặc respring, các thông tin bảo trì sẽ ngay lập tức được hệ thống vPlay đẩy lên đây.</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          const restoreNotifs = [
-                            {
-                              id: Date.now() - 1000,
-                              title: "Cập nhật hệ thống vPlay Build 2026.05 SFX",
-                              message: "Phiên bản Canary mới nhất đã được áp dụng thành công. Sửa đổi độ bo cong mềm mịn hơn của bảng widgets, chỉnh nút 'Add widgets' thành font chữ Regular đẹp mắt.",
-                              type: "success",
-                              time: new Date().toISOString(),
-                              read: false,
-                              category: "UPDATE"
-                            },
-                            {
-                              id: Date.now() - 10000,
-                              title: "Hệ thống Respring khôi phục thành công",
-                              message: "Quá trình Respring / Reboot nhanh diễn ra an toàn. Đã làm sạch các phân mảnh bộ nhớ đệm widget, cập nhật mượt mà danh sách luồng phát sóng.",
-                              type: "info",
-                              time: new Date(Date.now() - 180000).toISOString(),
-                              read: false,
-                              category: "RESPRING"
-                            }
-                          ];
-                          setNotifications(restoreNotifs);
-                          localStorage.setItem("vplay_notifications", JSON.stringify(restoreNotifs));
-                          addNotification("Hệ thống", "Đã phục hồi các thông báo mẫu", "success");
-                        }}
-                        className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-xl text-xs font-bold border border-blue-500/20 transition-all font-sans"
-                      >
-                        Tải lại thông báo mẫu
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 max-w-4xl mx-auto w-full">
-                      {notifications.map((item) => {
-                        let dotColor = "bg-blue-400";
-                        let bannerBg = "bg-[#161b22]/40 border-slate-800";
-                        let catText = "BẢO TRÌ";
-
-                        if (item.type === 'success' || item.category === 'UPDATE') {
-                          dotColor = "bg-emerald-400";
-                          bannerBg = "bg-emerald-500/5 border-emerald-500/10 hover:bg-emerald-500/10";
-                          catText = "BẢN CẬP NHẬT";
-                        } else if (item.category === 'RESPRING') {
-                          dotColor = "bg-purple-400";
-                          bannerBg = "bg-purple-500/5 border-purple-500/10 hover:bg-purple-500/10";
-                          catText = "RESPRING";
-                        } else if (item.category === 'SYSTEM') {
-                          dotColor = "bg-pink-400";
-                          bannerBg = "bg-pink-500/5 border-pink-500/10 hover:bg-pink-500/10";
-                          catText = "HỆ THỐNG";
-                        } else if (item.type === 'warning') {
-                          dotColor = "bg-amber-400";
-                          bannerBg = "bg-amber-500/5 border-amber-500/10 hover:bg-amber-500/10";
-                        }
-
-                        const markAsRead = (id: number) => {
-                          setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-                        };
-
-                        return (
-                          <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className={`p-5 rounded-2xl border text-left flex flex-col md:flex-row gap-4 justify-between items-start transition-all cursor-pointer ${bannerBg} ${!item.read ? "ring-1 ring-blue-500/25 border-blue-500/20" : "border-white/5"}`}
-                            onClick={() => markAsRead(item.id)}
-                          >
-                            <div className="flex gap-3.5 items-start">
-                              <span className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 animate-pulse ${dotColor}`} />
-                              <div>
-                                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                                  <span className="text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider rounded bg-white/5 border border-white/5 text-slate-300">{catText}</span>
-                                  {!item.read && (
-                                    <span className="text-[8px] bg-blue-500 text-white font-black px-1.5 py-0.1 uppercase tracking-tight rounded-sm">NEW</span>
-                                  )}
-                                </div>
-                                <h4 className="font-bold text-sm tracking-tight text-white leading-snug">{item.title}</h4>
-                                <p className="text-xs text-slate-300 font-medium leading-relaxed mt-1">{item.message}</p>
-                              </div>
-                            </div>
-                            <span className="text-[10px] text-slate-400 whitespace-nowrap font-medium self-end md:self-start bg-black/20 px-2 py-1 rounded border border-white/5 font-mono">
-                              {new Date(item.time).toLocaleDateString('vi-VN')} {new Date(item.time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
         </AnimatePresence>
      </div>
   </div>
@@ -12631,7 +12885,8 @@ export default function App() {
         top_bar: true,
         cobalt_ui: false,
         cobalt_scrollbar: false,
-        xaml_experience: true
+        xaml_experience: true,
+        vids_feature: false
       };
       if (!saved) return defaults;
       const parsed = JSON.parse(saved);
@@ -12663,7 +12918,8 @@ export default function App() {
         ai_sidebar: false,
         top_bar: true,
         cobalt_scrollbar: false,
-        xaml_experience: false
+        xaml_experience: false,
+        vids_feature: false
       };
     }
   });
@@ -12964,6 +13220,7 @@ export default function App() {
       "Do For Me": "Search with AI",
       "Phát sóng": "Search channels",
       "Pizza": "Search experiments",
+      "Vconnect": "Search Vconnect feed and users",
     };
     if (tabMapping[activeTab as string]) return tabMapping[activeTab as string];
     if (showWidgets && isWidgetsFullScreen) return "Search the web";
@@ -12975,7 +13232,7 @@ export default function App() {
   }, [activeTab, featureFlags?.search_placeholder_treatment, featureFlags?.search_placeholder_treatment_id, randomSearchSeed, showWidgets, isWidgetsFullScreen]);
 
   const showSearchBar = useMemo(() => {
-    const allowedTabs = ["Trang chủ", "Phát sóng", "Pizza", "Do For Me"];
+    const allowedTabs = ["Trang chủ", "Phát sóng", "Pizza", "Do For Me", "Vconnect"];
     return allowedTabs.includes(activeTab as string) || (showWidgets && isWidgetsFullScreen);
   }, [activeTab, showWidgets, isWidgetsFullScreen]);
 
@@ -13553,7 +13810,7 @@ export default function App() {
     if (t.id === "VTV6_Tab") return false;
     if (t.id === "Design Hub" || t.name === "Design Hub") return false;
     if (t.id === "My Feed" || t.name === "My Feed") return false;
-    if (t.id === "Vids" && !featureFlags?.vids_for_uploads) return false;
+    if (t.id === "Vconnect" && !featureFlags?.vids_feature && !featureFlags?.vids_for_uploads) return false;
     if (t.id === "V-pilot" && (featureFlags?.ai_tools)) return false;
     if (t.id === "V-pilot" && !featureFlags?.ai_tools_preview && !featureFlags?.ai_tools) return false;
     if (t.id === "Search" && featureFlags?.ai_tools) return false;
@@ -14473,6 +14730,39 @@ export default function App() {
                            <p className="text-slate-500 font-medium">Welcome back to Vplay Media Player</p>
                          </motion.header>
 
+                         {/* Vconnect Promo Banner for XAML Layout */}
+                         <motion.div 
+                           initial={{ opacity: 0, y: 15 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
+                           onClick={() => {
+                             // Managed by layout or standard tab setter
+                           }}
+                         >
+                           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
+                           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                             <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
+                               <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
+                                 <Users size={24} />
+                               </div>
+                               <div>
+                                 <div className="flex items-center justify-center md:justify-start gap-2">
+                                   <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 border border-purple-500/30">Nổi bật</span>
+                                   <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-green-300 bg-green-500/15 border border-green-500/30">Mới</span>
+                                 </div>
+                                 <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vconnect</h3>
+                                 <p className="text-slate-400 text-xs mt-0.5 max-w-xl">Trải nghiệm chia sẻ câu chuyện, đăng tin nhắn thoại, theo dõi tài khoản có tick xanh & xem video ngắn Vshorts cực đỉnh!</p>
+                               </div>
+                             </div>
+                             <button 
+                               className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2 group-hover:translate-x-1"
+                             >
+                               Thử ngay
+                               <ArrowRight size={12} />
+                             </button>
+                           </div>
+                         </motion.div>
+
                          <motion.section 
                            layout
                            initial={{ opacity: 0, y: 20 }}
@@ -14570,6 +14860,40 @@ export default function App() {
                           <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-white/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
                           <div className="absolute -top-20 -left-20 w-80 h-80 bg-purple-500/20 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
                         </motion.div>
+
+                      {/* Vconnect Promo Banner for Standard Layout */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
+                        onClick={() => {
+                          // Click callback handled inside component view
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
+                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                          <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
+                              <Users size={24} />
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-center md:justify-start gap-2">
+                                <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 border border-purple-500/30">Nổi bật</span>
+                                <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-green-300 bg-green-500/15 border border-green-500/30">Mới</span>
+                              </div>
+                              <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vconnect</h3>
+                              <p className="text-slate-400 text-xs mt-0.5 max-w-xl">Trải nghiệm chia sẻ câu chuyện, đăng tin nhắn thoại, theo dõi tài khoản có tick xanh & xem video ngắn Vshorts cực đỉnh!</p>
+                            </div>
+                          </div>
+                          <button 
+                            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2 group-hover:translate-x-1"
+                          >
+                            Thử ngay
+                            <ArrowRight size={12} />
+                          </button>
+                        </div>
+                      </motion.div>
+
                       <HomeContent isDark={isDark} onSwitchToDev={() => setShowDevConfirm(true)} featureFlags={featureFlags} liquidGlass={liquidGlass} channels={scambidifiedChannels} />
                     </>
                   )}
@@ -14806,6 +15130,19 @@ export default function App() {
                     setShowCanaryWarning={() => {}} // Unlocked
                     activeSearchPlaceholder={activeSearchPlaceholder}
                     channels={scambidifiedChannels}
+                  />
+                </div>
+              )}
+              {displayTab === "Vconnect" && (
+                <div className={`rounded-none overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <VconnectContent 
+                    isDark={isDark} 
+                    user={user} 
+                    liquidGlass={liquidGlass} 
+                    onLogin={() => setShowAuthModal(true)} 
+                    featureFlags={featureFlags} 
+                    lite={!user} 
+                    addNotification={addNotification} 
                   />
                 </div>
               )}
