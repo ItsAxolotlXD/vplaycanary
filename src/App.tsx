@@ -361,7 +361,7 @@ const baseTabs = [
   { name: "Widgets", icon: LayoutDashboard, id: "Widgets" },
   { name: "Vstore", icon: ShoppingBag, id: "Vstore", isExtra: true },
   { name: "Live", icon: Tv, id: "Phát sóng" },
-  { name: "Vconnect", icon: Users, id: "Vconnect" },
+  { name: "Vconnect", icon: Play, id: "Vconnect" },
   { name: "Labs", icon: Pizza, id: "Pizza" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
 ];
@@ -1698,7 +1698,65 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
             </div>
           )}
 
-          {!["weather", "clock_date", "vtv6_countdown", "stocks", "ports", "entertainment", "notify", "history", "record", "channel", "music_player", "sys_mon", "notes", "crypto", "world_clock", "calendar_alt", "thirdparty"].includes(w.type) && (
+          {w.type === "vconnect_spark" && (
+            <div className="flex flex-col h-full overflow-hidden justify-between w-full">
+               <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-purple-500/10 rounded-[18px]">
+                    <Play size={20} className="text-purple-600 fill-current" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[12px] font-semibold text-slate-400">Siêu tốc</span>
+                    <span className="text-sm font-semibold text-slate-800 tracking-tight">Social Vconnect</span>
+                  </div>
+               </div>
+               
+               <div className="flex-1 flex flex-col justify-center gap-2 my-2 pointer-events-auto">
+                 <button 
+                   onClick={() => {
+                     localStorage.setItem("vconnect_quick_trigger", "story");
+                     onNavigate("Vconnect");
+                   }}
+                   className="w-full flex items-center justify-between p-2.5 bg-purple-50 hover:bg-purple-100/80 rounded-xl text-left border border-purple-100 transition-all active:scale-[0.98]"
+                 >
+                   <div className="flex items-center gap-2">
+                     <Camera size={14} className="text-purple-600" />
+                     <span className="text-xs font-black text-purple-950">Đăng story mới...</span>
+                   </div>
+                   <ArrowRight size={12} className="text-purple-400" />
+                 </button>
+
+                 <button 
+                   onClick={() => {
+                     localStorage.setItem("vconnect_quick_trigger", "feed");
+                     onNavigate("Vconnect");
+                   }}
+                   className="w-full flex items-center justify-between p-2.5 bg-indigo-50 hover:bg-indigo-100/80 rounded-xl text-left border border-indigo-100 transition-all active:scale-[0.98]"
+                 >
+                   <div className="flex items-center gap-2">
+                     <MessageSquare size={14} className="text-indigo-600" />
+                     <span className="text-xs font-black text-indigo-950">Đăng bài viết mới...</span>
+                   </div>
+                   <ArrowRight size={12} className="text-indigo-400" />
+                 </button>
+
+                 <button 
+                   onClick={() => {
+                     localStorage.setItem("vconnect_quick_trigger", "vchat");
+                     onNavigate("Vconnect");
+                   }}
+                   className="w-full flex items-center justify-between p-2.5 bg-pink-50 hover:bg-pink-100/80 rounded-xl text-left border border-pink-100 transition-all active:scale-[0.98]"
+                 >
+                   <div className="flex items-center gap-2">
+                     <Mail size={14} className="text-pink-600" />
+                     <span className="text-xs font-black text-pink-950">Mờ nhắn tin vChat...</span>
+                   </div>
+                   <ArrowRight size={12} className="text-pink-400" />
+                 </button>
+               </div>
+            </div>
+          )}
+
+          {!["weather", "clock_date", "vtv6_countdown", "stocks", "ports", "entertainment", "notify", "history", "record", "channel", "music_player", "sys_mon", "notes", "crypto", "world_clock", "calendar_alt", "thirdparty", "vconnect_spark"].includes(w.type) && (
             <div className="flex flex-col h-full items-center justify-center text-center">
                <div className="p-4 bg-blue-500/5 rounded-[28px] mb-3">
                    <Flask size={32} className="text-blue-500/20" />
@@ -6761,6 +6819,8 @@ function FeedbackContent({ isDark, liquidGlass }: { isDark: boolean, liquidGlass
 function SettingsContent({ 
   isDark, 
   setIsDark, 
+  vconnectIsDark = true,
+  setVconnectIsDark,
   isDev, 
   setIsDev, 
   featureFlags,
@@ -6803,6 +6863,8 @@ function SettingsContent({
 }: { 
   isDark: boolean, 
   setIsDark: (val: boolean) => void, 
+  vconnectIsDark?: boolean,
+  setVconnectIsDark?: (val: boolean) => void,
   isDev: boolean, 
   setIsDev: (val: boolean) => void,
   featureFlags: { [key: string]: any },
@@ -6845,6 +6907,12 @@ function SettingsContent({
 }) {
   const [saving, setSaving] = useState(false);
   const [flagSearch, setFlagSearch] = useState("");
+
+  const [vProfileName, setVProfileName] = useState(() => localStorage.getItem("vplay_vconnect_p_name") || "Khách Danh Tính");
+  const [vProfileBio, setVProfileBio] = useState(() => localStorage.getItem("vplay_vconnect_p_bio") || "Bận chơi game rồi | vPlay-er chính hiệu!");
+  const [vProfileLocation, setVProfileLocation] = useState(() => localStorage.getItem("vplay_vconnect_p_location") || "vPlay OS, Việt Nam");
+  const [vProfileAvatar, setVProfileAvatar] = useState(() => localStorage.getItem("vplay_vconnect_p_avatar") || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80");
+  const [vProfileCover, setVProfileCover] = useState(() => localStorage.getItem("vplay_vconnect_p_cover") || "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&h=300&w=600&q=80");
 
   const toggleFlag = (id: string) => {
     setFeatureFlags(prev => {
@@ -7355,6 +7423,169 @@ function SettingsContent({
             <RefreshCw size={14} />
             Respring now
           </button>
+        </div>
+      </div>
+
+      {/* Vconnect settings */}
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
+        <div className="flex items-center gap-4 mb-8">
+          <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-500">
+            <ShoppingBag size={24} />
+          </div>
+          <div>
+            <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Cài đặt Vconnect & Hồ sơ</h3>
+            <p className="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Tùy chỉnh giao diện độc lập và quản lý hồ sơ mạng xã hội</p>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {/* Vconnect Theme Switcher */}
+          <div className="space-y-3 text-left">
+            <div className="flex items-center gap-2 px-1">
+              <Sun size={14} className="text-purple-500 animate-spin-slow" />
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Chủ đề giao diện (Chỉ áp dụng cho Vconnect)</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 max-w-md">
+              <button 
+                type="button"
+                onClick={() => {
+                  if (setVconnectIsDark) {
+                    setVconnectIsDark(false);
+                    localStorage.setItem("vplay_vconnect_is_dark", "false");
+                    onAlert?.("Vconnect", "Đã chuyển chủ đề Vconnect sang giao diện Sáng!");
+                  }
+                }}
+                className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 cursor-pointer ${!vconnectIsDark ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400 hover:text-white" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}`}
+              >
+                <Sun size={18} />
+                <span className="text-xs font-bold">Chế độ Sáng (Vconnect)</span>
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  if (setVconnectIsDark) {
+                    setVconnectIsDark(true);
+                    localStorage.setItem("vplay_vconnect_is_dark", "true");
+                    onAlert?.("Vconnect", "Đã chuyển chủ đề Vconnect sang giao diện Tối!");
+                  }
+                }}
+                className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 cursor-pointer ${vconnectIsDark ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400 hover:text-white" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}`}
+              >
+                <Moon size={18} />
+                <span className="text-xs font-bold">Chế độ Tối (Vconnect)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Moved Profile settings card form into Vconnect Settings */}
+          <div className="border border-white/5 bg-black/20 p-6 rounded-[32px] space-y-4 max-w-2xl text-left">
+            <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 block">Chỉnh sửa Hồ sơ Mạng Xã Hội Vconnect</span>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Tên hiển thị</label>
+                <input 
+                  type="text" 
+                  value={vProfileName} 
+                  onChange={(e) => {
+                    setVProfileName(e.target.value);
+                    localStorage.setItem("vplay_vconnect_p_name", e.target.value);
+                  }}
+                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Địa điểm</label>
+                <input 
+                  type="text" 
+                  value={vProfileLocation} 
+                  onChange={(e) => {
+                    setVProfileLocation(e.target.value);
+                    localStorage.setItem("vplay_vconnect_p_location", e.target.value);
+                  }}
+                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Tiểu sử ngắn</label>
+              <input 
+                type="text" 
+                value={vProfileBio} 
+                onChange={(e) => {
+                  setVProfileBio(e.target.value);
+                  localStorage.setItem("vplay_vconnect_p_bio", e.target.value);
+                }}
+                className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Ảnh đại diện (URL)</label>
+                <input 
+                  type="text" 
+                  value={vProfileAvatar} 
+                  onChange={(e) => {
+                    setVProfileAvatar(e.target.value);
+                    localStorage.setItem("vplay_vconnect_p_avatar", e.target.value);
+                  }}
+                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Ảnh bìa (URL)</label>
+                <input 
+                  type="text" 
+                  value={vProfileCover} 
+                  onChange={(e) => {
+                    setVProfileCover(e.target.value);
+                    localStorage.setItem("vplay_vconnect_p_cover", e.target.value);
+                  }}
+                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-[#cccccc] focus:border-purple-500 outline-none font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Quick Preset Avatars list */}
+            <div>
+              <span className="block text-[9px] uppercase font-bold text-slate-500 mb-1.5">Ảnh Đại Diện Mẫu</span>
+              <div className="flex gap-2.5">
+                {[
+                  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80"
+                ].map((presetUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setVProfileAvatar(presetUrl);
+                      localStorage.setItem("vplay_vconnect_p_avatar", presetUrl);
+                    }}
+                    className="w-8 h-8 rounded-full overflow-hidden border border-white/20 hover:scale-110 active:scale-95 transition-transform"
+                  >
+                    <img src={presetUrl} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  onAlert?.("Vconnect", "Cập nhật thông tin tài khoản Vconnect thành công!");
+                }}
+                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer"
+              >
+                Lưu thay đổi hồ sơ
+              </button>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
@@ -8338,13 +8569,8 @@ function WidgetsDashboard({
     <div className={sidebarClassName}>
       {[
         { id: 'widgets', label: 'My widgets', icon: LayoutDashboard, color: 'text-[#00d2ff]', lightColor: 'text-blue-600' },
-        { id: 'vstore', label: 'Vstore', icon: ShoppingBag, color: 'text-amber-500', lightColor: 'text-amber-600' },
+        { id: 'vstore', label: 'Vstore Widgets', icon: ShoppingBag, color: 'text-amber-500', lightColor: 'text-amber-600' },
         ...(widgetSettings.showFeed ? [{ id: 'feed', label: 'My feed', icon: Newspaper, color: 'text-blue-400', lightColor: 'text-blue-600' }] : []),
-        ...(featureFlags?.vids_feature ? [
-          user 
-            ? { id: 'vids', label: 'Vids', icon: Film, color: 'text-purple-400', lightColor: 'text-purple-600' }
-            : { id: 'vids_lite', label: 'Vids Lite', icon: Film, color: 'text-purple-400', lightColor: 'text-purple-600' }
-        ] : []),
         { id: 'doforme', label: 'Operate', icon: Sparkles, color: 'text-purple-400', lightColor: 'text-purple-600' },
         ...(isDev ? [{ id: 'dev', label: 'Dev', icon: Terminal, color: 'text-rose-400', lightColor: 'text-rose-600' }] : [])
       ].map(tab => {
@@ -8456,13 +8682,8 @@ function WidgetsDashboard({
               <div className="flex items-center gap-4 mt-6 overflow-x-auto pb-2 scrollbar-none">
                  {[
                   { id: 'widgets', icon: LayoutDashboard, label: 'My widgets' },
-                  { id: 'vstore', icon: ShoppingBag, label: 'Vstore' },
+                  { id: 'vstore', icon: ShoppingBag, label: 'Vstore Widgets' },
                   { id: 'feed', icon: Newspaper, label: 'My feed' },
-                  ...(featureFlags?.vids_feature ? [
-                    user 
-                      ? { id: 'vids', icon: Film, label: 'Vids' }
-                      : { id: 'vids_lite', icon: Film, label: 'Vids Lite' }
-                  ] : []),
                   ...(isDev ? [{ id: 'dev', icon: Terminal, label: 'Dev' }] : []),
                   { id: 'doforme', icon: Sparkles, label: 'AI' }
                 ].filter(t => t.id !== 'feed' || widgetSettings.showFeed).map(tab => (
@@ -10707,7 +10928,7 @@ function WidgetsDashboard({
               >
                <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/10">
                   <div>
-                    <h3 className="text-xl font-bold tracking-tight text-white">Vplay Store</h3>
+                    <h3 className="text-xl font-bold tracking-tight text-white">Vstore Widgets</h3>
                     <p className="text-xs text-slate-400 font-medium font-sans">Khám phá và ghim tiện ích vào Board</p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -10876,7 +11097,8 @@ function WidgetsDashboard({
                         { type: 'clock_date', name: 'Ngày & Giờ', icon: Clock, desc: 'Đồng hồ hệ thống đa phong cách.' },
                         { type: 'vtv6_countdown', name: 'VTV6 Live', icon: Tv, desc: 'Lịch thi đấu Euro/U23 trên VTV6.' },
                         { type: 'stocks', name: 'Thị trường', icon: TrendingUp, desc: 'Cập nhật chỉ số VN-Index, NASDAQ.' },
-                        { type: 'notify', name: 'Trung tâm tin', icon: Bell, desc: 'Thông báo & News flash.' }
+                        { type: 'notify', name: 'Trung tâm tin', icon: Bell, desc: 'Thông báo & News flash.' },
+                        { type: 'vconnect_spark', name: 'Siêu tốc Vconnect', icon: Play, desc: 'Đăng nhanh Story, viết bài đăng Feed & nhắn tin Direct!' }
                       ].filter(w => w.name.toLowerCase().includes(gallerySearch.toLowerCase())).map((item) => (
                         <button 
                           key={item.type}
@@ -13024,6 +13246,10 @@ export default function App() {
   };
 
   const [isDark, setIsDark] = useState(true);
+  const [vconnectIsDark, setVconnectIsDark] = useState<boolean>(() => {
+    const saved = localStorage.getItem("vplay_vconnect_is_dark");
+    return saved !== null ? (saved === "true") : true;
+  });
   const [searchBoxPosition, setSearchBoxPosition] = useState(() => {
     return localStorage.getItem("vplay_search_position") || "sidebar";
   });
@@ -13799,7 +14025,12 @@ export default function App() {
     }
   };
 
-  const tabs = baseTabs.concat(customTabs.map(ct => ({
+  const tabs = baseTabs.map(t => {
+    if (t.id === "Vconnect") {
+      return { ...t, name: user ? "Vconnect" : "Vconnect Lite" };
+    }
+    return t;
+  }).concat(customTabs.map(ct => ({
     name: ct.name,
     icon: Layout,
     id: ct.id,
@@ -14736,7 +14967,7 @@ export default function App() {
                            animate={{ opacity: 1, y: 0 }}
                            className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
                            onClick={() => {
-                             // Managed by layout or standard tab setter
+                             setActiveTab("Vconnect");
                            }}
                          >
                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
@@ -14867,7 +15098,7 @@ export default function App() {
                         animate={{ opacity: 1, y: 0 }}
                         className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
                         onClick={() => {
-                          // Click callback handled inside component view
+                          setActiveTab("Vconnect");
                         }}
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
@@ -14912,6 +15143,8 @@ export default function App() {
                         onEraseClick={() => setShowEraseModal(true)}
                         isDark={isDark} 
                         setIsDark={setIsDark} 
+                        vconnectIsDark={vconnectIsDark}
+                        setVconnectIsDark={setVconnectIsDark}
                         isDev={isDev} 
                         setIsDev={setIsDev} 
                         featureFlags={featureFlags}
@@ -15136,13 +15369,15 @@ export default function App() {
               {displayTab === "Vconnect" && (
                 <div className={`rounded-none overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
                   <VconnectContent 
-                    isDark={isDark} 
+                    isDark={vconnectIsDark} 
                     user={user} 
                     liquidGlass={liquidGlass} 
                     onLogin={() => setShowAuthModal(true)} 
                     featureFlags={featureFlags} 
                     lite={!user} 
                     addNotification={addNotification} 
+                    vpoints={vpoints}
+                    setVpoints={setVpoints}
                   />
                 </div>
               )}
