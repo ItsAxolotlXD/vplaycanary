@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, ChangeEvent, FormEvent, MouseEvent, ReactNode, Fragment, Dispatch, SetStateAction } from "react";
-import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown, CloudLightning, Grid, ShoppingBag, Bitcoin, StickyNote, Mail } from "lucide-react";
+import { Search, User, Copy, Tv, Calendar, Home, Play, Pause, Radio, Info, Sun, Moon, Maximize, Settings, Volume2, VolumeX, CheckCircle2, Check, Shield, LogOut, LogIn, Heart, X, Lock, Terminal, Zap, Clock, History, MousePointer2, Sliders, ChevronLeft, ChevronRight, Mic, Layers, Filter, Sparkles, Leaf, Camera, Palette, Layout, MessageSquare, Eye, EyeOff, ExternalLink, Monitor, Columns, Maximize2, Circle, AlertCircle, RotateCcw, Droplet, Trophy, Film, Music, Globe, Users, Activity, ShieldCheck, LayoutGrid, LayoutDashboard, ArrowRight, ArrowLeft, TrendingUp, Star, Crown, Menu, Pin, Wrench, Settings2, FileCode, Minus, Square, Minimize2, FlaskConical as Flask, MapPin, Cloud, Plus, Folder, File, HardDrive, SkipBack, SkipForward, RefreshCw, RefreshCcw, Wifi, Battery, ChevronUp, ChevronDown, Image as ImageIcon, ShieldAlert, Trash2, Video, Download, Pizza, Gavel, MoreVertical, GripVertical, Upload, Compass, Share2, Scissors, Clipboard, Type, List, MoreHorizontal, Bell, Timer, PlayCircle, MousePointer, Type as TextIcon, CheckSquare, ToggleLeft, PanelTop, Mouse, ListTodo, Hash, Gamepad, Newspaper, ChevronsUpDown, CloudLightning, Grid, ShoppingBag, Bitcoin, StickyNote, Mail } from "lucide-react";
 import Hls from "hls.js";
 import { motion, AnimatePresence, MotionConfig, Reorder } from "motion/react";
 import { auth, db, handleFirestoreError, OperationType } from "./firebase";
@@ -1246,6 +1246,14 @@ function MyFeedContent({ isDark, onAction, onNavigate, liquidGlass, featureFlags
             placeholder={activeSearchPlaceholder}
             onNavigate={onNavigate}
             variant="minimal"
+            onSearchIconClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(new MouseEvent("contextmenu", {
+                clientX: e.clientX,
+                clientY: e.clientY,
+                bubbles: true
+              }));
+            }}
           />
           <div className="flex flex-wrap justify-center gap-2 mt-8">
              {["Bóng đá", "Thời tiết", "VTV6", "Tin tức", "Chứng khoán", "Film"].map(tag => (
@@ -11954,7 +11962,7 @@ function WindowsDesktop({
         <div className="flex flex-col flex-wrap gap-4 h-[calc(100vh-140px)] content-start">
           <motion.button 
             drag dragMomentum={false}
-            onDoubleClick={(e: any) => { e.stopPropagation(); window.open("https://vplay-beta-fa8k.vercel.app", "_blank"); }}
+            onDoubleClick={(e: any) => { e.stopPropagation(); window.open("https://vplaydev.vercel.app", "_blank"); }}
             onClick={(e: any) => e.stopPropagation()}
             className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-white/10 group transition-all w-24 cursor-grab active:cursor-grabbing"
           >
@@ -12733,7 +12741,7 @@ function WindowsDesktop({
 }
 
 
-function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featureFlags, placeholder, onNavigate, setHoveredItem, setHoveredRect, variant = "standard" }: { isDark: boolean, query: string, setQuery: (q: string) => void, onClose: () => void, liquidGlass: "glassy" | "tinted", isTop?: boolean, featureFlags?: any, placeholder?: string, onNavigate?: (tab: string) => void, setHoveredItem?: (s: string | null) => void, setHoveredRect?: (r: DOMRect | null) => void, variant?: "standard" | "minimal" }) {
+function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featureFlags, placeholder, onNavigate, setHoveredItem, setHoveredRect, variant = "standard", onSearchIconClick }: { isDark: boolean, query: string, setQuery: (q: string) => void, onClose: () => void, liquidGlass: "glassy" | "tinted", isTop?: boolean, featureFlags?: any, placeholder?: string, onNavigate?: (tab: string) => void, setHoveredItem?: (s: string | null) => void, setHoveredRect?: (r: DOMRect | null) => void, variant?: "standard" | "minimal", onSearchIconClick?: (e: React.MouseEvent) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isListening, setIsListening] = useState(false);
 
@@ -12774,6 +12782,10 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featu
   return (
     <div className={`flex items-center gap-1 md:gap-4 px-3 md:px-4 py-1.5 ${isTop ? "h-10" : "h-12"} w-full ${isTop ? "max-w-xl" : "max-w-3xl"} relative group transition-all ${variant === "minimal" ? (isDark ? "bg-white/5 hover:bg-white/10" : "bg-black/5 hover:bg-black/10") + " rounded-full backdrop-blur-3xl" : (isDark ? "bg-[#1c1c1c] border-white/10 shadow-black/80" : "bg-white border-slate-200") + " rounded-[4px] border shadow-sm"} overflow-hidden inline-flex`}>
       <div className="flex items-center gap-1 md:gap-2 flex-1 h-full">
+        <Search 
+          onClick={onSearchIconClick}
+          className={`h-4 w-4 text-white flex-shrink-0 transition-all ${onSearchIconClick ? 'cursor-pointer hover:opacity-80' : ''}`} 
+        />
         <input
           ref={inputRef}
           type="text"
@@ -12782,7 +12794,6 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featu
           onChange={(e) => setQuery(e.target.value)}
           className={`flex-1 bg-transparent border-none outline-none ${isTop ? "text-sm" : "text-[15px]"} font-normal ${textColor} ${placeholderColor} h-full py-0`}
         />
-        <Search className={`h-4 w-4 ${iconColor} flex-shrink-0 transition-colors group-focus-within:text-blue-400`} />
       </div>
       
       {/* Bottom Accent Line removed for minimal/pill variant to avoid visual bug */}
@@ -12815,20 +12826,6 @@ function SearchBar({ isDark, query, setQuery, onClose, liquidGlass, isTop, featu
             className="w-4 h-4 object-contain grayscale hover:grayscale-0 transition-all" 
             alt="V-pilot"
           />
-        </button>
-        <button 
-          onMouseEnter={(e) => {
-            setHoveredItem?.("Operator Console");
-            setHoveredRect?.(e.currentTarget.getBoundingClientRect());
-          }}
-          onMouseLeave={() => {
-            setHoveredItem?.(null);
-            setHoveredRect?.(null);
-          }}
-          onClick={() => onNavigate?.("Search")}
-          className={`transition-all hover:scale-110 active:scale-95 opacity-60 hover:opacity-100`}
-        >
-          <Terminal size={16} className={iconColor} />
         </button>
         <button 
           onMouseEnter={(e) => {
@@ -13459,6 +13456,28 @@ const SendFeedback = ({ size = 20, className }: { size?: number, className?: str
 );
 
 export default function App() {
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  // Global Context Menu Event Listeners
+  useEffect(() => {
+    const handleContextMenuEvent = (e: MouseEvent) => {
+      e.preventDefault();
+      setContextMenu({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleCloseContextMenu = () => {
+      setContextMenu(null);
+    };
+
+    window.addEventListener("contextmenu", handleContextMenuEvent as any);
+    window.addEventListener("click", handleCloseContextMenu);
+
+    return () => {
+      window.removeEventListener("contextmenu", handleContextMenuEvent as any);
+      window.removeEventListener("click", handleCloseContextMenu);
+    };
+  }, []);
+
   const [showEraseModal, setShowEraseModal] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
   const [eraseProgress, setEraseProgress] = useState(0);
@@ -13468,6 +13487,13 @@ export default function App() {
     return localStorage.getItem("vplay_refreshing_mode") === "true";
   });
   const [isRefreshingModeFaqModalOpen, setIsRefreshingModeFaqModalOpen] = useState(false);
+
+  const [showDateTime, setShowDateTime] = useState<boolean>(() => {
+    return localStorage.getItem("vplay_show_datetime") !== "false";
+  });
+  const [showTemperature, setShowTemperature] = useState<boolean>(() => {
+    return localStorage.getItem("vplay_show_temperature") !== "false";
+  });
 
   useEffect(() => {
     let interval: any;
@@ -15210,6 +15236,10 @@ export default function App() {
                           placeholder={activeSearchPlaceholder}
                           onNavigate={setActiveTab}
                           variant="minimal"
+                          onSearchIconClick={(e) => {
+                            e.stopPropagation();
+                            setContextMenu({ x: e.clientX, y: e.clientY });
+                          }}
                         />
                       
                         <AnimatePresence>
@@ -15243,13 +15273,14 @@ export default function App() {
                {/* Right Section (Stats) */}
                <div className="flex items-center gap-4 md:gap-6 px-6 select-none shrink-0">
                   {/* Refreshing Mode Inline Topbar Toggle */}
-                  <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-2.5 py-1.5 rounded-full shrink-0">
-                    <Sparkles size={11} className={refreshingMode ? "text-emerald-400 animate-pulse" : "text-white/40"} />
+                  <div className="group/refresh relative flex items-center gap-2 bg-white/5 border border-white/5 px-2.5 py-1.5 rounded-full shrink-0">
+                    <Leaf size={11} className={refreshingMode ? "text-emerald-400 animate-pulse" : "text-white/40"} />
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-300 hidden xs:inline">Refreshing</span>
                     <button 
                       onClick={() => {
                         const nextVal = !refreshingMode;
                         setRefreshingMode(nextVal);
+                        localStorage.setItem("vplay_refreshing_mode", String(nextVal));
                         addNotification?.("Hệ thống", `Đã ${nextVal ? 'bật' : 'tắt'} chế độ tự động làm mới (Refreshing Mode).`, 'info');
                       }}
                       className={`relative w-9 h-5 rounded-full transition-colors flex items-center ${
@@ -15262,29 +15293,37 @@ export default function App() {
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       />
                     </button>
+                    {/* Tooltip */}
+                    <div className="absolute top-10 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-slate-900 border border-white/10 rounded-xl text-[10px] font-bold text-slate-200 opacity-0 group-hover/refresh:opacity-100 pointer-events-none scale-95 group-hover/refresh:scale-100 transition-all duration-200 shadow-2xl z-50 whitespace-nowrap">
+                      Refreshing mode
+                    </div>
                   </div>
 
                   <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 bg-amber-400 rounded-full text-white shadow-lg shadow-amber-400/20 active:scale-95 transition-all cursor-pointer" onClick={() => { setShowWidgets(true); setActiveBoardTab('vstore'); }}>
                      <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-black italic">V</div>
                      <span className="text-xs font-black tracking-tight">{isUnlimitedVpoints ? "∞" : vpoints} <span className="opacity-60 font-medium">VP</span></span>
                   </div>
-                  <div 
-                    onClick={() => { setShowWidgets(true); setActiveBoardTab('widgets'); }}
-                    className="hidden sm:flex items-center gap-3 pr-6 border-r border-white/5 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-all"
-                  >
-                     <Sun size={14} className="text-amber-400" />
-                     <div className="flex flex-col">
-                        <span className="text-[11px] font-bold">26°C</span>
-                        <span className="text-[8px] font-bold opacity-30 uppercase tracking-tighter">HANOI</span>
-                     </div>
-                  </div>
-                  <div 
-                    onClick={() => { setShowWidgets(true); setActiveBoardTab('widgets'); }}
-                    className="flex flex-col items-end leading-none cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-all"
-                  >
-                     <span className="text-[13px] font-black tracking-tight uppercase leading-none">{currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
-                     <span className="text-[9px] font-bold opacity-20 uppercase tracking-widest mt-1.5">{currentTime.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                  </div>
+                  {showTemperature && (
+                    <div 
+                      onClick={() => { setShowWidgets(true); setActiveBoardTab('widgets'); }}
+                      className="hidden sm:flex items-center gap-3 pr-6 border-r border-white/5 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-all"
+                    >
+                       <Sun size={14} className="text-amber-400" />
+                       <div className="flex flex-col">
+                          <span className="text-[11px] font-bold">26°C</span>
+                          <span className="text-[8px] font-bold opacity-30 uppercase tracking-tighter">HANOI</span>
+                       </div>
+                    </div>
+                  )}
+                  {showDateTime && (
+                    <div 
+                      onClick={() => { setShowWidgets(true); setActiveBoardTab('widgets'); }}
+                      className="flex flex-col items-end leading-none cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-all"
+                    >
+                       <span className="text-[13px] font-black tracking-tight uppercase leading-none">{currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+                       <span className="text-[9px] font-bold opacity-20 uppercase tracking-widest mt-1.5">{currentTime.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                    </div>
+                  )}
                </div>
             </div>
           )}
@@ -15458,7 +15497,7 @@ export default function App() {
                   <button 
                     onClick={() => {
                       setShowDevConfirm(false);
-                      window.open("https://vplay-beta-fa8k.vercel.app", "_blank");
+                      window.open("https://vplaydev.vercel.app", "_blank");
                     }}
                     className="px-10 py-2.5 bg-[#4facfe] hover:bg-[#00f2fe] text-slate-900 rounded-lg font-bold text-sm transition-all active:scale-95 shadow-[0_0_15px_rgba(79,172,254,0.3)]"
                   >
@@ -15473,6 +15512,158 @@ export default function App() {
                 </div>
               </motion.div>
             </div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {contextMenu && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              style={{ 
+                position: "fixed",
+                top: Math.min(contextMenu.y, window.innerHeight - 480),
+                left: Math.min(contextMenu.x, window.innerWidth - 240),
+                zIndex: 99999
+              }}
+              className="w-56 bg-[#0f172ab0] backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl flex flex-col gap-0.5 select-none"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Hide/Show Sidebar */}
+              <button
+                onClick={() => {
+                  const nextVal = !useSidebar;
+                  setUseSidebar(nextVal);
+                  localStorage.setItem("vplay_sidebar", nextVal.toString());
+                  addNotification?.("Hệ thống", `Đã ${nextVal ? 'hiện' : 'ẩn'} thanh điều hướng bên (Sidebar).`, 'info');
+                  setContextMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer animate-none"
+              >
+                <Monitor size={14} className="opacity-70" />
+                <span>{useSidebar ? "Ẩn Sidebar" : "Hiện Sidebar"}</span>
+              </button>
+
+              {/* Hide/Show Topbar */}
+              <button
+                onClick={() => {
+                  const nextVal = !featureFlags.top_bar;
+                  const newFlags = { ...featureFlags, top_bar: nextVal };
+                  setFeatureFlags(newFlags);
+                  localStorage.setItem("vplay_feature_flags", JSON.stringify(newFlags));
+                  addNotification?.("Hệ thống", `Đã ${nextVal ? 'hiện' : 'ẩn'} thanh điều hướng trên cùng (Topbar).`, 'info');
+                  setContextMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <PanelTop size={14} className="opacity-70" />
+                <span>{featureFlags.top_bar ? "Ẩn Topbar" : "Hiện Topbar"}</span>
+              </button>
+
+              <div className="h-[1px] bg-white/5 my-1" />
+
+              {/* Hide/Show Date and Time */}
+              <button
+                onClick={() => {
+                  const nextVal = !showDateTime;
+                  setShowDateTime(nextVal);
+                  localStorage.setItem("vplay_show_datetime", nextVal.toString());
+                  addNotification?.("Hệ thống", `Đã ${nextVal ? 'hiện' : 'ẩn'} hiển thị ngày & giờ.`, 'info');
+                  setContextMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Clock size={14} className="opacity-70" />
+                <span>{showDateTime ? "Ẩn ngày & giờ" : "Hiện ngày & giờ"}</span>
+              </button>
+
+              {/* Hide/Show Temperature */}
+              <button
+                onClick={() => {
+                  const nextVal = !showTemperature;
+                  setShowTemperature(nextVal);
+                  localStorage.setItem("vplay_show_temperature", nextVal.toString());
+                  addNotification?.("Hệ thống", `Đã ${nextVal ? 'hiện' : 'ẩn'} hiển thị nhiệt độ.`, 'info');
+                  setContextMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Sun size={14} className="opacity-70 text-amber-400" />
+                <span>{showTemperature ? "Ẩn nhiệt độ" : "Hiện nhiệt độ"}</span>
+              </button>
+
+              <div className="h-[1px] bg-white/5 my-1" />
+
+              {/* Refresh (Làm mới) */}
+              <button
+                onClick={() => {
+                  setContextMenu(null);
+                  window.location.reload();
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <RefreshCw size={14} className="opacity-70 text-blue-400 animate-spin-slow" />
+                <span>Làm mới ứng dụng</span>
+              </button>
+
+              {/* Refreshing mode toggle (leaf icon!) */}
+              <button
+                onClick={() => {
+                  const nextVal = !refreshingMode;
+                  setRefreshingMode(nextVal);
+                  localStorage.setItem("vplay_refreshing_mode", String(nextVal));
+                  addNotification?.("Hệ thống", `Đã ${nextVal ? 'bật' : 'tắt'} chế độ tự động làm mới (Refreshing Mode).`, 'info');
+                  setContextMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Leaf size={14} className={refreshingMode ? "text-emerald-400 animate-pulse" : "opacity-70"} />
+                <div className="flex-grow flex items-center justify-between">
+                  <span>Refreshing Mode</span>
+                  <div className={`w-1.5 h-1.5 rounded-full ${refreshingMode ? "bg-emerald-500 animate-pulse" : "bg-slate-500"}`} />
+                </div>
+              </button>
+
+              {/* Open Settings */}
+              <button
+                onClick={() => {
+                  setActiveTab("Cài đặt");
+                  setContextMenu(null);
+                  addNotification?.("Hệ thống", "Đã mở Cài đặt hệ thống.", 'info');
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Settings size={14} className="opacity-70 text-purple-400" />
+                <span>Mở Cài đặt</span>
+              </button>
+
+              {/* Operate Console */}
+              <button
+                onClick={() => {
+                  setActiveTab("Search");
+                  setContextMenu(null);
+                  addNotification?.("Hệ thống", "Đã mở bảng điều khiển Console.", 'info');
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Terminal size={14} className="opacity-70 text-indigo-400" />
+                <span>Hành động Console</span>
+              </button>
+
+              {/* Switch to Dev */}
+              <button
+                onClick={() => {
+                  setShowDevConfirm(true);
+                  setContextMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-all cursor-pointer"
+              >
+                <ExternalLink size={14} className="opacity-70 animate-pulse" />
+                <span>Switch to Dev</span>
+              </button>
+            </motion.div>
           )}
         </AnimatePresence>
 
@@ -15523,6 +15714,10 @@ export default function App() {
                     onNavigate={setActiveTab}
                     setHoveredItem={setHoveredHeadingItem}
                     setHoveredRect={setHoveredHeadingRect}
+                    onSearchIconClick={(e) => {
+                      e.stopPropagation();
+                      setContextMenu({ x: e.clientX, y: e.clientY });
+                    }}
                   />
                 </div>
               </div>
@@ -15913,6 +16108,10 @@ export default function App() {
                       onNavigate={setActiveTab}
                       setHoveredItem={setHoveredHeadingItem}
                       setHoveredRect={setHoveredHeadingRect}
+                      onSearchIconClick={(e) => {
+                        e.stopPropagation();
+                        setContextMenu({ x: e.clientX, y: e.clientY });
+                      }}
                     />
                   </div>
                   <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -16602,8 +16801,8 @@ export default function App() {
               </div>
 
               {/* Footer Section */}
-              <div className={`p-6 mt-auto space-y-6 border-t ${isDark ? "border-white/5" : "border-slate-100"}`}>
-                {isSidebarExpanded && (
+              {isSidebarExpanded && (
+                <div className={`p-6 mt-auto border-t ${isDark ? "border-white/5" : "border-slate-100"}`}>
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
@@ -16612,23 +16811,8 @@ export default function App() {
                       </div>
                     </div>
                   </div>
-                )}
-                
-                <button
-                  onClick={() => setShowDevConfirm(true)}
-                  className={`flex ${featureFlags.sidebar_v3 ? "flex-col py-2 h-auto gap-1 items-center justify-center p-2 rounded-xl" : "items-center gap-4 px-4 py-3 rounded-xl h-[50px]"} transition-all w-full relative overflow-hidden ${
-                    isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:bg-slate-50"
-                  } ${(!isSidebarExpanded && !featureFlags.sidebar_v3) ? "justify-center" : (featureFlags.sidebar_v3 ? "justify-center" : "")}`}
-                >
-                  <motion.div
-                    whileHover={{ rotateY: 180 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <ExternalLink size={24} className="hover:scale-110 transition-transform" />
-                  </motion.div>
-                  {(isSidebarExpanded || featureFlags.sidebar_v3) && <span className={featureFlags.sidebar_v3 ? "text-[11px] font-medium tracking-tight mt-1 opacity-70 group-hover:opacity-100 text-center w-full truncate" : "font-normal text-base whitespace-nowrap"}>Switch to Dev</span>}
-                </button>
-              </div>
+                </div>
+              )}
             </motion.div>
           </>
         )}
@@ -16910,6 +17094,10 @@ export default function App() {
                       liquidGlass={liquidGlass}
                       placeholder={activeSearchPlaceholder}
                       onNavigate={setActiveTab}
+                      onSearchIconClick={(e) => {
+                        e.stopPropagation();
+                        setContextMenu({ x: e.clientX, y: e.clientY });
+                      }}
                     />
                   </motion.div>
                 )}
