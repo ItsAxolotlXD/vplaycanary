@@ -3,7 +3,7 @@ import {
   Film, Heart, MessageSquare, Share2, Star, ShieldAlert, Flag, Upload, Play, Pause, Trash2, 
   Send, Plus, Users, UserPlus, Search, X, Volume2, Mic, ArrowRight, ArrowLeft, Bookmark, 
   RefreshCw, Sparkles, Smile, MessageCircle, MoreHorizontal, Radio, ShieldCheck, HeartOff,
-  ChevronLeft, ChevronRight, User, MapPin, Calendar, Camera, Check, ShoppingBag, Tag
+  ChevronLeft, ChevronRight, User, MapPin, Calendar, Camera, Check, ShoppingBag, Tag, Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../firebase";
 
-interface VconnectContentProps {
+interface VibesContentProps {
   isDark: boolean;
   user: any;
   liquidGlass: "glassy" | "tinted";
@@ -24,7 +24,7 @@ interface VconnectContentProps {
   setVpoints?: React.Dispatch<React.SetStateAction<number>>;
 }
 
-// Interfaces for Vconnect
+// Interfaces for Vibes
 interface Story {
   id: string;
   userEmail: string;
@@ -162,13 +162,13 @@ const STORY_TEXT_POOL = [
 ];
 
 const POST_CONTENT_POOL = [
-  { title: "Khai hỏa Chiến Dịch Mùa Hè cực cháy trên vPlay OS!", content: "Hồng quân vPlay chính thức phát động chuỗi nhiệm vụ nhận điểm và quà tặng kép. Admin đã chuẩn bị giải thưởng cực khủng lên tới 10.000 Vpoints cho các bạn hoàn thành hết các thử thách hàng tuần! Tham gia ngay thôi nào anh em ơi! 🔥🎁 #vplay #vconnect" },
+  { title: "Khai hỏa Chiến Dịch Mùa Hè cực cháy trên vPlay OS!", content: "Hồng quân vPlay chính thức phát động chuỗi nhiệm vụ nhận điểm và quà tặng kép. Admin đã chuẩn bị giải thưởng cực khủng lên tới 10.000 Vpoints cho các bạn hoàn thành hết các thử thách hàng tuần! Tham gia ngay thôi nào anh em ơi! 🔥🎁 #vplay #vibes" },
   { title: "Trực tiếp EURO kịch tính chuẩn bị phát sóng từ tối nay!", content: "Kênh livestream Phát sóng VTV6 của chúng tôi đã tối ưu hóa băng thông HLS proxy mượt mà không độ trễ. Chuẩn bị đồ uống, rủ bạn bè lập Room Party để cổ vũ những pha bóng đỉnh cao đêm nay nhé cả nhà! 📺⚽ #vplay #xemtivi" },
-  { title: "Anh em nghĩ sao về việc tích hợp AI Gemini trực tiếp?", content: "Hệ điều hành vPlay OS thế hệ mới đang nghiên cứu cho phép người dùng ra lệnh bằng giọng nói hỗ trợ bởi mô hình Gemini 3.5 siêu tốc. Bình luận ý tưởng của bạn hoặc drop tim nếu ủng hộ tính năng này để ad triển khai luôn nào! 🤖💬 #geminiai #vconnect" },
+  { title: "Anh em nghĩ sao về việc tích hợp AI Gemini trực tiếp?", content: "Hệ điều hành vPlay OS thế hệ mới đang nghiên cứu cho phép người dùng ra lệnh bằng giọng nói hỗ trợ bởi mô hình Gemini 3.5 siêu tốc. Bình luận ý tưởng của bạn hoặc drop tim nếu ủng hộ tính năng này để ad triển khai luôn nào! 🤖💬 #geminiai #vibes" },
   { title: "Gợi ý list nhạc Lofi chill ngày mưa rả rích", content: "Mở widget Music Pro, bật bài 'Pigstep' hoặc chọn kênh âm nhạc Vstore của Quốc Anh để cảm nhận giai điệu êm dịu, sảng khoái tối đa. Có ai có bài hát ruột nào hay ho không, chia sẻ nhé! 🎧🌧️ #musicpro #chill" },
   { title: "Góc khoe góc máy: Trải nghiệm tay cầm Bluetooth siêu mượt!", content: "Setup cực nhanh với vPlay Board, chiến Liên quân hay đá FIFA mượt vô đối. Trình thiết lập Driver Bluetooth tự động nhận diện tất cả model tay cầm phổ biến hiện nay. Comment ảnh góc máy của bạn bên dưới nha! 🎮⚡ #lienminh #fifa" },
-  { title: "Bí kíp leo rank Kim Cương thần tốc cực đơn giản", content: "Hãy rủ tối thiểu 2 người trong danh sách bạn bè Vconnect, mở cuộc gọi micro voice chat trực tiếp để bàn chiến thuật thời gian thực. Đảm bảo tỷ lệ thắng tăng lên ít nhất 30%! Chúc anh em tối nay leo rank thành công nhé! 🎙️🔥 #lienminh" },
-  { title: "Cảm nhận cá nhân sau 1 tuần đồng hành cùng vPlay", content: "Hệ sinh thái chạy ngày một mượt mà, nhiều tính năng giải trí chất chơi người dơi. Thiết kế widget card sắc nét mang cảm giác cao cấp rõ rệt. Cảm ơn đội ngũ phát triển đã lắng nghe và liên tục nâng cấp nhé! ⭐👍 #vconnect" }
+  { title: "Bí kíp leo rank Kim Cương thần tốc cực đơn giản", content: "Hãy rủ tối thiểu 2 người trong danh sách bạn bè Vibes, mở cuộc gọi micro voice chat trực tiếp để bàn chiến thuật thời gian thực. Đảm bảo tỷ lệ thắng tăng lên ít nhất 30%! Chúc anh em tối nay leo rank thành công nhé! 🎙️🔥 #lienminh" },
+  { title: "Cảm nhận cá nhân sau 1 tuần đồng hành cùng vPlay", content: "Hệ sinh thái chạy ngày một mượt mà, nhiều tính năng giải trí chất chơi người dơi. Thiết kế widget card sắc nét mang cảm giác cao cấp rõ rệt. Cảm ơn đội ngũ phát triển đã lắng nghe và liên tục nâng cấp nhé! ⭐👍 #vibes" }
 ];
 
 const DEFAULT_VSTORE_PRODUCTS = [
@@ -252,7 +252,7 @@ const DEFAULT_VSTORE_PRODUCTS = [
   }
 ];
 
-export function VconnectContent({ 
+export function VibesContent({ 
   isDark, 
   user, 
   liquidGlass, 
@@ -262,16 +262,16 @@ export function VconnectContent({
   addNotification,
   vpoints = 100,
   setVpoints
-}: VconnectContentProps) {
+}: VibesContentProps) {
   // Feed item states
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "media" | "post_blog" | "poll" | "favorites">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Vconnect Store States
+  // Vibes Store States
   const [vstoreProducts, setVstoreProducts] = useState(() => {
-    const saved = localStorage.getItem("vplay_vconnect_vstore_p");
+    const saved = localStorage.getItem("vplay_vibes_vstore_p");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -293,7 +293,7 @@ export function VconnectContent({
   const [buyingProduct, setBuyingProduct] = useState<any>(null);
 
   useEffect(() => {
-    localStorage.setItem("vplay_vconnect_vstore_p", JSON.stringify(vstoreProducts));
+    localStorage.setItem("vplay_vibes_vstore_p", JSON.stringify(vstoreProducts));
   }, [vstoreProducts]);
 
   // Stories states
@@ -353,17 +353,17 @@ export function VconnectContent({
   // Blog Reader
   const [readingBlog, setReadingBlog] = useState<Post | null>(null);
 
-  // Navigation sub-tab inside Vconnect
-  const [vconnectSubTab, setVconnectSubTab] = useState<"feed" | "vshorts" | "vstore" | "profile">("feed");
+  // Navigation sub-tab inside Vibes
+  const [vibesSubTab, setVibesSubTab] = useState<"feed" | "vshorts" | "vstore" | "profile">("feed");
 
   // Custom User Profile States (persisted Offline / Online)
-  const [profileName, setProfileName] = useState(() => localStorage.getItem("vplay_vconnect_p_name") || user?.displayName || user?.email?.split("@")[0] || "Khách Danh Tính");
-  const [profileId, setProfileId] = useState(() => localStorage.getItem("vplay_vconnect_p_id") || "guest_" + (user?.uid?.slice(0, 5) || "visitor"));
-  const [profileBio, setProfileBio] = useState(() => localStorage.getItem("vplay_vconnect_p_bio") || "Thành viên yêu đời của mạng xã hội vPlay Vconnect.");
-  const [profileBirth, setProfileBirth] = useState(() => localStorage.getItem("vplay_vconnect_p_birth") || "2000-01-01");
-  const [profileHometown, setProfileHometown] = useState(() => localStorage.getItem("vplay_vconnect_p_hometown") || "Hà Nội, Việt Nam");
-  const [profileAvatar, setProfileAvatar] = useState(() => localStorage.getItem("vplay_vconnect_p_avatar") || user?.photoURL || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80");
-  const [profileCover, setProfileCover] = useState(() => localStorage.getItem("vplay_vconnect_p_cover") || "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&h=300&w=600&q=80");
+  const [profileName, setProfileName] = useState(() => localStorage.getItem("vplay_vibes_p_name") || user?.displayName || user?.email?.split("@")[0] || "Khách Danh Tính");
+  const [profileId, setProfileId] = useState(() => localStorage.getItem("vplay_vibes_p_id") || "guest_" + (user?.uid?.slice(0, 5) || "visitor"));
+  const [profileBio, setProfileBio] = useState(() => localStorage.getItem("vplay_vibes_p_bio") || "Thành viên yêu đời của mạng xã hội vPlay Vibes.");
+  const [profileBirth, setProfileBirth] = useState(() => localStorage.getItem("vplay_vibes_p_birth") || "2000-01-01");
+  const [profileHometown, setProfileHometown] = useState(() => localStorage.getItem("vplay_vibes_p_hometown") || "Hà Nội, Việt Nam");
+  const [profileAvatar, setProfileAvatar] = useState(() => localStorage.getItem("vplay_vibes_p_avatar") || user?.photoURL || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80");
+  const [profileCover, setProfileCover] = useState(() => localStorage.getItem("vplay_vibes_p_cover") || "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&h=300&w=600&q=80");
 
   // Vshorts States
   const [vshorts, setVshorts] = useState<Vshort[]>([]);
@@ -376,10 +376,10 @@ export function VconnectContent({
   // Synchronize user displayName and avatar in state if present and not overridden
   useEffect(() => {
     if (user) {
-      if (!localStorage.getItem("vplay_vconnect_p_name")) {
+      if (!localStorage.getItem("vplay_vibes_p_name")) {
         setProfileName(user.displayName || user.email?.split("@")[0] || "Khách Danh Tính");
       }
-      if (!localStorage.getItem("vplay_vconnect_p_avatar")) {
+      if (!localStorage.getItem("vplay_vibes_p_avatar")) {
         setProfileAvatar(user.photoURL || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80");
       }
     }
@@ -429,7 +429,7 @@ export function VconnectContent({
       avatar: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=150&q=80",
       messages: [
         { id: "m1", senderEmail: "gamer_pro@vplay.local", senderName: "Phú Sát Gamer", text: "Alo anh em tối nay làm vài trận leo cao thủ không nhỉ?", createdAt: new Date(Date.now() - 3600000).toISOString() },
-        { id: "m2", senderEmail: "developer@vplay.local", senderName: "Vplay OS Developer", text: "Đang fix nốt cái Vconnect bạn ơi, tí nữa vào chiến sau nha!", createdAt: new Date(Date.now() - 1800000).toISOString() }
+        { id: "m2", senderEmail: "developer@vplay.local", senderName: "Vplay OS Developer", text: "Đang fix nốt cái Vibes bạn ơi, tí nữa vào chiến sau nha!", createdAt: new Date(Date.now() - 1800000).toISOString() }
       ]
     },
     {
@@ -449,7 +449,7 @@ export function VconnectContent({
     {
       id: "post-1",
       type: "post",
-      content: "Chào mừng các bạn đến với bản cập nhật Vconnect mạng xã hội đỉnh cao! Nay mình vừa tích hợp thêm ghi âm giọng nói trực tiếp cực xịn. Anh em nghe thử bản tin thoại ngắn này nhé! 🎤☄️",
+      content: "Chào mừng các bạn đến với bản cập nhật Vibes mạng xã hội đỉnh cao! Nay mình vừa tích hợp thêm ghi âm giọng nói trực tiếp cực xịn. Anh em nghe thử bản tin thoại ngắn này nhé! 🎤☄️",
       voiceUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
       mediaType: "voice",
       createdAt: new Date().toISOString(),
@@ -467,7 +467,7 @@ export function VconnectContent({
       id: "post-2",
       type: "blog",
       title: "Hành trình xây dựng hệ sinh thái VTV & vPlay",
-      content: "Trong một thế kỷ mạng xã hội bùng nổ, việc phát triển một hệ điều hành thu nhỏ dành cho tivi và máy tính (VplayOS) là một thách thức kỹ thuật lớn. Chúng tôi tập trung tối ưu hóa tài nguyên phần cứng, tận dụng tối đa kiến trúc phi tập trung, lưu trữ bảo mật qua Sandbox Cloud và Firebase. Vconnect sẽ là trung tâm kết nối các developer và người dùng cuối, là trái tim năng động của vPlay...\n\nĐọc tiếp để ủng hộ đội ngũ phát triển nhé!",
+      content: "Trong một thế kỷ mạng xã hội bùng nổ, việc phát triển một hệ điều hành thu nhỏ dành cho tivi và máy tính (VplayOS) là một thách thức kỹ thuật lớn. Chúng tôi tập trung tối ưu hóa tài nguyên phần cứng, tận dụng tối đa kiến trúc phi tập trung, lưu trữ bảo mật qua Sandbox Cloud và Firebase. Vibes sẽ là trung tâm kết nối các developer và người dùng cuối, là trái tim năng động của vPlay...\n\nĐọc tiếp để ủng hộ đội ngũ phát triển nhé!",
       category: "Công Nghệ",
       coverUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
       createdAt: new Date(Date.now() - 86400000).toISOString(),
@@ -482,7 +482,7 @@ export function VconnectContent({
     {
       id: "post-3",
       type: "poll",
-      title: "Bạn đánh giá bản cập nhật Social Vconnect này ở thang điểm mấy?",
+      title: "Bạn đánh giá bản cập nhật Social Vibes này ở thang điểm mấy?",
       pollOptions: ["10/10 Quá tuyệt vời", "9/10 Cực kỳ hữu dụng", "Cần nâng cấp thêm nhiều game", "Bình thường"],
       pollVotes: [120, 45, 12, 1],
       createdAt: new Date(Date.now() - 172800000).toISOString(),
@@ -499,7 +499,7 @@ export function VconnectContent({
   // Stories defaults
   const defaultStories: Story[] = [
     { id: "s-1", userEmail: "music_queen@vplay.local", userName: "DJ Minari", userPhoto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", mediaUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=400", mediaType: "image", createdAt: new Date().toISOString() },
-    { id: "s-2", userEmail: "developer@vplay.local", userName: "Vplay OS Developer", userPhoto: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80", textContent: "🔥 Vconnect Social Hub chính thức ra lò!", mediaType: "text", createdAt: new Date().toISOString() },
+    { id: "s-2", userEmail: "developer@vplay.local", userName: "Vplay OS Developer", userPhoto: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80", textContent: "🔥 Vibes Social Hub chính thức ra lò!", mediaType: "text", createdAt: new Date().toISOString() },
     { id: "s-3", userEmail: "gamer_pro@vplay.local", userName: "Phú Sát Gamer", userPhoto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", mediaUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=400", mediaType: "image", createdAt: new Date().toISOString() }
   ];
 
@@ -511,7 +511,7 @@ export function VconnectContent({
       userName: "Vplay Updates",
       userPhoto: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
       videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-light-12402-large.mp4",
-      title: "Tính năng Vshorts cực cháy nay đã có mặt trên Vconnect! Hãy tải ngay video ngắn của bạn dưới 5 phút nào! 🔥🎥 #vplay #v_short",
+      title: "Tính năng Vshorts cực cháy nay đã có mặt trên Vibes! Hãy tải ngay video ngắn của bạn dưới 5 phút nào! 🔥🎥 #vplay #v_short",
       likes: 120,
       likesVoted: false,
       commentsCount: 15,
@@ -634,35 +634,35 @@ export function VconnectContent({
     setLoading(true);
 
     // Load Friends
-    const savedFriends = localStorage.getItem("vplay_vconnect_friends");
+    const savedFriends = localStorage.getItem("vplay_vibes_friends");
     if (savedFriends) {
       setFriends(JSON.parse(savedFriends));
     } else {
       const initFriends = ["developer@vplay.local", "music_queen@vplay.local"];
       setFriends(initFriends);
-      localStorage.setItem("vplay_vconnect_friends", JSON.stringify(initFriends));
+      localStorage.setItem("vplay_vibes_friends", JSON.stringify(initFriends));
     }
 
     // Load Discovery People
-    const savedPeople = localStorage.getItem("vplay_vconnect_people");
+    const savedPeople = localStorage.getItem("vplay_vibes_people");
     if (savedPeople) {
       setPeople(JSON.parse(savedPeople));
     } else {
       setPeople(defaultPeople);
-      localStorage.setItem("vplay_vconnect_people", JSON.stringify(defaultPeople));
+      localStorage.setItem("vplay_vibes_people", JSON.stringify(defaultPeople));
     }
 
     // Load Chats & Group Rooms
-    const savedRooms = localStorage.getItem("vplay_vconnect_rooms");
+    const savedRooms = localStorage.getItem("vplay_vibes_rooms");
     if (savedRooms) {
       setChatRooms(JSON.parse(savedRooms));
     } else {
       setChatRooms(defaultRooms);
-      localStorage.setItem("vplay_vconnect_rooms", JSON.stringify(defaultRooms));
+      localStorage.setItem("vplay_vibes_rooms", JSON.stringify(defaultRooms));
     }
 
     // Load Stories (always keep user's stories and fill with 20+ scrambled random stories!)
-    const savedStoriesJson = localStorage.getItem("vplay_vconnect_stories");
+    const savedStoriesJson = localStorage.getItem("vplay_vibes_stories");
     let userStories: Story[] = [];
     if (savedStoriesJson) {
       try {
@@ -678,17 +678,17 @@ export function VconnectContent({
     setStories(mergedStories);
 
     // Load Vshorts
-    const savedVshorts = localStorage.getItem("vplay_vconnect_vshorts");
+    const savedVshorts = localStorage.getItem("vplay_vibes_vshorts");
     if (savedVshorts) {
       setVshorts(JSON.parse(savedVshorts));
     } else {
       setVshorts(defaultVshorts);
-      localStorage.setItem("vplay_vconnect_vshorts", JSON.stringify(defaultVshorts));
+      localStorage.setItem("vplay_vibes_vshorts", JSON.stringify(defaultVshorts));
     }
 
     if (lite) {
       // Offline LocalStorage Mode
-      const savedFeed = localStorage.getItem("vplay_vconnect_feed");
+      const savedFeed = localStorage.getItem("vplay_vibes_feed");
       let userPosts: Post[] = [];
       if (savedFeed) {
         try {
@@ -704,7 +704,7 @@ export function VconnectContent({
     } else {
       // Firebase Online Mode
       try {
-        const querySnapshot = await getDocs(collection(db, "vplay_community_vconnect"));
+        const querySnapshot = await getDocs(collection(db, "vplay_community_vibes"));
         const fbItems: Post[] = [];
         querySnapshot.forEach((docSnap) => {
           fbItems.push({ id: docSnap.id, ...docSnap.data() } as Post);
@@ -721,7 +721,7 @@ export function VconnectContent({
           setItems(defaultPosts);
           // Auto populate demo data in online database to seed
           for (const dp of defaultPosts) {
-            await addDoc(collection(db, "vplay_community_vconnect"), {
+            await addDoc(collection(db, "vplay_community_vibes"), {
               ...dp,
               createdAt: serverTimestamp()
             });
@@ -731,7 +731,7 @@ export function VconnectContent({
         }
       } catch (err) {
         console.error("Firestore Loading Failed, falling back to LocalStorage:", err);
-        const savedFeed = localStorage.getItem("vplay_vconnect_feed");
+        const savedFeed = localStorage.getItem("vplay_vibes_feed");
         setItems(savedFeed ? JSON.parse(savedFeed) : defaultPosts);
       } finally {
         setLoading(false);
@@ -795,7 +795,7 @@ export function VconnectContent({
 
     const updated = [newVshort, ...vshorts];
     setVshorts(updated);
-    localStorage.setItem("vplay_vconnect_vshorts", JSON.stringify(updated));
+    localStorage.setItem("vplay_vibes_vshorts", JSON.stringify(updated));
     setActiveVshortIndex(0);
     
     // Reset states
@@ -950,23 +950,23 @@ export function VconnectContent({
     if (lite) {
       const merged = [newPost, ...items];
       setItems(merged);
-      localStorage.setItem("vplay_vconnect_feed", JSON.stringify(merged));
-      addNotification?.("Vconnect Offline", "Bài viết đã lưu offline thành công trong trình duyệt!", "success");
+      localStorage.setItem("vplay_vibes_feed", JSON.stringify(merged));
+      addNotification?.("Vibes Offline", "Bài viết đã lưu offline thành công trong trình duyệt!", "success");
     } else {
       try {
-        await addDoc(collection(db, "vplay_community_vconnect"), {
+        await addDoc(collection(db, "vplay_community_vibes"), {
           ...newPost,
           createdAt: serverTimestamp()
         });
-        addNotification?.("Vconnect Community", "Đăng tải bài viết thành công lên bảng tin công cộng!", "success");
+        addNotification?.("Vibes Community", "Đăng tải bài viết thành công lên bảng tin công cộng!", "success");
         loadAllData();
       } catch (err) {
         console.error("Firebase post upload error:", err);
         // Fallback local append
         const merged = [newPost, ...items];
         setItems(merged);
-        localStorage.setItem("vplay_vconnect_feed", JSON.stringify(merged));
-        addNotification?.("Vconnect", "Ghi khẩn cấp offline, bài viết khả dụng tạm thời.", "warning");
+        localStorage.setItem("vplay_vibes_feed", JSON.stringify(merged));
+        addNotification?.("Vibes", "Ghi khẩn cấp offline, bài viết khả dụng tạm thời.", "warning");
       }
     }
 
@@ -1011,14 +1011,14 @@ export function VconnectContent({
 
     const updatedStories = [newStory, ...stories];
     setStories(updatedStories);
-    localStorage.setItem("vplay_vconnect_stories", JSON.stringify(updatedStories));
+    localStorage.setItem("vplay_vibes_stories", JSON.stringify(updatedStories));
 
     setNewStoryText("");
     setNewStoryFileUrl("");
     setVoiceUrl("");
     setAudioBlob(null);
     setShowAddStoryModal(false);
-    addNotification?.("Tin của bạn", "Đã thêm tin Vconnect Story thành công (hiệu lực 24h)!", "success");
+    addNotification?.("Tin của bạn", "Đã thêm tin Vibes Story thành công (hiệu lực 24h)!", "success");
   };
 
   // Liking Feed Posts
@@ -1036,13 +1036,13 @@ export function VconnectContent({
     });
 
     setItems(updated);
-    localStorage.setItem("vplay_vconnect_feed", JSON.stringify(updated));
+    localStorage.setItem("vplay_vibes_feed", JSON.stringify(updated));
 
     if (!lite) {
       try {
         const target = updated.find(p => p.id === postId);
         if (target && !postId.startsWith("post-") && !postId.startsWith("online-")) {
-          await updateDoc(doc(db, "vplay_community_vconnect", postId), {
+          await updateDoc(doc(db, "vplay_community_vibes", postId), {
             likes: target.likes
           });
         }
@@ -1072,14 +1072,14 @@ export function VconnectContent({
     });
 
     setItems(updated);
-    localStorage.setItem("vplay_vconnect_feed", JSON.stringify(updated));
+    localStorage.setItem("vplay_vibes_feed", JSON.stringify(updated));
   };
 
   // Report Posts
   const handleSubmitReport = () => {
     if (!reportingPostId) return;
     
-    addNotification?.("Báo cáo vi phạm", `Vconnect đã tiếp nhận báo cáo của bạn về bài viết này lý do: ${reportReason}. Ban quản trị sẽ rà soát lập tức!`, "success");
+    addNotification?.("Báo cáo vi phạm", `Vibes đã tiếp nhận báo cáo của bạn về bài viết này lý do: ${reportReason}. Ban quản trị sẽ rà soát lập tức!`, "success");
     setReportingPostId(null);
   };
 
@@ -1109,17 +1109,17 @@ export function VconnectContent({
 
   // Share Feed Post (Simulated and clipboard Copy link)
   const handleSharePost = (post: Post, shareToChatRoomId?: string) => {
-    const virtualLink = `${window.location.origin}/vconnect/post/${post.id}`;
+    const virtualLink = `${window.location.origin}/vibes/post/${post.id}`;
     
     if (shareToChatRoomId) {
       // Send directly to chat room
-      const textShare = `[Chia sẻ bài viết từ Vconnect] "${post.title || post.content?.slice(0, 30)}...": ${virtualLink}`;
+      const textShare = `[Chia sẻ bài viết từ Vibes] "${post.title || post.content?.slice(0, 30)}...": ${virtualLink}`;
       handleSendChatMessage(textShare, undefined, shareToChatRoomId);
       addNotification?.("Chia sẻ thành công", `Đã gửi trực tiếp liên kết bài viết tới phòng trò chuyện!`, "success");
     } else {
       // Copy to clipboard
       navigator.clipboard.writeText(virtualLink).then(() => {
-        addNotification?.("Sao chép liên kết", "Đã lưu URL chia sẻ mạng xã hội Vconnect vào clipboard!", "success");
+        addNotification?.("Sao chép liên kết", "Đã lưu URL chia sẻ mạng xã hội Vibes vào clipboard!", "success");
       }).catch(() => {
         alert("Liên kết chia sẻ bài viết: " + virtualLink);
       });
@@ -1153,13 +1153,13 @@ export function VconnectContent({
     });
 
     setItems(updated);
-    localStorage.setItem("vplay_vconnect_feed", JSON.stringify(updated));
+    localStorage.setItem("vplay_vibes_feed", JSON.stringify(updated));
 
     if (!lite && !activeCommentsPostId.startsWith("post-") && !activeCommentsPostId.startsWith("online-")) {
       try {
         const target = updated.find(p => p.id === activeCommentsPostId);
         if (target) {
-          updateDoc(doc(db, "vplay_community_vconnect", activeCommentsPostId), {
+          updateDoc(doc(db, "vplay_community_vibes", activeCommentsPostId), {
             comments: target.comments
           });
         }
@@ -1203,7 +1203,7 @@ export function VconnectContent({
               }
               return p;
             });
-            localStorage.setItem("vplay_vconnect_feed", JSON.stringify(upd));
+            localStorage.setItem("vplay_vibes_feed", JSON.stringify(upd));
             return upd;
           });
         })
@@ -1236,13 +1236,13 @@ export function VconnectContent({
     });
 
     setItems(updated);
-    localStorage.setItem("vplay_vconnect_feed", JSON.stringify(updated));
+    localStorage.setItem("vplay_vibes_feed", JSON.stringify(updated));
 
     if (!lite && !postId.startsWith("post-") && !postId.startsWith("online-")) {
       try {
         const target = updated.find(p => p.id === postId);
         if (target) {
-          await updateDoc(doc(db, "vplay_community_vconnect", postId), {
+          await updateDoc(doc(db, "vplay_community_vibes", postId), {
             pollVotes: target.pollVotes
           });
         }
@@ -1259,13 +1259,13 @@ export function VconnectContent({
       // Unfriend
       const filtered = friends.filter(f => f !== personEmail);
       setFriends(filtered);
-      localStorage.setItem("vplay_vconnect_friends", JSON.stringify(filtered));
+      localStorage.setItem("vplay_vibes_friends", JSON.stringify(filtered));
       addNotification?.("Hủy kết bạn", `Đã xóa kết nối bạn bè với ${personName}.`, "info");
     } else {
       // Add Friend
       const updated = [...friends, personEmail];
       setFriends(updated);
-      localStorage.setItem("vplay_vconnect_friends", JSON.stringify(updated));
+      localStorage.setItem("vplay_vibes_friends", JSON.stringify(updated));
       addNotification?.("Thêm bạn bè", `Đã gửi lời mời & kết bạn thành công với ${personName}!`, "success");
 
       // Auto start DM room with this friend if not existing
@@ -1279,12 +1279,12 @@ export function VconnectContent({
           participants: [currentUserEmail, personEmail],
           avatar: personData?.avatar,
           messages: [
-            { id: "m-welcome", senderEmail: personEmail, senderName: personName, text: `Chào bạn! Chúng mình đã là bạn bè trên Vconnect. Hãy nhắn tin trò chuyện nhé! 👋`, createdAt: new Date().toISOString() }
+            { id: "m-welcome", senderEmail: personEmail, senderName: personName, text: `Chào bạn! Chúng mình đã là bạn bè trên Vibes. Hãy nhắn tin trò chuyện nhé! 👋`, createdAt: new Date().toISOString() }
           ]
         };
         const updatedRooms = [newRoom, ...chatRooms];
         setChatRooms(updatedRooms);
-        localStorage.setItem("vplay_vconnect_rooms", JSON.stringify(updatedRooms));
+        localStorage.setItem("vplay_vibes_rooms", JSON.stringify(updatedRooms));
       }
     }
   };
@@ -1319,7 +1319,7 @@ export function VconnectContent({
     });
 
     setChatRooms(updatedRooms);
-    localStorage.setItem("vplay_vconnect_rooms", JSON.stringify(updatedRooms));
+    localStorage.setItem("vplay_vibes_rooms", JSON.stringify(updatedRooms));
 
     if (!forceTargetRoomId) {
       setChatInputText("");
@@ -1368,7 +1368,7 @@ export function VconnectContent({
             }
             return rm;
           });
-          localStorage.setItem("vplay_vconnect_rooms", JSON.stringify(updated));
+          localStorage.setItem("vplay_vibes_rooms", JSON.stringify(updated));
           return updated;
         });
       })
@@ -1379,7 +1379,7 @@ export function VconnectContent({
           "Thú vị thật đó, hôm nào làm ly cà phê chém gió tiếp nhé! ☕",
           "Chuẩn luôn bạn ơi, vPlay OS chạy ngày một mượt ra đó! 🔥",
           "Ủng hộ bạn phát triển thêm mảng micro voice chat này nhé! 🎙️",
-          "Vừa lướt Vconnect thấy bài đăng của bạn đỉnh quá, thả tim luôn! ❤️"
+          "Vừa lướt Vibes thấy bài đăng của bạn đỉnh quá, thả tim luôn! ❤️"
         ];
         const randomAnswer = senderAnswers[Math.floor(Math.random() * senderAnswers.length)];
         
@@ -1401,7 +1401,7 @@ export function VconnectContent({
             }
             return rm;
           });
-          localStorage.setItem("vplay_vconnect_rooms", JSON.stringify(updated));
+          localStorage.setItem("vplay_vibes_rooms", JSON.stringify(updated));
           return updated;
         });
       });
@@ -1426,7 +1426,7 @@ export function VconnectContent({
 
     const updated = [newGroup, ...chatRooms];
     setChatRooms(updated);
-    localStorage.setItem("vplay_vconnect_rooms", JSON.stringify(updated));
+    localStorage.setItem("vplay_vibes_rooms", JSON.stringify(updated));
     setActiveRoomId(newGroup.id);
     addNotification?.("Tạo Party", `Phòng chat nhóm ${partyName} đã hoạt động!`, "success");
   };
@@ -1464,13 +1464,13 @@ export function VconnectContent({
       {/* LEFT: Central Social Feed & Stories */}
       <div className="flex-1 flex flex-col min-h-0 bg-transparent relative border-r border-white/5">
         
-        {/* Sub-header inside Vconnect tab */}
+        {/* Sub-header inside Vibes tab */}
         <div className="px-8 py-5 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black/60 backdrop-blur-2xl">
           <div>
             <div className="flex items-center gap-2">
               <Users size={22} className="text-[#a855f7]" />
               <h2 className="text-xl font-black uppercase tracking-tight text-white font-mono">
-                {lite ? "Vconnect Lite" : "Vconnect Social"}
+                {lite ? "Vibes Lite" : "Vibes Social"}
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase text-purple-400 bg-purple-500/10 border border-purple-500/20">
                 vPlay Hub
@@ -1509,19 +1509,19 @@ export function VconnectContent({
           </div>
         </div>
 
-        {/* Navigation sub-tabs inside Vconnect */}
+        {/* Navigation sub-tabs inside Vibes */}
         <div className="flex items-center gap-2 bg-black/40 px-8 py-2.5 border-b border-white/5 overflow-x-auto scrollbar-none">
           <button 
-            onClick={() => setVconnectSubTab("feed")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vconnectSubTab === "feed" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
+            onClick={() => setVibesSubTab("feed")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vibesSubTab === "feed" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
           >
             <Users size={12} />
             <span>Bảng tin</span>
           </button>
           
           <button 
-            onClick={() => setVconnectSubTab("vshorts")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vconnectSubTab === "vshorts" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
+            onClick={() => setVibesSubTab("vshorts")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vibesSubTab === "vshorts" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
           >
             <Film size={12} />
             <span className="flex items-center gap-1">
@@ -1531,8 +1531,8 @@ export function VconnectContent({
           </button>
 
           <button 
-            onClick={() => setVconnectSubTab("vstore")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vconnectSubTab === "vstore" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
+            onClick={() => setVibesSubTab("vstore")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vibesSubTab === "vstore" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
           >
             <ShoppingBag size={12} />
             <span className="flex items-center gap-1">
@@ -1542,15 +1542,15 @@ export function VconnectContent({
           </button>
 
           <button 
-            onClick={() => setVconnectSubTab("profile")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vconnectSubTab === "profile" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
+            onClick={() => setVibesSubTab("profile")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-all border ${vibesSubTab === "profile" ? "bg-purple-600 border-purple-500 text-white shadow-lg" : "bg-[#141416] border-transparent text-slate-400 hover:text-white"}`}
           >
             <User size={12} />
             <span>Trang cá nhân</span>
           </button>
         </div>
 
-        {vconnectSubTab === "feed" && (
+        {vibesSubTab === "feed" && (
           /* FEED BODY */
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
             
@@ -1561,7 +1561,7 @@ export function VconnectContent({
                     <Users size={20} />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm text-purple-300">Bạn đang trải nghiệm Vconnect Lite</h4>
+                    <h4 className="font-extrabold text-sm text-purple-300">Bạn đang trải nghiệm Vibes Lite</h4>
                     <p className="text-[11px] text-slate-300 mt-1 max-w-xl">
                       Đăng nhập tài khoản vPlay ngay để tham gia bình luận, chia sẻ bài viết, đăng câu chuyện Stories của riêng bạn và đàm thoại đập hộp cùng Party!
                     </p>
@@ -1578,7 +1578,7 @@ export function VconnectContent({
           
           {/* STORIES BROWSER SECTION */}
           <div className="space-y-3 pb-3 border-b border-white/5">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Vconnect Stories</h3>
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Vibes Stories</h3>
             <div className="flex items-center gap-4 overflow-x-auto py-2 scrollbar-none">
               
               {/* Creator Add Story trigger */}
@@ -1652,7 +1652,7 @@ export function VconnectContent({
               <Search size={14} className="text-slate-500" />
               <input 
                 type="text" 
-                placeholder="Tìm trang Feed Vconnect" 
+                placeholder="Tìm trang Feed Vibes" 
                 className="bg-transparent border-none outline-none text-[11px] w-full font-bold text-white placeholder-slate-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -1669,7 +1669,7 @@ export function VconnectContent({
           {loading ? (
             <div className="h-64 flex flex-col items-center justify-center gap-3">
               <RefreshCw className="animate-spin text-purple-400" size={32} />
-              <p className="text-xs text-slate-400 font-medium font-mono">Đang đồng bộ mạng xã hội Vconnect...</p>
+              <p className="text-xs text-slate-400 font-medium font-mono">Đang đồng bộ mạng xã hội Vibes...</p>
             </div>
           ) : filteredFeedPosts.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center text-center p-8 bg-[#141416]/40 border border-white/5 rounded-3xl">
@@ -1892,7 +1892,7 @@ export function VconnectContent({
         {/* ==================================================== */}
         {/* VSHORTS SCREEN RENDER AND CONTROLS */}
         {/* ==================================================== */}
-        {vconnectSubTab === "vshorts" && (
+        {vibesSubTab === "vshorts" && (
           <div className="flex-1 flex flex-col min-h-0 bg-transparent relative">
             <div className="flex-1 flex flex-col items-center justify-between bg-black/40 p-4 overflow-y-auto custom-scrollbar h-full w-full">
               
@@ -1989,7 +1989,7 @@ export function VconnectContent({
                                 cur.likesVoted = true;
                               }
                               setVshorts(copy);
-                              localStorage.setItem("vplay_vconnect_vshorts", JSON.stringify(copy));
+                              localStorage.setItem("vplay_vibes_vshorts", JSON.stringify(copy));
                             }}
                             className={`p-2.5 rounded-full border transition-all shadow-lg hover:scale-110 active:scale-95 ${currentSt.likesVoted ? "bg-rose-600 border-rose-500 text-white" : "bg-black/60 border-white/10 text-white hover:text-rose-400"}`}
                           >
@@ -2020,7 +2020,7 @@ export function VconnectContent({
                               const copy = [...vshorts];
                               copy[activeVshortIndex].sharesCount += 1;
                               setVshorts(copy);
-                              localStorage.setItem("vplay_vconnect_vshorts", JSON.stringify(copy));
+                              localStorage.setItem("vplay_vibes_vshorts", JSON.stringify(copy));
                             }}
                             className="p-2.5 rounded-full bg-black/60 border border-white/10 text-white hover:text-blue-400 hover:scale-110 active:scale-95 transition-all shadow-lg"
                             title="Sao chép liên kết"
@@ -2089,7 +2089,7 @@ export function VconnectContent({
         {/* ==================================================== */}
         {/* VSTORE ONLINE SHOPPING AND MARKETPLACE SUB-TAB */}
         {/* ==================================================== */}
-        {vconnectSubTab === "vstore" && (
+        {vibesSubTab === "vstore" && (
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
             
             {/* VSTORE SHOP HEADER */}
@@ -2243,7 +2243,7 @@ export function VconnectContent({
         {/* ==================================================== */}
         {/* MEMBER PROFILE SETTINGS AND EDIT SCREEN */}
         {/* ==================================================== */}
-        {vconnectSubTab === "profile" && (
+        {vibesSubTab === "profile" && (
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
             <div className="max-w-2xl mx-auto bg-[#141416] border border-white/5 rounded-[32px] overflow-hidden shadow-2xl relative">
               
@@ -2274,7 +2274,7 @@ export function VconnectContent({
 
                 <div className="text-left sm:text-right">
                   <span className="text-[9px] font-bold text-slate-400 block mb-1">Cấu hình hồ sơ</span>
-                  <p className="text-[10px] text-purple-400 font-semibold bg-purple-500/10 px-2.5 py-1.5 rounded-lg border border-purple-500/20 inline-block">Chỉnh sửa ở mục Cài đặt Vconnect</p>
+                  <p className="text-[10px] text-purple-400 font-semibold bg-purple-500/10 px-2.5 py-1.5 rounded-lg border border-purple-500/20 inline-block">Chỉnh sửa ở mục Cài đặt Vibes</p>
                 </div>
               </div>
 
@@ -2312,7 +2312,7 @@ export function VconnectContent({
                   <div className="flex-1">
                     <p className="text-xs font-black text-white leading-tight">Cần cập nhật tên hiển thị hay thay đổi avatar?</p>
                     <p className="text-[10.5px] text-slate-400 mt-1 font-medium leading-relaxed">
-                      Để thống nhất các phân hệ, chức năng chỉnh sửa thuộc tính trang cá nhân của bạn đã được chuyển dời hoàn toàn vào <b>Tab Cài đặt chính &gt; Cài đặt Vconnect &amp; Hồ sơ</b>.
+                      Để thống nhất các phân hệ, chức năng chỉnh sửa thuộc tính trang cá nhân của bạn đã được chuyển dời hoàn toàn vào <b>Tab Cài đặt chính &gt; Cài đặt Vibes &amp; Hồ sơ</b>.
                     </p>
                   </div>
                 </div>
@@ -2576,7 +2576,7 @@ export function VconnectContent({
             >
               <div className="px-6 py-5 border-b border-white/5 bg-black/40 flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-black uppercase text-white tracking-widest font-mono">Soạn Bài Vconnect</h3>
+                  <h3 className="text-base font-black uppercase text-white tracking-widest font-mono">Soạn Bài Vibes</h3>
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Viết bài, đăng blog hoặc tạo khảo sát ý kiến</p>
                 </div>
                 <button 
@@ -2905,7 +2905,7 @@ export function VconnectContent({
                       <ChevronLeft size={16} />
                     </button>
 
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Vconnect Story Feed</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">Vibes Story Feed</span>
 
                     <button
                       onClick={() => {
@@ -3035,7 +3035,7 @@ export function VconnectContent({
             >
               <div className="px-5 py-4 border-b border-white/5 bg-black/40 flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-200 font-mono">Phản Hồi Vconnect</h3>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-slate-200 font-mono">Phản Hồi Vibes</h3>
                   <span className="text-[9px] text-slate-400 uppercase tracking-wider">Danh sách bình luận thoại & chữ</span>
                 </div>
                 <button 
@@ -3201,7 +3201,7 @@ export function VconnectContent({
               <div className="p-6 border-b border-white/5 bg-black/40 flex items-center justify-between">
                 <div>
                   <span className="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/25 rounded-md text-[9px] font-black uppercase tracking-widest">
-                    Vconnect Blog Reader
+                    Vibes Blog Reader
                   </span>
                 </div>
                 <button 

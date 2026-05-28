@@ -12,7 +12,8 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, on
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, updateDoc, arrayUnion, getDocFromServer, addDoc } from "firebase/firestore";
 
 import { channels, Channel } from "./channels";
-import { VconnectContent } from "./components/VconnectContent";
+import { VibesContent } from "./components/VibesContent";
+import { VTV6CountdownBanner } from "./components/VTV6CountdownBanner";
 
 // Test connection as per critical directive
 // Test connection removed
@@ -47,10 +48,10 @@ const PIZZA_EXPERIMENTS = {
     { id: 'multiview_experimental', name: 'Multiview (Picture-in-Picture)', status: 'Beta', desc: 'Xem nhiều kênh truyền hình cùng một lúc.' },
     { id: 'disable_animation', name: 'Reduce Animation', status: 'Stable', desc: 'Giảm hiệu ứng chuyển động, tiết kiệm tài nguyên.' },
     { id: 'settings_vertical', name: 'List Settings', status: 'Beta', desc: 'Chuyển layout cài đặt về dạng danh sách (yêu cầu XAML View).' },
-    { id: 'xaml_home', name: 'XAML Home Page', status: 'Internal', desc: 'Sử dụng trang chủ thế hệ mới dựa trên XAML system.' },
     { id: 'xaml_experience', name: 'Vplay Symphony UI', status: 'Active', desc: 'Trải nghiệm giao diện hoàn toàn mới được tái thiết kế.' },
     { id: 'cobalt_scrollbar', name: 'Cobalt UI 3 Scrollbar', status: 'Experimental', desc: 'Replaces the default browser scrollbar to the new scrollbar of Cobalt UI version 3' },
-    { id: 'vids_feature', name: 'Vids Feature', status: 'Experimental', desc: 'Kích hoạt tính năng Vids đăng tải post, blog, polls, ảnh/video dưới 1GB.' }
+    { id: 'vids_feature', name: 'Vids Feature', status: 'Experimental', desc: 'Kích hoạt tính năng Vids đăng tải post, blog, polls, ảnh/video dưới 1GB.' },
+    { id: 'redesign_live_page', name: 'Redesign Live Page', status: 'Experimental', desc: 'Tái thiết kế lại trang Phát sóng (Live Page) đẹp mắt và hiện đại hơn với trải nghiệm truyền hình vượt trội.' }
   ],
   widgets: [
     { id: 'settings_on_widgets', name: 'Settings on Widgets', status: 'Experimental', desc: 'Moves the app settings in the Widgets Dashboard.' },
@@ -361,7 +362,7 @@ const baseTabs = [
   { name: "Widgets", icon: LayoutDashboard, id: "Widgets" },
   { name: "Vstore", icon: ShoppingBag, id: "Vstore", isExtra: true },
   { name: "Live", icon: Tv, id: "Phát sóng" },
-  { name: "Vconnect", icon: Play, id: "Vconnect" },
+  { name: "Vibes", icon: Play, id: "Vibes" },
   { name: "Labs", icon: Pizza, id: "Pizza" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
 ];
@@ -627,7 +628,7 @@ const slides = [
   }
 ];
 
-function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass, channels }: { isDark: boolean, onSwitchToDev: () => void, featureFlags?: any, liquidGlass: "glassy" | "tinted", channels: Channel[] }) {
+function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass, channels, refreshingMode, setIsRefreshingModeFaqModalOpen }: { isDark: boolean, onSwitchToDev: () => void, featureFlags?: any, liquidGlass: "glassy" | "tinted", channels: Channel[], refreshingMode?: boolean, setIsRefreshingModeFaqModalOpen?: (val: boolean) => void }) {
   return (
     <div className={`flex-1 flex flex-col items-center justify-center p-8 select-none relative ${featureFlags?.xaml_experience ? "bg-transparent" : (isDark ? "bg-[#0b0b0b]" : "bg-slate-50")}`}>
       <div className={`fixed inset-0 pointer-events-none transition-opacity duration-1000 ${(liquidGlass === "glassy" && !featureFlags?.xaml_experience) ? "opacity-100" : "opacity-0"}`} style={{ background: 'linear-gradient(135deg, #2d0b3b 0%, #1a0525 100%)', zIndex: 0 }} />
@@ -635,8 +636,23 @@ function HomeContent({ isDark, onSwitchToDev, featureFlags, liquidGlass, channel
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center space-y-12"
+        className="flex flex-col items-center space-y-12 w-full max-w-2xl"
       >
+        {refreshingMode && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full p-6 rounded-[32px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm cursor-pointer hover:bg-emerald-500/15 transition-all text-left flex items-center justify-between gap-4 shadow-lg shadow-emerald-550/5"
+            onClick={() => setIsRefreshingModeFaqModalOpen?.(true)}
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles size={18} className="animate-pulse text-emerald-400 shrink-0" />
+              <span>What is Refreshing Mode? Click here to find out!</span>
+            </div>
+            <ArrowRight size={16} className="text-emerald-400 shrink-0" />
+          </motion.div>
+        )}
+
         <div className="relative group">
           <div className="absolute -inset-8 bg-purple-500/20 blur-[80px] rounded-full opacity-60" />
           <LoadingAnimation featureFlags={featureFlags} isDark={isDark} className="w-16 h-16 relative z-10" />
@@ -1706,7 +1722,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[12px] font-semibold text-slate-400">Siêu tốc</span>
-                    <span className="text-sm font-semibold text-slate-800 tracking-tight">Social Vconnect</span>
+                    <span className="text-sm font-semibold text-slate-800 tracking-tight">Social Vibes</span>
                   </div>
                </div>
                
@@ -1714,7 +1730,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
                  <button 
                    onClick={() => {
                      localStorage.setItem("vconnect_quick_trigger", "story");
-                     onNavigate("Vconnect");
+                     onNavigate("Vibes");
                    }}
                    className="w-full flex items-center justify-between p-2.5 bg-purple-50 hover:bg-purple-100/80 rounded-xl text-left border border-purple-100 transition-all active:scale-[0.98]"
                  >
@@ -1728,7 +1744,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
                  <button 
                    onClick={() => {
                      localStorage.setItem("vconnect_quick_trigger", "feed");
-                     onNavigate("Vconnect");
+                     onNavigate("Vibes");
                    }}
                    className="w-full flex items-center justify-between p-2.5 bg-indigo-50 hover:bg-indigo-100/80 rounded-xl text-left border border-indigo-100 transition-all active:scale-[0.98]"
                  >
@@ -1742,7 +1758,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
                  <button 
                    onClick={() => {
                      localStorage.setItem("vconnect_quick_trigger", "vchat");
-                     onNavigate("Vconnect");
+                     onNavigate("Vibes");
                    }}
                    className="w-full flex items-center justify-between p-2.5 bg-pink-50 hover:bg-pink-100/80 rounded-xl text-left border border-pink-100 transition-all active:scale-[0.98]"
                  >
@@ -3117,7 +3133,6 @@ function DebugContent({ isDark, featureFlags, setFeatureFlags, setUser, setIsAdm
     { id: 'multiview_experimental', name: 'Multiview', desc: 'Xem nhiều kênh truyền hình cùng một lúc' },
     { id: 'disable_animation', name: 'Reduce Animation', desc: 'Giảm hiệu ứng chuyển động trên trang web. Thích hợp cho các thiết bị yếu' },
     { id: 'settings_vertical', name: 'List settings', desc: 'Chuyển layout settings về dạng danh sách thay vì dạng ô (Yêu cầu XAML View)' },
-    { id: 'xaml_home', name: 'XAML Home Page', desc: 'Use the new XAML version of the Home page' },
     { id: 'speaking_feature', name: 'Speak for me', desc: 'Speak for me!' },
     { id: 'revamp_process_animation', name: 'Revamped Process', desc: 'Use the updated version of the processing loading circle' },
     { id: 'search_merge', name: 'Merge Search', desc: 'Merge the search button with the navigation bar' },
@@ -3835,6 +3850,438 @@ function TVContent({
     c.name.toLowerCase().includes(channelSearch.toLowerCase()) ||
     c.category.toLowerCase().includes(channelSearch.toLowerCase())
   );
+
+  if (featureFlags.redesign_live_page) {
+    return (
+      <div className="flex-1 flex flex-col xl:flex-row gap-6 p-4 md:p-6 overflow-hidden max-h-screen select-none bg-[#09090b] text-white">
+        {/* Ambient Cinema Backdrop Glow */}
+        <div className="absolute inset-x-0 top-0 h-[300px] pointer-events-none select-none bg-gradient-to-b from-purple-900/15 via-rose-900/5 to-transparent blur-3xl z-0" />
+        
+        {/* Left Side: Video & Metadata Console (70% width) */}
+        <div className="flex-1 flex flex-col gap-5 z-10 overflow-y-auto custom-scrollbar">
+          
+          {/* Back button or Breadcrumb */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+              <span className="px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/10 flex items-center gap-1.5 font-mono">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                Live Page Redesign
+              </span>
+              <span>/</span>
+              <span className="text-white font-black">{active.category}</span>
+            </div>
+            
+            <div className="flex items-center gap-3 text-xs font-bold font-mono text-slate-500">
+              <Compass size={14} className="text-purple-500" />
+              <span>STATION ID: {active.name.toUpperCase()}</span>
+            </div>
+          </div>
+
+          {/* Sleek Theater Player Frame */}
+          <div className="relative group/player rounded-[30px] overflow-hidden bg-black border border-white/5 shadow-2xl shadow-purple-950/20 aspect-video flex-shrink-0">
+            
+            {/* Corner ambient corner lighting */}
+            <div className="absolute top-0 left-0 w-32 h-32 bg-purple-600/10 blur-2xl pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-32 h-32 bg-red-600/10 blur-2xl pointer-events-none" />
+
+            {/* Video element */}
+            <video 
+              ref={videoRef} 
+              className="w-full h-full object-contain" 
+              autoPlay 
+              playsInline 
+              muted={isMuted}
+              onClick={togglePlay}
+              loop={active.name === "VTV6"}
+            />
+
+            {/* Overlays / Stream Error */}
+            {streamError && active.status !== "maintenance" && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/95 backdrop-blur-md p-6 text-center">
+                <div className="bg-red-500/10 p-5 rounded-full border border-red-500/20 mb-4 animate-bounce">
+                  <X className="h-10 w-10 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold tracking-tight text-white mb-1.5">Lỗi bảo mật luồng (CORS / Player Error)</h3>
+                <p className="text-slate-400 text-xs max-w-sm mb-6 leading-relaxed">
+                  {streamError}
+                  <span className="text-[10px] mt-2 block text-amber-400 font-medium">Bảo mật của trình duyệt chặn phát trực tiếp luồng này trên trang web. Bạn có thể mở link gốc để xem mượt mà hơn.</span>
+                </p>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => window.open(active.stream, '_blank')}
+                    className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-purple-600/20 flex items-center gap-2"
+                  >
+                    <ExternalLink size={14} />
+                    Xem link gốc
+                  </button>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-white/15"
+                  >
+                    Tải lại trang
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Maintenance overlay */}
+            {active.status === "maintenance" && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/95 backdrop-blur-md p-6 text-center">
+                <div className="bg-amber-500/10 p-5 rounded-full border border-amber-500/20 mb-4 animate-pulse">
+                  <Zap className="h-10 w-10 text-amber-400" />
+                </div>
+                <h3 className="text-xl font-bold tracking-tight text-white mb-1">Kênh đang bảo trì</h3>
+                <p className="text-slate-400 text-xs max-w-xs mb-6 leading-relaxed font-medium">
+                  Trạm phát sóng hiện đang nâng cấp chất lượng luồng và cập nhật hệ thống định kỳ.
+                </p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-2.5 bg-white text-zinc-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-zinc-200 transition-all flex items-center gap-2"
+                >
+                  <RotateCcw size={14} />
+                  Tải lại trang
+                </button>
+              </div>
+            )}
+
+            {/* Locked for non-logged users */}
+            {!user && !isDev && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-xl p-6 text-center text-white">
+                <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="p-8 border border-white/15 bg-zinc-900/90 rounded-[28px] max-w-sm shadow-2xl flex flex-col items-center text-center space-y-4"
+                >
+                  <div className="p-3 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full">
+                    <Lock size={28} />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-black tracking-tight text-white uppercase font-bold">Yêu cầu đăng nhập</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Kênh này yêu cầu xác thực tài khoản. Vui lòng đăng nhập vào ứng dụng để tiếp tục thưởng thức.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={onLogin}
+                    className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                  >
+                    Đăng nhập tài khoản
+                  </button>
+                </motion.div>
+              </div>
+            )}
+
+            {/* Under Video Floating Glass Controls */}
+            {!isMaintenance && (user || isDev) && (
+              <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end opacity-0 group-hover/player:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                <div className="flex items-center justify-between gap-4 pointer-events-auto bg-[#0a0a0c]/80 backdrop-blur-md rounded-2xl border border-white/5 p-3">
+                  
+                  {/* Play & Vol controls */}
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={togglePlay}
+                      className="w-10 h-10 rounded-xl bg-white text-zinc-950 hover:bg-slate-200 transition-all flex items-center justify-center shrink-0 shadow-lg cursor-pointer"
+                      title={isPlaying ? "Dừng" : "Phát"}
+                    >
+                      {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
+                    </button>
+
+                    <button 
+                      onClick={toggleMute}
+                      className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center shrink-0 border border-white/10 cursor-pointer"
+                      title={isMuted ? "Bật tiếng" : "Tắt tiếng"}
+                    >
+                      {isMuted ? <VolumeX size={18} className="text-red-400 animate-pulse" /> : <Volume2 size={18} className="text-white" />}
+                    </button>
+
+                    {/* Fluid volume slider */}
+                    <div className="w-20 hidden md:flex items-center">
+                      <input 
+                        type="range" min="0" max="1" step="0.05" 
+                        value={volume} onChange={handleVolumeChange}
+                        className="w-full h-1 bg-white/10 rounded-full appearance-none accent-purple-500 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Station title & live indicator */}
+                  <div className="flex items-center gap-3 truncate">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-850 p-1 border border-white/5 flex items-center justify-center shrink-0">
+                      <img src={active.logo} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    </div>
+                    <div className="text-left select-none truncate">
+                      <p className="text-xs font-black uppercase text-white truncate">{active.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-[8px] font-bold font-mono tracking-wider text-red-400">LIVE HD</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions (Fullscreen, Recording, Quality) */}
+                  <div className="flex items-center gap-2">
+                    
+                    {/* Quality Selector */}
+                    {levels.length > 0 && (
+                      <div className="relative">
+                        <button 
+                          onClick={() => setShowQualityMenu(!showQualityMenu)}
+                          className="px-3 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-mono font-black uppercase tracking-wider text-slate-300 cursor-pointer"
+                        >
+                          {currentLevel === -1 ? "AUTO" : `${levels[currentLevel]?.height || "HD"}P`}
+                        </button>
+                        
+                        {showQualityMenu && (
+                          <div className="absolute bottom-12 right-0 bg-zinc-900 border border-white/10 rounded-xl p-1.5 space-y-1 shadow-2xl z-50 min-w-[100px]">
+                            <button 
+                              onClick={() => setQuality(-1)}
+                              className={`w-full px-3 py-1.5 rounded-lg text-left text-[10px] font-bold font-mono transition-all cursor-pointer ${currentLevel === -1 ? "bg-purple-600 text-white" : "text-white/60 hover:bg-white/5"}`}
+                            >
+                              AUTO
+                            </button>
+                            {levels.map((l, i) => (
+                              <button 
+                                key={i}
+                                onClick={() => setQuality(i)}
+                                className={`w-full px-3 py-1.5 rounded-lg text-left text-[10px] font-bold font-mono transition-all cursor-pointer ${currentLevel === i ? "bg-purple-600 text-white" : "text-white/60 hover:bg-white/5"}`}
+                              >
+                                {l.height}P
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Recording button */}
+                    <button 
+                      onClick={toggleRecording}
+                      className={`h-10 px-3.5 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer ${
+                        isRecording 
+                          ? "bg-red-600 border-red-500 text-white animate-pulse" 
+                          : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                      }`}
+                    >
+                      <Circle size={10} fill={isRecording ? "currentColor" : "none"} className={isRecording ? "text-white animate-ping" : "text-red-500"} />
+                      <span>{isRecording ? "STOP REC" : "REC"}</span>
+                    </button>
+
+                    {/* Fullscreen button */}
+                    <button 
+                      onClick={toggleFullscreen}
+                      className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center shrink-0 border border-white/10 cursor-pointer"
+                    >
+                      <Maximize2 size={16} className="text-white" />
+                    </button>
+
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+            {/* Tap to Unmute Overlay */}
+            {isMuted && isPlaying && !isMaintenance && (
+              <button 
+                onClick={toggleMute}
+                className="absolute top-4 right-4 bg-purple-600 border border-purple-500 text-white px-4 py-2 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-2 hover:bg-purple-500 transition-all shadow-lg shadow-purple-600/30 select-none animate-bounce z-10 cursor-pointer"
+              >
+                <VolumeX size={14} className="animate-pulse" />
+                TAP TO UNMUTE AUDIO
+              </button>
+            )}
+
+          </div>
+
+          {/* Redesigned Active Channel Glass-Card */}
+          <div className="p-6 md:p-8 rounded-[28px] border border-white/5 bg-zinc-900/35 backdrop-blur-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0 shadow-lg select-none">
+            
+            {/* Ambient detail lamp */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-purple-500/10 to-transparent blur-xl pointer-events-none" />
+
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 p-2.5 flex items-center justify-center shrink-0 select-none">
+                <img src={active.logo} alt={active.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest text-[#00ffff] bg-cyan-950/40 border border-cyan-800/30">
+                    {active.category}
+                  </span>
+                  
+                  {isMaintenance ? (
+                    <span className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest text-amber-500 bg-amber-950/40 border border-amber-800/30 inline-flex items-center gap-1">
+                      <div className="w-1 h-1 rounded-full bg-amber-500" /> BẢO TRÌ
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/40 border border-emerald-800/30 inline-flex items-center gap-1">
+                      <div className="w-1 h-1 rounded-full bg-emerald-450 animate-pulse" /> ĐANG CHIẾU LIVE
+                    </span>
+                  )}
+                </div>
+                
+                <h2 className="text-3xl font-black text-white uppercase tracking-tight mt-1.5 flex items-center gap-2.5">
+                  {active.name}
+                </h2>
+                <p className="text-xs text-slate-400 font-medium mt-1">
+                  Đang phát nội dung chất lượng cao. Thêm kênh vào danh mục yêu thích để hiển thị đầu danh sách hoặc đính kèm widgets board của bạn.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button 
+                onClick={() => toggleFavorite(active)}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl border transition-all font-black text-[10px] uppercase tracking-widest shrink-0 cursor-pointer ${
+                  favorites.includes(active.name)
+                    ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20"
+                    : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                }`}
+              >
+                <Heart size={14} fill={favorites.includes(active.name) ? "currentColor" : "none"} />
+                {favorites.includes(active.name) ? "ĐÃ THÍCH" : "LƯU KÊNH"}
+              </button>
+              
+              {togglePin && (
+                <button 
+                  onClick={() => togglePin(active)}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-xl border transition-all font-black text-[10px] uppercase tracking-widest shrink-0 cursor-pointer ${
+                    isPinned?.(active.name)
+                      ? "bg-teal-600 border-teal-500 text-white shadow-lg"
+                      : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Pin size={14} className={isPinned?.(active.name) ? "text-white" : "text-white/60"} />
+                  {isPinned?.(active.name) ? "ĐÃ PIN PIN" : "PIN TO WIDGET"}
+                </button>
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Right Side: Redesigned Channel Selection Control Station (30% width) */}
+        <div className="w-full xl:w-[350px] flex flex-col gap-4 bg-zinc-900/30 border border-white/5 rounded-[30px] p-4 backdrop-blur-xl relative z-10 z-10 h-full overflow-hidden select-none shrink-0 shadow-2xl">
+          
+          <div className="relative z-10 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-widest text-[#00ffff] flex items-center gap-1.5">
+                <Radio size={14} className="text-[#00ffff] animate-pulse" />
+                Đài phát sóng
+              </h3>
+              <span className="text-[10px] font-mono text-white/40 font-bold uppercase tracking-wider">{channels.length} KÊNH</span>
+            </div>
+
+            {/* Premium custom search box */}
+            <div className="relative flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500/30 transition-all group-within overflow-hidden">
+              <Search size={14} className="text-slate-400 group-within:text-purple-400 shrink-0" />
+              <input 
+                type="text"
+                placeholder="Tìm tên đài hoặc thể loại..."
+                value={searchQuery}
+                className="bg-transparent border-none outline-none text-xs font-bold text-white w-full placeholder-slate-500"
+                onChange={(e) => {
+                  const targetCh = channels.find(c => c.name.toLowerCase().includes(e.target.value.toLowerCase()));
+                  // Bind searching
+                }}
+              />
+            </div>
+
+            {/* Custom Horizontal Pills Category filter */}
+            <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-thin select-none">
+              {["Tất cả", "VTV", "HTV", "VTVcab", "Thiết yếu", "Địa phương", "Hoạt động", "Bảo trì"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setFilterType(cat)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                    filterType === cat
+                      ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
+                      : "bg-white/5 border border-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Scrolling channel list items */}
+          <div className="flex-grow overflow-y-auto custom-scrollbar pr-1 space-y-1.5 relative z-10">
+            {filteredChannels.length > 0 ? (
+              filteredChannels.map((ch) => {
+                const isSelected = active.name === ch.name;
+                const isChFavorite = favorites.includes(ch.name);
+                
+                return (
+                  <motion.button
+                    key={`${ch.name}-${ch.stream}`}
+                    onClick={() => setActive(ch)}
+                    whileHover={{ x: 2 }}
+                    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all border text-left cursor-pointer group select-none relative ${
+                      isSelected
+                        ? "bg-[#0c0c0e]/95 border-purple-500/50 text-white shadow-lg shadow-purple-500/5"
+                        : "bg-white/0 hover:bg-white/5 border-transparent text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {/* Glowing active bar in slot */}
+                    {isSelected && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-purple-500 rounded-r-md" />
+                    )}
+
+                    {/* Logo */}
+                    <div className={`w-10 h-10 rounded-lg p-1.5 flex items-center justify-center shrink-0 border relative ${
+                      isSelected ? "bg-white border-purple-500/30" : "bg-white/5 border-white/5"
+                    }`}>
+                      <img src={ch.logo} alt={ch.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    </div>
+
+                    {/* Detail metadata */}
+                    <div className="flex-grow min-w-0 select-none">
+                      <div className="flex items-center gap-1.5">
+                        <p className={`text-xs font-black uppercase truncate tracking-tight ${isSelected ? "text-purple-400" : "text-white"}`}>
+                          {ch.name}
+                        </p>
+                        {isChFavorite && (
+                          <Heart size={10} fill="currentColor" className="text-red-500 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-1">
+                        {ch.category}
+                      </p>
+                    </div>
+
+                    {/* Pulse status indicator / Action button */}
+                    <div className="shrink-0">
+                      {isSelected ? (
+                        <div className="flex items-center gap-0.5 bg-purple-500/20 border border-purple-500/30 text-purple-400 px-2 py-1 rounded-md">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse shrink-0" />
+                          <span className="text-[7px] font-black tracking-widest font-mono uppercase">PLAYING</span>
+                        </div>
+                      ) : ch.status === "maintenance" ? (
+                        <span className="text-[8px] font-mono text-amber-500/60 font-black uppercase tracking-wider">MAINT</span>
+                      ) : (
+                        <div className="w-6 h-6 rounded-lg bg-white/5 group-hover:bg-purple-600/20 group-hover:text-purple-400 transition-all flex items-center justify-center border border-white/5">
+                          <Play size={10} className="text-slate-400 group-hover:text-purple-400 ml-0.5" />
+                        </div>
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })
+            ) : (
+              <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
+                <Search size={26} className="text-slate-600" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Không tìm thấy đài phát</p>
+              </div>
+            )}
+          </div>
+
+        </div>
+
+      </div>
+    );
+  }
 
   return (
     <div className={`flex-1 p-4 md:p-6 overflow-y-auto relative ${featureFlags.xaml_experience ? "bg-transparent" : (isDark ? "bg-[#0b0b0b] text-white" : "bg-slate-50 text-slate-900")}`}>
@@ -6859,7 +7306,9 @@ function SettingsContent({
   setDesktopWallpaper,
   forcedFont,
   setForcedFont,
-  onEraseClick
+  onEraseClick,
+  refreshingMode,
+  setRefreshingMode
 }: { 
   isDark: boolean, 
   setIsDark: (val: boolean) => void, 
@@ -6903,16 +7352,18 @@ function SettingsContent({
   setDesktopWallpaper: (val: string) => void,
   forcedFont: string,
   setForcedFont: (val: string) => void,
-  onEraseClick?: () => void
+  onEraseClick?: () => void,
+  refreshingMode: boolean,
+  setRefreshingMode: (val: boolean) => void
 }) {
   const [saving, setSaving] = useState(false);
   const [flagSearch, setFlagSearch] = useState("");
 
-  const [vProfileName, setVProfileName] = useState(() => localStorage.getItem("vplay_vconnect_p_name") || "Khách Danh Tính");
-  const [vProfileBio, setVProfileBio] = useState(() => localStorage.getItem("vplay_vconnect_p_bio") || "Bận chơi game rồi | vPlay-er chính hiệu!");
-  const [vProfileLocation, setVProfileLocation] = useState(() => localStorage.getItem("vplay_vconnect_p_location") || "vPlay OS, Việt Nam");
-  const [vProfileAvatar, setVProfileAvatar] = useState(() => localStorage.getItem("vplay_vconnect_p_avatar") || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80");
-  const [vProfileCover, setVProfileCover] = useState(() => localStorage.getItem("vplay_vconnect_p_cover") || "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&h=300&w=600&q=80");
+  const [vProfileName, setVProfileName] = useState(() => localStorage.getItem("vplay_vibes_p_name") || "Khách Danh Tính");
+  const [vProfileBio, setVProfileBio] = useState(() => localStorage.getItem("vplay_vibes_p_bio") || "Bận chơi game rồi | vPlay-er chính hiệu!");
+  const [vProfileLocation, setVProfileLocation] = useState(() => localStorage.getItem("vplay_vibes_p_location") || "vPlay OS, Việt Nam");
+  const [vProfileAvatar, setVProfileAvatar] = useState(() => localStorage.getItem("vplay_vibes_p_avatar") || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80");
+  const [vProfileCover, setVProfileCover] = useState(() => localStorage.getItem("vplay_vibes_p_cover") || "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&h=300&w=600&q=80");
 
   const toggleFlag = (id: string) => {
     setFeatureFlags(prev => {
@@ -7401,6 +7852,44 @@ function SettingsContent({
         </div>
       )}
 
+      {/* Refreshing Mode Section */}
+      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full mt-8 ${refreshingMode ? "border-emerald-500/20 bg-emerald-500/5" : (isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50")}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 text-left">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-2xl ${refreshingMode ? "bg-emerald-500/15 text-emerald-400" : "bg-slate-500/10 text-slate-400"}`}>
+              <Sparkles size={24} className={refreshingMode ? "animate-pulse" : ""} />
+            </div>
+            <div>
+              <h3 className={`font-bold text-xl tracking-tight ${refreshingMode ? "text-emerald-400" : (isDark ? "text-white" : "text-slate-900")}`}>Refreshing Mode</h3>
+              <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} font-medium mt-1`}>
+                Provides a cleaner, simpler, more calm and refreshing Vplay Canary experience. Recommended for low-end devices
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button"
+            onClick={() => {
+              const nextVal = !refreshingMode;
+              setRefreshingMode(nextVal);
+              localStorage.setItem("vplay_refreshing_mode", String(nextVal));
+              onAlert?.(
+                "Refreshing Mode", 
+                nextVal 
+                  ? "Refreshing Mode enabled! Advanced features hidden." 
+                  : "Refreshing Mode disabled! All features restored."
+              );
+            }}
+            className={`px-6 py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs transition-all shadow-lg active:scale-95 flex items-center gap-2 whitespace-nowrap self-start sm:self-center ${
+              refreshingMode 
+                ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20" 
+                : "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/20"
+            }`}
+          >
+            {refreshingMode ? "Enabled" : "Enable Mode"}
+          </button>
+        </div>
+      </div>
+
       {/* Erase Data Section */}
       <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full mt-8 border-blue-500/10 ${isDark ? "bg-blue-500/5" : "bg-blue-500/2 shadow-xl shadow-blue-100/30"}`}>
         <div className="flex items-center gap-4 mb-6">
@@ -7433,7 +7922,7 @@ function SettingsContent({
             <ShoppingBag size={24} />
           </div>
           <div>
-            <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Cài đặt Vconnect & Hồ sơ</h3>
+            <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Cài đặt Vibes & Hồ sơ</h3>
             <p className="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Tùy chỉnh giao diện độc lập và quản lý hồ sơ mạng xã hội</p>
           </div>
         </div>
@@ -7443,7 +7932,7 @@ function SettingsContent({
           <div className="space-y-3 text-left">
             <div className="flex items-center gap-2 px-1">
               <Sun size={14} className="text-purple-500 animate-spin-slow" />
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Chủ đề giao diện (Chỉ áp dụng cho Vconnect)</span>
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Chủ đề giao diện (Chỉ áp dụng cho Vibes)</span>
             </div>
             <div className="grid grid-cols-2 gap-3 max-w-md">
               <button 
@@ -7451,35 +7940,35 @@ function SettingsContent({
                 onClick={() => {
                   if (setVconnectIsDark) {
                     setVconnectIsDark(false);
-                    localStorage.setItem("vplay_vconnect_is_dark", "false");
-                    onAlert?.("Vconnect", "Đã chuyển chủ đề Vconnect sang giao diện Sáng!");
+                    localStorage.setItem("vplay_vibes_is_dark", "false");
+                    onAlert?.("Vibes", "Đã chuyển chủ đề Vibes sang giao diện Sáng!");
                   }
                 }}
                 className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 cursor-pointer ${!vconnectIsDark ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400 hover:text-white" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}`}
               >
                 <Sun size={18} />
-                <span className="text-xs font-bold">Chế độ Sáng (Vconnect)</span>
+                <span className="text-xs font-bold">Chế độ Sáng (Vibes)</span>
               </button>
               <button 
                 type="button"
                 onClick={() => {
                   if (setVconnectIsDark) {
                     setVconnectIsDark(true);
-                    localStorage.setItem("vplay_vconnect_is_dark", "true");
-                    onAlert?.("Vconnect", "Đã chuyển chủ đề Vconnect sang giao diện Tối!");
+                    localStorage.setItem("vplay_vibes_is_dark", "true");
+                    onAlert?.("Vibes", "Đã chuyển chủ đề Vibes sang giao diện Tối!");
                   }
                 }}
                 className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 cursor-pointer ${vconnectIsDark ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400 hover:text-white" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}`}
               >
                 <Moon size={18} />
-                <span className="text-xs font-bold">Chế độ Tối (Vconnect)</span>
+                <span className="text-xs font-bold">Chế độ Tối (Vibes)</span>
               </button>
             </div>
           </div>
 
           {/* Moved Profile settings card form into Vconnect Settings */}
           <div className="border border-white/5 bg-black/20 p-6 rounded-[32px] space-y-4 max-w-2xl text-left">
-            <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 block">Chỉnh sửa Hồ sơ Mạng Xã Hội Vconnect</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 block">Chỉnh sửa Hồ sơ Mạng Xã Hội Vibes</span>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -7489,7 +7978,7 @@ function SettingsContent({
                   value={vProfileName} 
                   onChange={(e) => {
                     setVProfileName(e.target.value);
-                    localStorage.setItem("vplay_vconnect_p_name", e.target.value);
+                    localStorage.setItem("vplay_vibes_p_name", e.target.value);
                   }}
                   className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
                 />
@@ -7501,7 +7990,7 @@ function SettingsContent({
                   value={vProfileLocation} 
                   onChange={(e) => {
                     setVProfileLocation(e.target.value);
-                    localStorage.setItem("vplay_vconnect_p_location", e.target.value);
+                    localStorage.setItem("vplay_vibes_p_location", e.target.value);
                   }}
                   className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
                 />
@@ -7515,7 +8004,7 @@ function SettingsContent({
                 value={vProfileBio} 
                 onChange={(e) => {
                   setVProfileBio(e.target.value);
-                  localStorage.setItem("vplay_vconnect_p_bio", e.target.value);
+                  localStorage.setItem("vplay_vibes_p_bio", e.target.value);
                 }}
                 className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
               />
@@ -7529,7 +8018,7 @@ function SettingsContent({
                   value={vProfileAvatar} 
                   onChange={(e) => {
                     setVProfileAvatar(e.target.value);
-                    localStorage.setItem("vplay_vconnect_p_avatar", e.target.value);
+                    localStorage.setItem("vplay_vibes_p_avatar", e.target.value);
                   }}
                   className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none font-mono"
                 />
@@ -7541,7 +8030,7 @@ function SettingsContent({
                   value={vProfileCover} 
                   onChange={(e) => {
                     setVProfileCover(e.target.value);
-                    localStorage.setItem("vplay_vconnect_p_cover", e.target.value);
+                    localStorage.setItem("vplay_vibes_p_cover", e.target.value);
                   }}
                   className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-[#cccccc] focus:border-purple-500 outline-none font-mono"
                 />
@@ -7563,7 +8052,7 @@ function SettingsContent({
                     type="button"
                     onClick={() => {
                       setVProfileAvatar(presetUrl);
-                      localStorage.setItem("vplay_vconnect_p_avatar", presetUrl);
+                      localStorage.setItem("vplay_vibes_p_avatar", presetUrl);
                     }}
                     className="w-8 h-8 rounded-full overflow-hidden border border-white/20 hover:scale-110 active:scale-95 transition-transform"
                   >
@@ -7577,7 +8066,7 @@ function SettingsContent({
               <button
                 type="button"
                 onClick={() => {
-                  onAlert?.("Vconnect", "Cập nhật thông tin tài khoản Vconnect thành công!");
+                  onAlert?.("Vibes", "Cập nhật thông tin tài khoản Vibes thành công!");
                 }}
                 className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer"
               >
@@ -8104,7 +8593,9 @@ function WidgetsDashboard({
   historyStats,
   setHistoryStats,
   setNotifications,
-  clearNotifications
+  clearNotifications,
+  refreshingMode,
+  setRefreshingMode
 }: any) {
   const isDark = widgetsTheme === "dark"; 
   const [widgetsFeedTreatment, setWidgetsFeedTreatment] = useState<number>(() => {
@@ -8193,6 +8684,7 @@ function WidgetsDashboard({
     return localStorage.getItem("vplay_widgets_updated_canary") === "true";
   });
   const [isUpdateSkipped, setIsUpdateSkipped] = useState(false);
+  const [isManualUpdateOpen, setIsManualUpdateOpen] = useState(false);
   const [isInstallingUpdate, setIsInstallingUpdate] = useState(false);
   const [installProgress, setInstallProgress] = useState(0);
   const [installMessage, setInstallMessage] = useState("Initializing installation...");
@@ -8234,6 +8726,7 @@ function WidgetsDashboard({
         localStorage.setItem("vplay_widgets_updated_canary", "true");
         setIsWidgetsUpdated(true);
         setIsInstallingUpdate(false);
+        setIsManualUpdateOpen(false);
         setActiveBoardTab('widgets');
         
         const finishTimeout = setTimeout(() => {
@@ -8495,7 +8988,7 @@ function WidgetsDashboard({
       }
     `}</style>
   )}
-  {!isWidgetsUpdated && !isUpdateSkipped ? (
+  {!isWidgetsUpdated && (!isUpdateSkipped || isManualUpdateOpen) ? (
      <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white select-none z-[10005] overflow-hidden">
         <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
            <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-light leading-relaxed">
@@ -8517,7 +9010,10 @@ function WidgetsDashboard({
                           Install now
                        </button>
                        <button
-                          onClick={() => setIsUpdateSkipped(true)}
+                          onClick={() => {
+                              setIsUpdateSkipped(true);
+                              setIsManualUpdateOpen(false);
+                           }}
                           className="border border-white/40 text-white/80 font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/5 hover:text-white rounded-none active:scale-[0.98] cursor-pointer"
                        >
                           Skip update
@@ -8572,8 +9068,9 @@ function WidgetsDashboard({
         { id: 'vstore', label: 'Vstore Widgets', icon: ShoppingBag, color: 'text-amber-500', lightColor: 'text-amber-600' },
         ...(widgetSettings.showFeed ? [{ id: 'feed', label: 'My feed', icon: Newspaper, color: 'text-blue-400', lightColor: 'text-blue-600' }] : []),
         { id: 'doforme', label: 'Operate', icon: Sparkles, color: 'text-purple-400', lightColor: 'text-purple-600' },
-        ...(isDev ? [{ id: 'dev', label: 'Dev', icon: Terminal, color: 'text-rose-400', lightColor: 'text-rose-600' }] : [])
-      ].map(tab => {
+        ...(isDev ? [{ id: 'dev', label: 'Dev', icon: Terminal, color: 'text-rose-400', lightColor: 'text-rose-600' }] : []),
+        { id: 'update', label: 'Update', icon: isWidgetsUpdated ? Check : RefreshCw, color: isWidgetsUpdated ? 'text-emerald-400' : 'text-yellow-400', lightColor: isWidgetsUpdated ? 'text-emerald-600' : 'text-yellow-600' }
+      ].filter(t => t.id === 'update' || !refreshingMode || (t.id !== 'vstore' && t.id !== 'feed' && t.id !== 'doforme')).map(tab => {
         const isActive = activeBoardTab === tab.id;
         const Icon = tab.icon;
         
@@ -8596,15 +9093,40 @@ function WidgetsDashboard({
         return (
           <button
             key={tab.id}
-            onClick={() => setActiveBoardTab(tab.id as any)}
+            onClick={() => {
+              if (tab.id === 'update') {
+                if (!isWidgetsUpdated) {
+                  setIsUpdateSkipped(false);
+                  setIsInstallingUpdate(false);
+                  setInstallProgress(0);
+                  setIsManualUpdateOpen(true);
+                } else {
+                  addNotification?.("System", "Widgets board is already up to date!", "success");
+                }
+                return;
+              }
+              setActiveBoardTab(tab.id as any);
+            }}
             className={btnClassName}
             title={tab.label}
           >
             {isActive && (
               <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-[3px] h-[24px] rounded-full bg-[#00d2ff]" />
             )}
-            <Icon size={isCollapsedSidebar ? 18 : 22} className={isActive ? "text-[#00d2ff]" : ""} />
-            {!isCollapsedSidebar && !isActive && (
+            <div className="relative">
+              <Icon size={isCollapsedSidebar ? 18 : 22} className={isActive ? "text-[#00d2ff]" : (tab.id === 'update' ? (isWidgetsUpdated ? "text-emerald-400" : "text-yellow-400 animate-pulse") : "")} />
+              {tab.id === 'update' && !isWidgetsUpdated && (
+                <span className="absolute -top-1 -right-2 px-1 py-0.5 rounded-full text-[8px] font-black bg-yellow-500 text-black leading-none animate-pulse">
+                  !
+                </span>
+              )}
+              {tab.id === 'update' && isWidgetsUpdated && (
+                <span className="absolute -top-1 -right-2 px-1 py-0.5 rounded-full text-[8px] font-black bg-emerald-500 text-white leading-none">
+                  ✓
+                </span>
+              )}
+            </div>
+            {!isCollapsedSidebar && (!isActive || tab.id === 'update') && (
               <span className="text-[10px] font-semibold tracking-tight select-none truncate w-full px-0.5">
                 {tab.label}
               </span>
@@ -8683,15 +9205,39 @@ function WidgetsDashboard({
                  {[
                   { id: 'widgets', icon: LayoutDashboard, label: 'My widgets' },
                   { id: 'vstore', icon: ShoppingBag, label: 'Vstore Widgets' },
-                  { id: 'feed', icon: Newspaper, label: 'My feed' },
+                  ...(widgetSettings.showFeed ? [{ id: 'feed', icon: Newspaper, label: 'My feed' }] : []),
                   ...(isDev ? [{ id: 'dev', icon: Terminal, label: 'Dev' }] : []),
-                  { id: 'doforme', icon: Sparkles, label: 'AI' }
-                ].filter(t => t.id !== 'feed' || widgetSettings.showFeed).map(tab => (
+                  { id: 'doforme', icon: Sparkles, label: 'AI' },
+                  { id: 'update', icon: isWidgetsUpdated ? Check : RefreshCw, label: 'Update' }
+                ].filter(t => t.id === 'update' || t.id !== 'feed' || widgetSettings.showFeed).map(tab => (
                   <button 
                     key={tab.id}
-                    onClick={() => setActiveBoardTab(tab.id as any)}
-                    className={`flex items-center gap-1.5 p-1.5 px-3 rounded-full transition-all ${activeBoardTab === tab.id ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" : "opacity-45 hover:opacity-100 hover:bg-white/5"}`}
+                    onClick={() => {
+                      if (tab.id === 'update') {
+                        if (!isWidgetsUpdated) {
+                          setIsUpdateSkipped(false);
+                          setIsInstallingUpdate(false);
+                          setInstallProgress(0);
+                          setIsManualUpdateOpen(true);
+                        } else {
+                          addNotification?.("System", "Widgets board is already up to date!", "success");
+                        }
+                        return;
+                      }
+                      setActiveBoardTab(tab.id as any);
+                    }}
+                    className={`flex items-center gap-1.5 p-1.5 px-3 rounded-full transition-all ${
+                      tab.id === 'update' 
+                        ? (isWidgetsUpdated ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30" : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse")
+                        : (activeBoardTab === tab.id ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" : "opacity-45 hover:opacity-100 hover:bg-white/5")
+                    }`}
                   >
+                    {tab.id === 'update' && !isWidgetsUpdated && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+                    )}
+                    {tab.id === 'update' && isWidgetsUpdated && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    )}
                     <tab.icon size={15} />
                     <span className="text-xs font-semibold tracking-tight">{tab.label}</span>
                   </button>
@@ -9943,6 +10489,44 @@ function WidgetsDashboard({
                         <h4 className="text-sm font-bold uppercase tracking-wider opacity-60">Respring & Khôi phục cài đặt</h4>
                       </div>
 
+                      {/* Refreshing Mode Section */}
+                      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${refreshingMode ? "border-emerald-500/20 bg-emerald-500/5" : (isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50")}`}>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 text-left">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-2xl ${refreshingMode ? "bg-emerald-500/15 text-emerald-400" : "bg-slate-500/10 text-slate-400"}`}>
+                              <Sparkles size={24} className={refreshingMode ? "animate-pulse" : ""} />
+                            </div>
+                            <div>
+                              <h3 className={`font-bold text-xl tracking-tight ${refreshingMode ? "text-emerald-400" : (isDark ? "text-white" : "text-slate-900")}`}>Refreshing Mode</h3>
+                              <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} font-medium mt-1`}>
+                                Provides a cleaner, simpler, more calm and refreshing Vplay Canary experience. Recommended for low-end devices
+                              </p>
+                            </div>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const nextVal = !refreshingMode;
+                              setRefreshingMode(nextVal);
+                              localStorage.setItem("vplay_refreshing_mode", String(nextVal));
+                              onAlert?.(
+                                "Refreshing Mode", 
+                                nextVal 
+                                  ? "Refreshing Mode enabled! Advanced features hidden." 
+                                  : "Refreshing Mode disabled! All features restored."
+                              );
+                            }}
+                            className={`px-6 py-3.5 rounded-2xl font-black uppercase tracking-wider text-xs transition-all shadow-lg active:scale-95 flex items-center gap-2 whitespace-nowrap self-start sm:self-center ${
+                              refreshingMode 
+                                ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20" 
+                                : "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/20"
+                            }`}
+                          >
+                            {refreshingMode ? "Enabled" : "Enable Mode"}
+                          </button>
+                        </div>
+                      </div>
+
                       <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full border-blue-500/10 ${isDark ? "bg-blue-500/5" : "bg-blue-500/2 shadow-xl shadow-blue-100/30"}`}>
                         <div className="flex items-center gap-4 mb-6 text-left">
                           <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-500">
@@ -10635,6 +11219,8 @@ function WidgetsDashboard({
                         forcedFont={forcedFont}
                         setForcedFont={setForcedFont}
                         onEraseClick={onEraseClick}
+                        refreshingMode={refreshingMode}
+                        setRefreshingMode={setRefreshingMode}
                       />
                     </div>
                   );
@@ -11098,7 +11684,7 @@ function WidgetsDashboard({
                         { type: 'vtv6_countdown', name: 'VTV6 Live', icon: Tv, desc: 'Lịch thi đấu Euro/U23 trên VTV6.' },
                         { type: 'stocks', name: 'Thị trường', icon: TrendingUp, desc: 'Cập nhật chỉ số VN-Index, NASDAQ.' },
                         { type: 'notify', name: 'Trung tâm tin', icon: Bell, desc: 'Thông báo & News flash.' },
-                        { type: 'vconnect_spark', name: 'Siêu tốc Vconnect', icon: Play, desc: 'Đăng nhanh Story, viết bài đăng Feed & nhắn tin Direct!' }
+                        { type: 'vconnect_spark', name: 'Siêu tốc Vibes', icon: Play, desc: 'Đăng nhanh Story, viết bài đăng Feed & nhắn tin Direct!' }
                       ].filter(w => w.name.toLowerCase().includes(gallerySearch.toLowerCase())).map((item) => (
                         <button 
                           key={item.type}
@@ -12436,6 +13022,7 @@ const LockScreen = ({ isDark, userName, weatherCity, onSignIn, setUserName, setW
 
 function AIToolsMenu({ onAction, align = "bottom", featureFlags, tabs, activeTab, setActiveTab, setShowAIToolsMenu, setShowAIToolsMenuSidebar, isNarratorActive, setIsAISidebarOpen, setShowVTV6Popup }: any) {
   const [isDoStuffExpanded, setIsDoStuffExpanded] = useState(false);
+  const isRefreshingMode = localStorage.getItem("vplay_refreshing_mode") === "true";
   return (
     <motion.div
     initial={{ opacity: 0 }}
@@ -12480,40 +13067,46 @@ function AIToolsMenu({ onAction, align = "bottom", featureFlags, tabs, activeTab
               </button>
             );
           })}
-          <div className="h-px bg-black/5 my-2" />
-          <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Intelligence</div>
-          <button 
-             onClick={() => onAction("ai_tools")}
-             className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900`}
-          >
-             <Sparkles size={18} className="text-black" />
-             <span className="text-sm font-medium">Open V-pilot</span>
-          </button>
-          <button 
-             onClick={() => onAction("gemini")}
-             className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900`}
-          >
-             <Sparkles size={18} className="text-black" />
-             <span className="text-sm font-medium">Gemini AI</span>
-          </button>
+          {!isRefreshingMode && (
+            <>
+              <div className="h-px bg-black/5 my-2" />
+              <div className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Intelligence</div>
+              <button 
+                 onClick={() => onAction("ai_tools")}
+                 className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900`}
+              >
+                 <Sparkles size={18} className="text-black" />
+                 <span className="text-sm font-medium">Open V-pilot</span>
+              </button>
+              <button 
+                 onClick={() => onAction("gemini")}
+                 className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900`}
+              >
+                 <Sparkles size={18} className="text-black" />
+                 <span className="text-sm font-medium">Gemini AI</span>
+              </button>
+            </>
+          )}
 
           <div className="h-px bg-black/5 my-2" />
           <div className="px-3 py-2 text-[10px] font-normal uppercase tracking-[0.2em] opacity-40">Utility</div>
           
-          <button 
-             onClick={(e) => {
-               e.stopPropagation();
-               setIsAISidebarOpen(true);
-               setShowAIToolsMenu(false);
-             }}
-             className="w-full flex items-center justify-between p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900"
-          >
-             <div className="flex items-center gap-3">
-               <Zap size={18} className="text-black" />
-               <span className="text-sm font-medium">Do For Me</span>
-             </div>
-             <ArrowRight size={14} />
-          </button>
+          {!isRefreshingMode && (
+            <button 
+               onClick={(e) => {
+                 e.stopPropagation();
+                 setIsAISidebarOpen(true);
+                 setShowAIToolsMenu(false);
+               }}
+               className="w-full flex items-center justify-between p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900"
+            >
+               <div className="flex items-center gap-3">
+                 <Zap size={18} className="text-black" />
+                 <span className="text-sm font-medium">Do For Me</span>
+               </div>
+               <ArrowRight size={14} />
+            </button>
+          )}
 
           <button 
              onClick={() => onAction("search")}
@@ -12522,13 +13115,15 @@ function AIToolsMenu({ onAction, align = "bottom", featureFlags, tabs, activeTab
              <Search size={18} className="text-black" />
              <span className="text-sm font-medium">AI Search & Command</span>
           </button>
-          <button 
-             onClick={() => onAction("operator")}
-             className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900`}
-          >
-             <Terminal size={18} className="text-black" />
-             <span className="text-sm font-medium">Operator Console (v2)</span>
-          </button>
+          {!isRefreshingMode && (
+            <button 
+               onClick={() => onAction("operator")}
+               className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-black/5 text-slate-900`}
+            >
+               <Terminal size={18} className="text-black" />
+               <span className="text-sm font-medium">Operator Console (v2)</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="p-2 space-y-1">
@@ -12868,6 +13463,12 @@ export default function App() {
   const [isErasing, setIsErasing] = useState(false);
   const [eraseProgress, setEraseProgress] = useState(0);
 
+  // Refreshing Mode States
+  const [refreshingMode, setRefreshingMode] = useState<boolean>(() => {
+    return localStorage.getItem("vplay_refreshing_mode") === "true";
+  });
+  const [isRefreshingModeFaqModalOpen, setIsRefreshingModeFaqModalOpen] = useState(false);
+
   useEffect(() => {
     let interval: any;
     if (isErasing) {
@@ -13090,7 +13691,7 @@ export default function App() {
         music_background: true,
         scambidi_ui: false,
         minecraft_mode: false,
-        xaml_home: false,
+        xaml_home: true,
         xaml_search: false,
         xaml_oobe_force: false,
         win8_metro: false,
@@ -13108,10 +13709,14 @@ export default function App() {
         cobalt_ui: false,
         cobalt_scrollbar: false,
         xaml_experience: true,
-        vids_feature: false
+        vids_feature: false,
+        redesign_live_page: false
       };
       if (!saved) return defaults;
       const parsed = JSON.parse(saved);
+      if (parsed.xaml_home === undefined) {
+        parsed.xaml_home = true;
+      }
       return { ...defaults, ...parsed };
     } catch (e) {
       return { 
@@ -13125,7 +13730,7 @@ export default function App() {
         music_background: true,
         scambidi_ui: false,
         minecraft_mode: false,
-        xaml_home: false,
+        xaml_home: true,
         xaml_search: false,
         xaml_oobe_force: false,
         win8_metro: false,
@@ -13141,7 +13746,8 @@ export default function App() {
         top_bar: true,
         cobalt_scrollbar: false,
         xaml_experience: false,
-        vids_feature: false
+        vids_feature: false,
+        redesign_live_page: false
       };
     }
   });
@@ -13247,7 +13853,7 @@ export default function App() {
 
   const [isDark, setIsDark] = useState(true);
   const [vconnectIsDark, setVconnectIsDark] = useState<boolean>(() => {
-    const saved = localStorage.getItem("vplay_vconnect_is_dark");
+    const saved = localStorage.getItem("vplay_vibes_is_dark");
     return saved !== null ? (saved === "true") : true;
   });
   const [searchBoxPosition, setSearchBoxPosition] = useState(() => {
@@ -13446,7 +14052,7 @@ export default function App() {
       "Do For Me": "Search with AI",
       "Phát sóng": "Search channels",
       "Pizza": "Search experiments",
-      "Vconnect": "Search Vconnect feed and users",
+      "Vibes": "Search Vibes feed and users",
     };
     if (tabMapping[activeTab as string]) return tabMapping[activeTab as string];
     if (showWidgets && isWidgetsFullScreen) return "Search the web";
@@ -13458,9 +14064,9 @@ export default function App() {
   }, [activeTab, featureFlags?.search_placeholder_treatment, featureFlags?.search_placeholder_treatment_id, randomSearchSeed, showWidgets, isWidgetsFullScreen]);
 
   const showSearchBar = useMemo(() => {
-    const allowedTabs = ["Trang chủ", "Phát sóng", "Pizza", "Do For Me", "Vconnect"];
+    const allowedTabs = ["Trang chủ", "Phát sóng", "Pizza", ...(!refreshingMode ? ["Do For Me", "Vibes"] : [])];
     return allowedTabs.includes(activeTab as string) || (showWidgets && isWidgetsFullScreen);
-  }, [activeTab, showWidgets, isWidgetsFullScreen]);
+  }, [activeTab, showWidgets, isWidgetsFullScreen, refreshingMode]);
 
   const [isAIToolsRotating, setIsAIToolsRotating] = useState(false);
   const [showAIToolsMenu, setShowAIToolsMenu] = useState(false);
@@ -14026,8 +14632,8 @@ export default function App() {
   };
 
   const tabs = baseTabs.map(t => {
-    if (t.id === "Vconnect") {
-      return { ...t, name: user ? "Vconnect" : "Vconnect Lite" };
+    if (t.id === "Vibes") {
+      return { ...t, name: user ? "Vibes" : "Vibes Lite" };
     }
     return t;
   }).concat(customTabs.map(ct => ({
@@ -14036,12 +14642,15 @@ export default function App() {
     id: ct.id,
     isCustom: true
   } as any))).filter(t => {
+    if (refreshingMode) {
+      if (t.id === "Do For Me" || t.id === "Vibes" || t.id === "Vstore" || t.name === "Do For Me" || t.name === "Vibes" || t.name === "Vstore" || t.name === "Vibes Lite") return false;
+    }
     if (t.id === "Cài đặt" && featureFlags?.settings_on_widgets) return false;
     if (t.id === "Quản trị") return false;
     if (t.id === "VTV6_Tab") return false;
     if (t.id === "Design Hub" || t.name === "Design Hub") return false;
     if (t.id === "My Feed" || t.name === "My Feed") return false;
-    if (t.id === "Vconnect" && !featureFlags?.vids_feature && !featureFlags?.vids_for_uploads) return false;
+    if (t.id === "Vibes" && !featureFlags?.vids_feature && !featureFlags?.vids_for_uploads) return false;
     if (t.id === "V-pilot" && (featureFlags?.ai_tools)) return false;
     if (t.id === "V-pilot" && !featureFlags?.ai_tools_preview && !featureFlags?.ai_tools) return false;
     if (t.id === "Search" && featureFlags?.ai_tools) return false;
@@ -14475,6 +15084,8 @@ export default function App() {
                           forcedFont={forcedFont}
                           setForcedFont={setForcedFont}
                           onEraseClick={() => setShowEraseModal(true)}
+                          refreshingMode={refreshingMode}
+                          setRefreshingMode={setRefreshingMode}
                         />
                     </div>
                   )}
@@ -14630,7 +15241,29 @@ export default function App() {
                 )}
 
                {/* Right Section (Stats) */}
-               <div className="flex items-center gap-6 px-6 select-none shrink-0">
+               <div className="flex items-center gap-4 md:gap-6 px-6 select-none shrink-0">
+                  {/* Refreshing Mode Inline Topbar Toggle */}
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-2.5 py-1.5 rounded-full shrink-0">
+                    <Sparkles size={11} className={refreshingMode ? "text-emerald-400 animate-pulse" : "text-white/40"} />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-300 hidden xs:inline">Refreshing</span>
+                    <button 
+                      onClick={() => {
+                        const nextVal = !refreshingMode;
+                        setRefreshingMode(nextVal);
+                        addNotification?.("Hệ thống", `Đã ${nextVal ? 'bật' : 'tắt'} chế độ tự động làm mới (Refreshing Mode).`, 'info');
+                      }}
+                      className={`relative w-9 h-5 rounded-full transition-colors flex items-center ${
+                        refreshingMode ? "bg-emerald-500" : "bg-white/10"
+                      } cursor-pointer`}
+                    >
+                      <motion.div 
+                        animate={{ x: refreshingMode ? 18 : 2 }}
+                        className="w-4 h-4 rounded-full bg-white shadow-md pointer-events-none"
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    </button>
+                  </div>
+
                   <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 bg-amber-400 rounded-full text-white shadow-lg shadow-amber-400/20 active:scale-95 transition-all cursor-pointer" onClick={() => { setShowWidgets(true); setActiveBoardTab('vstore'); }}>
                      <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-black italic">V</div>
                      <span className="text-xs font-black tracking-tight">{isUnlimitedVpoints ? "∞" : vpoints} <span className="opacity-60 font-medium">VP</span></span>
@@ -14959,17 +15592,37 @@ export default function App() {
                          >
                            <h1 className="text-5xl font-bold tracking-tighter mb-2">Home</h1>
                            <p className="text-slate-500 font-medium">Welcome back to Vplay Media Player</p>
+                          
+                          {/* VTV6 Countdown Banner */}
+                          <VTV6CountdownBanner currentTime={currentTime} />
                          </motion.header>
 
+                         {/* Refreshing Mode Notification */}
+                         {refreshingMode && (
+                           <motion.div 
+                             initial={{ opacity: 0, y: -10 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             className="mb-8 p-6 rounded-[32px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm cursor-pointer hover:bg-emerald-500/15 transition-all text-left flex items-center justify-between gap-4 shadow-lg shadow-emerald-555/5"
+                             onClick={() => setIsRefreshingModeFaqModalOpen(true)}
+                           >
+                             <div className="flex items-center gap-3">
+                               <Sparkles size={18} className="animate-pulse text-emerald-400 shrink-0" />
+                               <span>What is Refreshing Mode? Click here to find out!</span>
+                             </div>
+                             <ArrowRight size={16} className="text-emerald-400 shrink-0" />
+                           </motion.div>
+                         )}
+
                          {/* Vconnect Promo Banner for XAML Layout */}
-                         <motion.div 
-                           initial={{ opacity: 0, y: 15 }}
-                           animate={{ opacity: 1, y: 0 }}
-                           className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
-                           onClick={() => {
-                             setActiveTab("Vconnect");
-                           }}
-                         >
+                         {!refreshingMode && (
+                           <motion.div 
+                             initial={{ opacity: 0, y: 15 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
+                             onClick={() => {
+                               setActiveTab("Vibes");
+                             }}
+                           >
                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                              <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
@@ -14981,7 +15634,7 @@ export default function App() {
                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 border border-purple-500/30">Nổi bật</span>
                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-green-300 bg-green-500/15 border border-green-500/30">Mới</span>
                                  </div>
-                                 <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vconnect</h3>
+                                 <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vibes</h3>
                                  <p className="text-slate-400 text-xs mt-0.5 max-w-xl">Trải nghiệm chia sẻ câu chuyện, đăng tin nhắn thoại, theo dõi tài khoản có tick xanh & xem video ngắn Vshorts cực đỉnh!</p>
                                </div>
                              </div>
@@ -14993,6 +15646,7 @@ export default function App() {
                              </button>
                            </div>
                          </motion.div>
+                         )}
 
                          <motion.section 
                            layout
@@ -15060,6 +15714,9 @@ export default function App() {
                     )
                   ) : (
                     <>
+                      {/* VTV6 Countdown Banner */}
+                      <VTV6CountdownBanner currentTime={currentTime} />
+
                       {/* ADVERTISEMENT BANNER */}
                       <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -15093,14 +15750,15 @@ export default function App() {
                         </motion.div>
 
                       {/* Vconnect Promo Banner for Standard Layout */}
-                      <motion.div 
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
-                        onClick={() => {
-                          setActiveTab("Vconnect");
-                        }}
-                      >
+                      {!refreshingMode && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
+                          onClick={() => {
+                            setActiveTab("Vibes");
+                          }}
+                        >
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                           <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
@@ -15112,7 +15770,7 @@ export default function App() {
                                 <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 border border-purple-500/30">Nổi bật</span>
                                 <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-green-300 bg-green-500/15 border border-green-500/30">Mới</span>
                               </div>
-                              <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vconnect</h3>
+                              <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vibes</h3>
                               <p className="text-slate-400 text-xs mt-0.5 max-w-xl">Trải nghiệm chia sẻ câu chuyện, đăng tin nhắn thoại, theo dõi tài khoản có tick xanh & xem video ngắn Vshorts cực đỉnh!</p>
                             </div>
                           </div>
@@ -15124,8 +15782,9 @@ export default function App() {
                           </button>
                         </div>
                       </motion.div>
+                      )}
 
-                      <HomeContent isDark={isDark} onSwitchToDev={() => setShowDevConfirm(true)} featureFlags={featureFlags} liquidGlass={liquidGlass} channels={scambidifiedChannels} />
+                      <HomeContent isDark={isDark} onSwitchToDev={() => setShowDevConfirm(true)} featureFlags={featureFlags} liquidGlass={liquidGlass} channels={scambidifiedChannels} refreshingMode={refreshingMode} setIsRefreshingModeFaqModalOpen={setIsRefreshingModeFaqModalOpen} />
                     </>
                   )}
                 </div>
@@ -15183,6 +15842,8 @@ export default function App() {
                         setDesktopWallpaper={setDesktopWallpaper}
                         forcedFont={forcedFont}
                         setForcedFont={setForcedFont}
+                        refreshingMode={refreshingMode}
+                        setRefreshingMode={setRefreshingMode}
                       />
                     </div>
                   </div>
@@ -15366,9 +16027,9 @@ export default function App() {
                   />
                 </div>
               )}
-              {displayTab === "Vconnect" && (
+              {displayTab === "Vibes" && (
                 <div className={`rounded-none overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <VconnectContent 
+                  <VibesContent 
                     isDark={vconnectIsDark} 
                     user={user} 
                     liquidGlass={liquidGlass} 
@@ -15384,6 +16045,37 @@ export default function App() {
             </motion.div>
           </AnimatePresence>
         </div>
+
+      <LiquidModal
+        isOpen={isRefreshingModeFaqModalOpen}
+        onClose={() => setIsRefreshingModeFaqModalOpen(false)}
+        isDark={isDark}
+        liquidGlass={liquidGlass}
+        featureFlags={featureFlags}
+        title="What is Refreshing Mode? Click here to find out!"
+        description="Refreshing mode is a special mode for Vplay Canary to provide a cleaner, simpler, more calm and refreshing Vplay Canary experience for you. We realize we've messed up Vplay Canary quite a lot recently, causing lots of errors, bugs and performance and stability issues - the project needs to be reset and start over from scratch. Enabling this mode will hide every ads, unnecessary tools and utilities, which is recommended for low-end devices. To activate refreshing mode, go to settings or press the button bellow"
+        footer={
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+            <button 
+              onClick={() => {
+                setIsRefreshingModeFaqModalOpen(false);
+                setRefreshingMode(true);
+                localStorage.setItem("vplay_refreshing_mode", "true");
+                setShowEraseModal(true);
+              }}
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition-all active:scale-95 text-sm w-full"
+            >
+              Start over!
+            </button>
+            <button 
+              onClick={() => setIsRefreshingModeFaqModalOpen(false)}
+              className="px-6 py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-all active:scale-95 text-sm w-full"
+            >
+              Close
+            </button>
+          </div>
+        }
+      />
 
       <LiquidModal
         isOpen={showVTV6Popup}
@@ -17014,6 +17706,8 @@ export default function App() {
       <AnimatePresence>
         {showWidgets && (
           <WidgetsDashboard 
+            refreshingMode={refreshingMode}
+            setRefreshingMode={setRefreshingMode}
             showWidgets={showWidgets} 
             setShowWidgets={setShowWidgets} 
             pinnedWidgets={pinnedWidgets}
