@@ -7319,7 +7319,9 @@ function SettingsContent({
   setForcedFont,
   onEraseClick,
   refreshingMode,
-  setRefreshingMode
+  setRefreshingMode,
+  onTriggerCrash,
+  isFullSettings = false
 }: { 
   isDark: boolean, 
   setIsDark: (val: boolean) => void, 
@@ -7365,7 +7367,9 @@ function SettingsContent({
   setForcedFont: (val: string) => void,
   onEraseClick?: () => void,
   refreshingMode: boolean,
-  setRefreshingMode: (val: boolean) => void
+  setRefreshingMode: (val: boolean) => void,
+  onTriggerCrash?: () => void,
+  isFullSettings?: boolean
 }) {
   const [saving, setSaving] = useState(false);
   const [flagSearch, setFlagSearch] = useState("");
@@ -7925,6 +7929,35 @@ function SettingsContent({
           </button>
         </div>
       </div>
+
+      {/* SpringBoard Section */}
+      {isFullSettings && (
+        <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full mt-8 border-red-500/10 ${isDark ? "bg-red-500/5" : "bg-red-500/2 shadow-xl shadow-red-100/30"}`}>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="p-3 rounded-2xl bg-red-500/10 text-red-500 animate-pulse">
+              <Compass size={24} />
+            </div>
+            <div>
+              <h3 className={`font-bold text-xl tracking-tight text-red-500`}>SpringBoard</h3>
+              <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"} font-medium`}>Buộc dừng tức thời toàn bộ hệ thống vPlay OS và kích hoạt màn hình báo lỗi (Crash Screen) để thử nghiệm tính năng khôi phục hệ thống.</p>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button 
+              onClick={() => {
+                if (onTriggerCrash) {
+                  onTriggerCrash();
+                }
+              }}
+              className="px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95 flex items-center gap-2 cursor-pointer"
+            >
+              <AlertCircle size={14} />
+              Trigger Crash Screen
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Vconnect settings */}
       <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
@@ -8606,7 +8639,8 @@ function WidgetsDashboard({
   setNotifications,
   clearNotifications,
   refreshingMode,
-  setRefreshingMode
+  setRefreshingMode,
+  onTriggerCrash
 }: any) {
   const isDark = widgetsTheme === "dark"; 
   const [widgetsFeedTreatment, setWidgetsFeedTreatment] = useState<number>(() => {
@@ -11232,6 +11266,7 @@ function WidgetsDashboard({
                         onEraseClick={onEraseClick}
                         refreshingMode={refreshingMode}
                         setRefreshingMode={setRefreshingMode}
+                        onTriggerCrash={onTriggerCrash}
                       />
                     </div>
                   );
@@ -14633,6 +14668,64 @@ export default function App() {
   }, [isNarratorActive]);
 
   const [isConsoleFloating, setIsConsoleFloating] = useState(false);
+  const [isCrashed, setIsCrashed] = useState<boolean>(false);
+  const [crashSystemFile, setCrashSystemFile] = useState<string>("");
+  const [showCrashLogs, setShowCrashLogs] = useState<boolean>(false);
+  const [isRespringing, setIsRespringing] = useState<boolean>(false);
+  const [respringTimeLeft, setRespringTimeLeft] = useState<number>(180); // 180 seconds = 3 minutes
+
+  useEffect(() => {
+    let timer: any;
+    if (isRespringing && respringTimeLeft > 0) {
+      timer = setInterval(() => {
+        setRespringTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            sessionStorage.setItem("vplay_session_crashed", "false");
+            window.location.reload();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isRespringing, respringTimeLeft]);
+
+  useEffect(() => {
+    const files = [
+      "vplay_core_daemon.sys",
+      "vplay_render_engine.dll",
+      "vplay_kernel_bootstrap.bin",
+      "ui_xaml_layout_renderer.cpp",
+      "vplay_taskbar_controller.sys",
+      "hal_hardware_abstraction.sys",
+      "vplay_sound_synthesizer.bin"
+    ];
+    const chosenFile = files[Math.floor(Math.random() * files.length)];
+    setCrashSystemFile(chosenFile);
+
+    const sessionCrash = sessionStorage.getItem("vplay_session_crashed");
+    if (!sessionCrash) {
+      // 35% probability of crash
+      const shouldCrash = Math.random() < 0.35;
+      if (shouldCrash) {
+        sessionStorage.setItem("vplay_session_crashed", "true");
+        setIsCrashed(true);
+      } else {
+        sessionStorage.setItem("vplay_session_crashed", "false");
+      }
+    } else if (sessionCrash === "true") {
+      setIsCrashed(true);
+    }
+  }, []);
+
+  const handleCrashRespring = () => {
+    setIsRespringing(true);
+  };
+
   const [isSpeakForMeOpen, setIsSpeakForMeOpen] = useState(false);
   const [customTabs, setCustomTabs] = useState<CustomTab[]>(() => {
     try {
@@ -15514,6 +15607,11 @@ export default function App() {
                           onEraseClick={() => setShowEraseModal(true)}
                           refreshingMode={refreshingMode}
                           setRefreshingMode={setRefreshingMode}
+                          onTriggerCrash={() => {
+                            setIsCrashed(true);
+                            sessionStorage.setItem("vplay_session_crashed", "true");
+                          }}
+                          isFullSettings={true}
                         />
                     </div>
                   )}
@@ -16482,6 +16580,11 @@ export default function App() {
                         setForcedFont={setForcedFont}
                         refreshingMode={refreshingMode}
                         setRefreshingMode={setRefreshingMode}
+                        onTriggerCrash={() => {
+                          setIsCrashed(true);
+                          sessionStorage.setItem("vplay_session_crashed", "true");
+                        }}
+                        isFullSettings={true}
                       />
                     </div>
                   </div>
@@ -18439,6 +18542,10 @@ export default function App() {
             setHistoryStats={setHistoryStats}
             setNotifications={setNotifications}
             clearNotifications={clearNotifications}
+            onTriggerCrash={() => {
+              setIsCrashed(true);
+              sessionStorage.setItem("vplay_session_crashed", "true");
+            }}
           />
         )}
       </AnimatePresence>
@@ -18960,6 +19067,213 @@ export default function App() {
                   )}
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {isCrashed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-neutral-950/95 backdrop-blur-md z-[1000000] flex items-center justify-center p-4 font-sans select-none overflow-y-auto"
+            >
+              {!isRespringing ? (
+                <motion.div
+                  initial={{ scale: 0.95, y: 15 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.95, y: -15 }}
+                  className="w-full max-w-2xl bg-zinc-900 border border-red-500/30 text-white rounded-[32px] p-6 md:p-8 shadow-[0_20px_50px_rgba(239,68,68,0.15)] flex flex-col relative overflow-hidden text-center"
+                >
+                  {/* Visual Glitch design accent */}
+                  <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-red-500 via-orange-500 to-red-500 animate-pulse" />
+
+                  <div className="flex flex-col items-center space-y-6">
+                    {/* Crash icon wrapper */}
+                    <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center shadow-lg shadow-red-500/5">
+                      <AlertCircle size={32} />
+                    </div>
+
+                    <div className="space-y-3">
+                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
+                        Whoops! - Vplay has just crashed unexpectedly
+                      </h2>
+                      <p className="text-xs sm:text-sm text-zinc-400 font-semibold leading-relaxed max-w-xl mx-auto">
+                        Don't worry this is not your fault. Vplay Canary is a beta program which has massive amount of problems and issues that would probably break the code of the app, leading to unexpected crashes like this. The only way (for now) to fix this is... respring the app. We're so sorry about this :(
+                      </p>
+                      <div className="inline-flex py-1.5 px-3 rounded-lg bg-red-500/5 border border-red-500/15 text-red-400 font-mono text-[11px] font-bold tracking-tight">
+                        Error: {crashSystemFile} not loaded correctly
+                      </div>
+                    </div>
+
+                    {/* Crash logs details panel */}
+                    {showCrashLogs && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="w-full overflow-hidden text-left bg-black/60 border border-zinc-800 rounded-2xl p-4 font-mono text-[10px] leading-relaxed text-zinc-450 max-h-56 overflow-y-auto"
+                      >
+                        <p className="text-red-400 font-bold mb-1 border-b border-zinc-800 pb-1 flex items-center justify-between">
+                          <span>VPLAY CANARY CRASH DUMP</span>
+                          <span className="text-[8px] bg-red-500/15 text-red-400 px-1 rounded font-black uppercase">Halted</span>
+                        </p>
+                        <p className="opacity-45">[09:34:28.102] Core kernel version 5.14.9-vplay canary boot initialized.</p>
+                        <p className="opacity-45">[09:34:28.188] CPU Support: AVX2 X86-64_V3 active, Multi-threading enabled.</p>
+                        <p className="opacity-45">[09:34:28.250] Loading dynamic system files...</p>
+                        <p className="text-red-500 font-semibold">[09:34:28.324] ERROR: Failed loading file &apos;/sys/bin/{crashSystemFile}&apos;</p>
+                        <p className="text-red-500 font-semibold">[09:34:28.325] EXCEPTION: Code 0xC0000005 (Access Violation - Null Pointer Dereference)</p>
+                        <p className="opacity-60 text-zinc-500">
+                          Memory trace:<br />
+                          &nbsp;&nbsp;0x7FFF00412B00 - core_kernel.sys<br />
+                          &nbsp;&nbsp;0x7FFF004169E2 - ui_render_engine.dll<br />
+                          &nbsp;&nbsp;0x7FFF004FA19D - {crashSystemFile} [FATAL_CORRUPTION]
+                        </p>
+                        <p className="text-orange-400 font-semibold">[09:34:28.327] Thread 4 exited with status 1 (fatal hardware failure).</p>
+                        <p className="opacity-45">[09:34:28.328] Vplay system has halted security parameters to prevent corruption.</p>
+                        <p className="text-blue-400 font-semibold">[09:34:28.329] RECOMMENDED ACTION: Perform system respring now.</p>
+                      </motion.div>
+                    )}
+
+                    {/* Actions buttons */}
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      <button
+                        onClick={handleCrashRespring}
+                        className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-lg active:scale-95 text-center cursor-pointer"
+                      >
+                        Respring now
+                      </button>
+                      <button
+                        onClick={() => setShowCrashLogs(!showCrashLogs)}
+                        className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-black uppercase tracking-widest text-xs rounded-2xl transition-all active:scale-95 text-center cursor-pointer border border-zinc-700"
+                      >
+                        {showCrashLogs ? "Hide crash logs" : "View crash logs"}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ scale: 0.95, y: 15 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.95, y: -15 }}
+                  className="w-full max-w-xl bg-zinc-950 border border-blue-500/30 text-white rounded-[32px] p-8 md:p-10 shadow-[0_20px_50px_rgba(59,130,246,0.15)] flex flex-col relative overflow-hidden"
+                >
+                  <div className="absolute top-0 left-0 w-full h-[3px] bg-blue-500 animate-pulse" />
+                  
+                  {/* High Tech Loader UI */}
+                  <div className="flex flex-col space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <RefreshCw className="text-blue-500 animate-spin" size={24} />
+                        <div>
+                          <h3 className="text-lg font-bold tracking-tight">System Respring</h3>
+                          <p className="text-[10px] text-blue-400 font-extrabold uppercase tracking-widest">vPlay OS Kernel</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono text-xl font-bold text-blue-400">
+                          {Math.floor(respringTimeLeft / 60).toString().padStart(2, '0')}:{(respringTimeLeft % 60).toString().padStart(2, '0')}
+                        </span>
+                        <p className="text-[9px] text-zinc-500 font-bold uppercase select-none">Time remaining</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-zinc-900 border border-zinc-805/85 rounded-2xl p-5 text-left space-y-3">
+                      <div className="flex items-center justify-between text-xs font-bold text-zinc-400 select-none">
+                        <span>Restoring System State...</span>
+                        <span className="text-blue-400 font-mono">{Math.floor(((180 - respringTimeLeft) / 180) * 100)}%</span>
+                      </div>
+                      
+                      {/* Detailed Progress Bar */}
+                      <div className="h-2 w-full bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
+                        <motion.div 
+                          className="h-full bg-blue-500" 
+                          style={{ width: `${((180 - respringTimeLeft) / 180) * 100}%` }}
+                          transition={{ ease: "linear" }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Dynamic console log lines */}
+                    <div className="bg-black/80 border border-zinc-850 rounded-2xl p-4 text-left font-mono text-[10px] leading-relaxed text-zinc-400 h-44 overflow-y-auto scroll-smooth">
+                      <p className="text-blue-400 font-bold mb-1 border-b border-zinc-800 pb-1">CONSOLE LOGS (CANARY REBOOT)</p>
+                      <p className="text-zinc-500">[WARN] Unscheduled system crash recovery initiated.</p>
+                      
+                      {respringTimeLeft <= 180 && (
+                        <>
+                          <p className="text-blue-400 font-medium">[00:01] Loading secure boot parameters...</p>
+                          <p className="text-zinc-450">[00:03] Starting kernel core daemon thread...</p>
+                        </>
+                      )}
+                      
+                      {respringTimeLeft <= 160 && (
+                        <>
+                          <p className="text-blue-400 font-medium">[00:20] Mounting system HAL hardware components...</p>
+                          <p className="text-zinc-450">[00:24] Validating local device interface indices...</p>
+                        </>
+                      )}
+
+                      {respringTimeLeft <= 140 && (
+                        <>
+                          <p className="text-blue-400 font-medium">[00:40] Resetting sound engine oscillators...</p>
+                          <p className="text-zinc-450">[00:45] Purging active memory buffers & caches...</p>
+                        </>
+                      )}
+
+                      {respringTimeLeft <= 110 && (
+                        <>
+                          <p className="text-blue-400 font-medium">[01:10] Executing XAML experience rendering check...</p>
+                          <p className="text-zinc-450">[01:18] Generating default glassmorphic themes shader config...</p>
+                        </>
+                      )}
+
+                      {respringTimeLeft <= 80 && (
+                        <>
+                          <p className="text-blue-400 font-medium">[01:40] Clearing active database connection pools...</p>
+                          <p className="text-zinc-450">[01:52] Authenticating sandbox secure file access token...</p>
+                        </>
+                      )}
+
+                      {respringTimeLeft <= 50 && (
+                        <>
+                          <p className="text-blue-400 font-medium">[02:10] Restoring user metadata credentials...</p>
+                          <p className="text-zinc-450">[02:22] Synchronizing telemetry registry keys & credentials...</p>
+                        </>
+                      )}
+
+                      {respringTimeLeft <= 20 && (
+                        <>
+                          <p className="text-blue-400 font-medium">[02:40] Verification: SUCCESS. Preparing interface lock release...</p>
+                          <p className="text-green-400 font-extrabold">[02:50] BOOT CONTEXT SECURE. App starting in 5 seconds...</p>
+                        </>
+                      )}
+
+                      {respringTimeLeft <= 5 && (
+                        <p className="text-blue-400 font-black animate-pulse">[02:55] REBOOT IMMEDIATELY. Have a nice flight! 🚀</p>
+                      )}
+                    </div>
+
+                    <div className="text-[10px] text-zinc-500 font-semibold leading-relaxed text-center">
+                      Please do not close this browser tab or navigate away. Vplay OS requires this time to safely verify layout integrity and re-bind secure database.
+                    </div>
+
+                    {/* Developer Skip / Dev Mode Override */}
+                    {isDev && (
+                      <div className="pt-2 text-center">
+                        <button
+                          onClick={() => {
+                            sessionStorage.setItem("vplay_session_crashed", "false");
+                            window.location.reload();
+                          }}
+                          className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-400 hover:text-white font-mono font-black rounded-lg transition-colors border border-zinc-700 cursor-pointer"
+                        >
+                          [DEV ONLY] Bypass Long Respring (Reload Now)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
