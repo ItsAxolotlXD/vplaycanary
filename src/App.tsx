@@ -13,6 +13,7 @@ import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, updateDoc, a
 
 import { channels, Channel } from "./channels";
 import { VibesContent } from "./components/VibesContent";
+import { SpinTheWheelContent } from "./components/SpinTheWheel";
 import { VTV6CountdownBanner } from "./components/VTV6CountdownBanner";
 
 // Test connection as per critical directive
@@ -51,7 +52,8 @@ const PIZZA_EXPERIMENTS = {
     { id: 'xaml_experience', name: 'Vplay Symphony UI', status: 'Active', desc: 'Trải nghiệm giao diện hoàn toàn mới được tái thiết kế.' },
     { id: 'cobalt_scrollbar', name: 'Cobalt UI 3 Scrollbar', status: 'Experimental', desc: 'Replaces the default browser scrollbar to the new scrollbar of Cobalt UI version 3' },
     { id: 'vids_feature', name: 'Vids Feature', status: 'Experimental', desc: 'Kích hoạt tính năng Vids đăng tải post, blog, polls, ảnh/video dưới 1GB.' },
-    { id: 'redesign_live_page', name: 'Redesign Live Page', status: 'Experimental', desc: 'Tái thiết kế lại trang Phát sóng (Live Page) đẹp mắt và hiện đại hơn với trải nghiệm truyền hình vượt trội.' }
+    { id: 'redesign_live_page', name: 'Redesign Live Page', status: 'Experimental', desc: 'Tái thiết kế lại trang Phát sóng (Live Page) đẹp mắt và hiện đại hơn với trải nghiệm truyền hình vượt trội.' },
+    { id: 'taskbar_experimental', name: 'Experimental Taskbar', status: 'Experimental', desc: 'Kích hoạt thanh Taskbar trải nghiệm đặc biệt ở phía dưới màn hình.' }
   ],
   widgets: [
     { id: 'settings_on_widgets', name: 'Settings on Widgets', status: 'Experimental', desc: 'Moves the app settings in the Widgets Dashboard.' },
@@ -363,6 +365,7 @@ const baseTabs = [
   { name: "Vstore", icon: ShoppingBag, id: "Vstore", isExtra: true },
   { name: "Live", icon: Tv, id: "Phát sóng" },
   { name: "Vibes", icon: Play, id: "Vibes" },
+  { name: "Spin the Wheel!", icon: Compass, id: "Spin the Wheel!" },
   { name: "Labs", icon: Pizza, id: "Pizza" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
 ];
@@ -13455,6 +13458,391 @@ const SendFeedback = ({ size = 20, className }: { size?: number, className?: str
   </svg>
 );
 
+function StartPageContent({ 
+  isDark, 
+  channels, 
+  handleChannelSelect, 
+  searchQuery, 
+  setSearchQuery, 
+  setIsSearchOpen,
+  setActiveTab,
+  addNotification,
+  setFeatureFlags,
+  featureFlags
+}: { 
+  isDark: boolean, 
+  channels: any[], 
+  handleChannelSelect: (ch: any) => void,
+  searchQuery: string,
+  setSearchQuery: (q: string) => void,
+  setIsSearchOpen: (open: boolean) => void,
+  setActiveTab: (tab: string) => void,
+  addNotification?: (title: string, message: string, type?: "info" | "success" | "warning" | "error") => void,
+  setFeatureFlags: (flags: any) => void,
+  featureFlags: any
+}) {
+  const eligibleChannels = useMemo(() => {
+    return channels.filter(c => 
+      c.stream && 
+      c.stream !== "VTV6_COMING_SOON" && 
+      c.name !== "VTV6"
+    );
+  }, [channels]);
+
+  const [recommendedChannel, setRecommendedChannel] = useState<any>(() => {
+    if (eligibleChannels.length === 0) return null;
+    return eligibleChannels[Math.floor(Math.random() * eligibleChannels.length)];
+  });
+
+  const timeOfDayGreeting = useMemo(() => {
+    const hours = new Date().getHours();
+    if (hours < 12) return "Good morning – Let’s start!";
+    if (hours < 18) return "Good afternoon – Let’s start!";
+    return "Good evening – Let’s start!";
+  }, []);
+
+  const handleNextRecommendation = useCallback(() => {
+    if (eligibleChannels.length <= 1) return;
+    const filtered = eligibleChannels.filter(c => c.name !== recommendedChannel?.name);
+    if (filtered.length > 0) {
+      const nextCh = filtered[Math.floor(Math.random() * filtered.length)];
+      setRecommendedChannel(nextCh);
+    }
+  }, [eligibleChannels, recommendedChannel]);
+
+  // Syncing search placeholder with 3 seconds recommended interval
+  const [randomPlaceholderName, setRandomPlaceholderName] = useState("VTV1");
+
+  useEffect(() => {
+    const placeholderOptions = [
+      "VTV1", "VTV3", "VTV6 Sắp quay lại", "VTV9", "HTV7", "HTV9", "ON SPORT +", "ON Vie Giải Trí", "VTV5", "VTC1", "Bóng đá TV", "Thể thao TV"
+    ];
+
+    const timer = setInterval(() => {
+      handleNextRecommendation();
+      
+      setRandomPlaceholderName(prev => {
+        const remaining = placeholderOptions.filter(item => item !== prev);
+        return remaining[Math.floor(Math.random() * remaining.length)];
+      });
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [handleNextRecommendation]);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return channels.filter(ch => 
+      ch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ch.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [channels, searchQuery]);
+
+  // Count down target for VTV6 Return
+  const [timeLeft, setTimeLeft] = useState({ days: 17, hours: 9, minutes: 47, seconds: 32 });
+
+  useEffect(() => {
+    const target = new Date("2026-06-15T19:00:00").getTime();
+    
+    const updateTime = () => {
+      const now = new Date().getTime();
+      const difference = target - now;
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+      const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const h = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((difference % (1000 * 60)) / 1000);
+      setTimeLeft({ days: d, hours: h, minutes: m, seconds: s });
+    };
+    
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!recommendedChannel) return null;
+
+  return (
+    <div className="flex-1 w-full bg-[#18181b] min-h-[calc(100vh-140px)] flex flex-col items-center justify-center p-4 md:p-8 select-none transition-colors duration-500">
+      
+      {searchQuery.trim() !== "" ? (
+        // Search Results Hub directly inside the tab
+        <div className="w-full max-w-xl bg-zinc-900 border border-zinc-800 rounded-[32px] p-6 text-center shadow-2xl space-y-4 animate-fade-in my-6">
+          <div className="flex items-center justify-between px-2">
+            <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">
+              Kết quả tìm kiếm cho "{searchQuery}"
+            </span>
+            <button 
+              onClick={() => setSearchQuery("")} 
+              className="text-zinc-500 hover:text-white text-xs font-semibold cursor-pointer transition-colors"
+            >
+              Xóa tìm kiếm
+            </button>
+          </div>
+          
+          {searchResults.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+              {searchResults.map((ch: any) => (
+                <div
+                  key={ch.name}
+                  onClick={() => handleChannelSelect(ch)}
+                  className="flex items-center gap-3 p-3 bg-zinc-800/40 hover:bg-zinc-800 border border-zinc-700/20 hover:border-blue-500/40 rounded-2xl cursor-pointer transition-all duration-300 group"
+                >
+                  <div className="w-10 h-10 bg-zinc-950 rounded-xl p-1.5 flex items-center justify-center shrink-0">
+                    <img 
+                      src={ch.logo} 
+                      alt={ch.name} 
+                      className="w-full h-full object-contain filter group-hover:scale-105 transition-transform" 
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <div className="text-left overflow-hidden">
+                    <p className="text-white text-xs font-bold truncate group-hover:text-blue-400 transition-colors">{ch.name}</p>
+                    <p className="text-zinc-500 text-[10px] font-medium truncate">{ch.category}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8">
+              <p className="text-zinc-500 text-sm font-semibold">Không tìm thấy kênh nào phù hợp</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        // Centered upper recommended card with magnified logo and glow effect around it
+        <div 
+          onClick={() => handleChannelSelect(recommendedChannel)}
+          style={{
+            boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)"
+          }}
+          className="w-full max-w-xl bg-gradient-to-b from-zinc-900 via-zinc-900 to-zinc-950 border border-zinc-800/80 rounded-[32px] p-8 md:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden group cursor-pointer hover:border-blue-500/30 hover:shadow-[0_0_60px_rgba(59,130,246,0.15)] transition-all duration-500 min-h-[380px] md:min-h-[420px]"
+        >
+          {/* Glowing background underlay */}
+          <div className="absolute inset-0 bg-radial-gradient from-blue-500/5 via-transparent to-transparent pointer-events-none group-hover:from-blue-500/10 transition-all duration-500" />
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={recommendedChannel.name}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+              className="flex flex-col items-center justify-center w-full"
+            >
+              {/* Centered logo with pulsing ring/glow effect around logo */}
+              <div className="relative w-44 h-44 md:w-52 md:h-52 flex items-center justify-center mb-6">
+                <div className="absolute inset-0 bg-blue-500/15 rounded-full blur-[45px] scale-95 group-hover:scale-110 group-hover:bg-blue-500/25 transition-all duration-1000 animate-pulse shadow-[0_0_50px_20px_rgba(59,130,246,0.25)]" />
+                <motion.img 
+                  initial={{ rotate: -5 }}
+                  animate={{ rotate: 0 }}
+                  transition={{ duration: 0.6 }}
+                  src={recommendedChannel.logo} 
+                  alt={recommendedChannel.name} 
+                  className="max-w-[85%] max-h-[85%] object-contain filter drop-shadow-[0_0_25px_rgba(59,130,246,0.5)] md:drop-shadow-[0_0_40px_rgba(59,130,246,0.7)] group-hover:scale-110 transition-all duration-700" 
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Badge line representing details info */}
+              <div className="relative z-10 flex items-center gap-1.5 mb-5 select-none">
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold text-zinc-300 uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
+                  {recommendedChannel.category}
+                </span>
+                <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[9px] font-black text-blue-400 tracking-wider">
+                  ▶ XEM NGAY
+                </span>
+
+                {/* Cycle / refresh recommendation option inside Card */}
+                <button 
+                  title="Đổi kênh đề xuất"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextRecommendation();
+                  }}
+                  className="ml-2 w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all text-zinc-400 hover:text-white pointer-events-auto active:scale-90"
+                >
+                  <RefreshCw size={10} className="hover:rotate-180 transition-transform duration-500" />
+                </button>
+              </div>
+
+              {/* Title description block centered */}
+              <div className="relative z-10 space-y-2 max-w-sm mt-2 text-center">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight text-white leading-tight uppercase group-hover:text-blue-200 transition-colors">
+                  KÊNH {recommendedChannel.category} ĐỀ XUẤT:<br /> 
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-300">
+                    {recommendedChannel.name}
+                  </span>
+                </h2>
+                <p className="text-zinc-400 text-[10px] sm:text-xs leading-relaxed font-semibold">
+                  Bữa tiệc giải trí truyền hình, tin tức phim điện ảnh, thiếu nhi đặc sắc được tuyển chọn liên tục.
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Time greeting banner */}
+      <h3 className="text-xl md:text-[26px] font-medium tracking-tight text-white/90 mt-10 mb-4 font-sans text-center">
+        {timeOfDayGreeting}
+      </h3>
+
+      {/* Custom integrated Search Input on Start tab */}
+      <div className="w-full max-w-xl relative">
+        <input 
+          type="text"
+          placeholder={`Search channels (e.g: ${randomPlaceholderName})`}
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            // On Start page, do not trigger global search popup, keep results inline
+            setIsSearchOpen(false);
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSearchOpen(false);
+          }}
+          className="w-full h-12 rounded-full px-6 bg-zinc-900 hover:bg-zinc-900 focus:bg-zinc-900 border border-zinc-800/60 focus:border-zinc-700 text-white placeholder-zinc-500/80 text-sm font-semibold tracking-wide transition-all focus:outline-none shadow-2xl text-center"
+        />
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
+          <Search size={14} />
+        </div>
+      </div>
+
+      {/* VTV6 Countdown Banner under the search bar */}
+      <div className="w-full max-w-xl mt-5 p-5 rounded-2xl bg-gradient-to-r from-red-650 via-zinc-950/40 to-blue-950/30 border border-red-500/30 overflow-hidden relative shadow-lg group">
+        <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/15 pointer-events-none" />
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-red-500/10 blur-3xl rounded-full" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 justify-between w-full">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-11 rounded-lg bg-red-650 flex items-center justify-center p-1.5 relative shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+              <span className="text-white text-xs font-black italic tracking-tighter">VTV6</span>
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            </div>
+            <div className="text-left">
+              <h4 className="text-white text-xs font-bold uppercase tracking-wide flex items-center gap-1.5">
+                <span>VTV6 COUNTDOWN FOR RETURN</span>
+              </h4>
+              <p className="text-zinc-400 text-[10px] font-semibold">Tái khởi động và đồng hành cùng giải đấu lớn!</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-1.5 select-none shrink-0 mt-3 md:mt-0">
+            {/* Days block */}
+            <div className="flex flex-col items-center bg-black/50 backdrop-blur-md border border-white/5 rounded-lg w-10 py-1">
+              <span className="text-white text-xs font-bold tracking-tight">{String(timeLeft.days).padStart(2, "0")}</span>
+              <span className="text-zinc-500 text-[7px] font-bold uppercase">Ngày</span>
+            </div>
+            <span className="text-zinc-500 text-xs font-bold">:</span>
+            {/* Hours block */}
+            <div className="flex flex-col items-center bg-black/50 backdrop-blur-md border border-white/5 rounded-lg w-10 py-1">
+              <span className="text-white text-xs font-bold tracking-tight">{String(timeLeft.hours).padStart(2, "0")}</span>
+              <span className="text-zinc-500 text-[7px] font-bold uppercase">Giờ</span>
+            </div>
+            <span className="text-zinc-500 text-xs font-bold">:</span>
+            {/* Mins block */}
+            <div className="flex flex-col items-center bg-black/50 backdrop-blur-md border border-white/5 rounded-lg w-10 py-1">
+              <span className="text-white text-xs font-bold tracking-tight">{String(timeLeft.minutes).padStart(2, "0")}</span>
+              <span className="text-zinc-500 text-[7px] font-bold uppercase">Phút</span>
+            </div>
+            <span className="text-zinc-500 text-xs font-bold">:</span>
+            {/* Secs block */}
+            <div className="flex flex-col items-center bg-red-650/30 backdrop-blur-md border border-red-500/30 rounded-lg w-10 py-1 animate-pulse">
+              <span className="text-white text-xs font-bold tracking-tight text-red-400">{String(timeLeft.seconds).padStart(2, "0")}</span>
+              <span className="text-red-400 text-[7px] font-bold uppercase">Giây</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recommended All Live Channels section with staggered animations */}
+      <div className="w-full max-w-4xl mt-12 mb-4 text-center">
+        <h3 className="text-sm font-black uppercase tracking-widest text-blue-500 mb-4 select-none">
+          Tất cả kênh truyền hình đề xuất
+        </h3>
+        <div className="flex gap-4 overflow-x-auto pb-4 pt-1 px-4 justify-start sm:justify-start md:justify-center custom-scrollbar w-full">
+          {eligibleChannels.map((ch: any, index: number) => (
+            <motion.div
+              key={ch.name}
+              initial={{ opacity: 0, scale: 0.85, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.45), ease: "easeOut" }}
+              whileHover={{ scale: 1.05, y: -4 }}
+              onClick={() => handleChannelSelect(ch)}
+              className="flex flex-col items-center bg-zinc-900/65 hover:bg-zinc-900 border border-zinc-800/60 hover:border-blue-500/30 rounded-2xl p-4 cursor-pointer transition-all shrink-0 w-28 text-center select-none shadow hover:shadow-[0_8px_25px_rgba(59,130,246,0.12)]"
+            >
+              <div className="w-12 h-12 bg-black rounded-xl p-2 flex items-center justify-center shrink-0 mb-3 shadow border border-zinc-800">
+                <img 
+                  src={ch.logo} 
+                  alt={ch.name} 
+                  className="w-full h-full object-contain filter group-hover:scale-105 transition-transform" 
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <p className="text-white text-[11px] font-bold truncate max-w-full leading-none">{ch.name}</p>
+              <span className="text-[9px] text-blue-400 font-extrabold tracking-wider mt-2.5 bg-blue-550/10 px-1.5 py-0.5 rounded uppercase">Live</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Secondary Quick Action Buttons */}
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-8 max-w-xl w-full">
+        <button 
+          onClick={() => {
+            setActiveTab("Trang chủ");
+            addNotification?.("Hệ thống", "Đã chuyển đến bảng điều khiển Widgets mới.", "info");
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800/80 text-zinc-300 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 text-xs font-bold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer shadow-md"
+        >
+          <LayoutGrid size={13} className="text-blue-400 shrink-0" />
+          <span>Open widgets feed</span>
+        </button>
+
+        <button 
+          onClick={() => {
+            setActiveTab("Cài đặt");
+            addNotification?.("Hệ thống", "Đã mở Cài đặt hệ thống.", "info");
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800/80 text-zinc-300 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 text-xs font-bold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer shadow-md"
+        >
+          <Settings size={13} className="text-purple-400 shrink-0" />
+          <span>Open settings</span>
+        </button>
+
+        <button 
+          onClick={() => {
+            const flags = {
+              top_bar: true, 
+              settings_on_widgets: true, 
+              xaml_home: true, 
+              xaml_view_test: true, 
+              cobalt_ui: true
+            };
+            setFeatureFlags(flags);
+            localStorage.setItem("vplay_feature_flags", JSON.stringify(flags));
+            addNotification?.("Hệ thống", "Đã kích hoạt toàn bộ tính năng thử nghiệm đặc biệt!", "success");
+          }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800/80 text-zinc-300 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 text-xs font-bold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer shadow-md"
+        >
+          <Zap size={13} className="text-amber-400 shrink-0" />
+          <span>Activate experimental features</span>
+        </button>
+      </div>
+
+    </div>
+  );
+}
+
+
 export default function App() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
@@ -13493,6 +13881,9 @@ export default function App() {
   });
   const [showTemperature, setShowTemperature] = useState<boolean>(() => {
     return localStorage.getItem("vplay_show_temperature") !== "false";
+  });
+  const [useStartPage, setUseStartPage] = useState<boolean>(() => {
+    return localStorage.getItem("vplay_use_start_page") === "true";
   });
 
   useEffect(() => {
@@ -14069,7 +14460,14 @@ export default function App() {
     });
     setShowOOBE(true);
   };
-  const [activeTab, setActiveTab] = useState("Trang chủ");
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const startPageSetting = localStorage.getItem("vplay_use_start_page") === "true";
+    const refreshSetting = localStorage.getItem("vplay_refreshing_mode") === "true";
+    if (startPageSetting || refreshSetting) {
+      return "Start";
+    }
+    return "Trang chủ";
+  });
   const [isAISidebarOpen, setIsAISidebarOpen] = useState(false);
 
   const activeSearchPlaceholder = useMemo(() => {
@@ -14657,18 +15055,22 @@ export default function App() {
     }
   };
 
-  const tabs = baseTabs.map(t => {
-    if (t.id === "Vibes") {
-      return { ...t, name: user ? "Vibes" : "Vibes Lite" };
-    }
-    return t;
-  }).concat(customTabs.map(ct => ({
+  const tabs = [
+    ...((useStartPage || refreshingMode) ? [{ name: "Home (new)", icon: Leaf, id: "Start" }] : []),
+    ...baseTabs.map(t => {
+      if (t.id === "Vibes") {
+        return { ...t, name: user ? "Vibes" : "Vibes Lite" };
+      }
+      return t;
+    })
+  ].concat(customTabs.map(ct => ({
     name: ct.name,
     icon: Layout,
     id: ct.id,
     isCustom: true
   } as any))).filter(t => {
     if (refreshingMode) {
+      if (t.id === "Trang chủ" || t.name === "Home") return false;
       if (t.id === "Do For Me" || t.id === "Vibes" || t.id === "Vstore" || t.name === "Do For Me" || t.name === "Vibes" || t.name === "Vstore" || t.name === "Vibes Lite") return false;
     }
     if (t.id === "Cài đặt" && featureFlags?.settings_on_widgets) return false;
@@ -15524,11 +15926,11 @@ export default function App() {
               transition={{ duration: 0.15, ease: "easeOut" }}
               style={{ 
                 position: "fixed",
-                top: Math.min(contextMenu.y, window.innerHeight - 480),
+                top: Math.min(contextMenu.y, window.innerHeight - 520),
                 left: Math.min(contextMenu.x, window.innerWidth - 240),
                 zIndex: 99999
               }}
-              className="w-56 bg-[#0f172ab0] backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl flex flex-col gap-0.5 select-none"
+              className="w-56 bg-[#18181b] border border-zinc-800 rounded-2xl p-1.5 shadow-2xl flex flex-col gap-0.5 select-none"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Hide/Show Sidebar */}
@@ -15609,17 +16011,44 @@ export default function App() {
               </button>
 
               {/* Refreshing mode toggle (leaf icon!) */}
+              {/* Experimental Start Page toggle (icon lá cây!) */}
+              <button
+                onClick={() => {
+                  const nextVal = !useStartPage;
+                  setUseStartPage(nextVal);
+                  localStorage.setItem("vplay_use_start_page", String(nextVal));
+                  addNotification?.("Hệ thống", `Đã ${nextVal ? 'bật' : 'tắt'} trang Home (new).`, 'info');
+                  if (nextVal) {
+                    setActiveTab("Start");
+                  } else if (activeTab === "Start") {
+                    setActiveTab("Trang chủ");
+                  }
+                  setContextMenu(null);
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Leaf size={14} className={useStartPage ? "text-emerald-400" : "opacity-70"} />
+                <div className="flex-grow flex items-center justify-between">
+                  <span>Home (new)</span>
+                  <div className={`w-1.5 h-1.5 rounded-full ${useStartPage ? "bg-emerald-500 animate-pulse" : "bg-slate-500"}`} />
+                </div>
+              </button>
+
+              {/* Refreshing mode toggle */}
               <button
                 onClick={() => {
                   const nextVal = !refreshingMode;
                   setRefreshingMode(nextVal);
                   localStorage.setItem("vplay_refreshing_mode", String(nextVal));
                   addNotification?.("Hệ thống", `Đã ${nextVal ? 'bật' : 'tắt'} chế độ tự động làm mới (Refreshing Mode).`, 'info');
+                  if (nextVal) {
+                    setActiveTab("Start");
+                  }
                   setContextMenu(null);
                 }}
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
               >
-                <Leaf size={14} className={refreshingMode ? "text-emerald-400 animate-pulse" : "opacity-70"} />
+                <RefreshCw size={14} className={refreshingMode ? "text-emerald-400" : "opacity-70"} />
                 <div className="flex-grow flex items-center justify-between">
                   <span>Refreshing Mode</span>
                   <div className={`w-1.5 h-1.5 rounded-full ${refreshingMode ? "bg-emerald-500 animate-pulse" : "bg-slate-500"}`} />
@@ -15757,6 +16186,20 @@ export default function App() {
               transition={featureFlags?.xaml_view_test ? { duration: 0.3, ease: [0.23, 1, 0.32, 1] } : { duration: 0.4, ease: "easeOut" }}
               className="h-full flex flex-col"
             >
+              {(displayTab === "Start") && (
+                <StartPageContent 
+                  isDark={isDark} 
+                  channels={scambidifiedChannels} 
+                  handleChannelSelect={handleChannelSelect} 
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  setIsSearchOpen={setIsSearchOpen}
+                  setActiveTab={setActiveTab}
+                  addNotification={addNotification}
+                  setFeatureFlags={setFeatureFlags}
+                  featureFlags={featureFlags}
+                />
+              )}
               {(displayTab === "Trang chủ") && (
                 <div className={`flex-1 flex flex-col transition-colors duration-500 ${featureFlags.xaml_home ? "bg-black/40 backdrop-blur-3xl" : "p-8"}`}>
                   {featureFlags.xaml_home ? (
@@ -16238,6 +16681,22 @@ export default function App() {
                     addNotification={addNotification} 
                     vpoints={vpoints}
                     setVpoints={setVpoints}
+                  />
+                </div>
+              )}
+              {displayTab === "Spin the Wheel!" && (
+                <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
+                  <SpinTheWheelContent 
+                    isDark={isDark}
+                    channels={scambidifiedChannels.filter(c => c.stream && c.stream !== "VTV6_COMING_SOON" && c.name !== "VTV6")}
+                    user={user}
+                    onLogin={handleLogin}
+                    handleChannelSelect={handleChannelSelect}
+                    vpoints={vpoints}
+                    setVpoints={setVpoints}
+                    isUnlimitedVpoints={isUnlimitedVpoints}
+                    addNotification={addNotification}
+                    isDev={isDev}
                   />
                 </div>
               )}
