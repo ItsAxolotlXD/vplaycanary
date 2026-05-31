@@ -12,7 +12,6 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, on
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, updateDoc, arrayUnion, getDocFromServer, addDoc } from "firebase/firestore";
 
 import { channels, Channel } from "./channels";
-import { VibesContent } from "./components/VibesContent";
 import { SpinTheWheelContent } from "./components/SpinTheWheel";
 import { VTV6CountdownBanner } from "./components/VTV6CountdownBanner";
 
@@ -364,7 +363,6 @@ const baseTabs = [
   { name: "Widgets", icon: LayoutDashboard, id: "Widgets" },
   { name: "Vstore", icon: ShoppingBag, id: "Vstore", isExtra: true },
   { name: "Live", icon: Tv, id: "Phát sóng" },
-  { name: "Vibes", icon: Play, id: "Vibes" },
   { name: "Spin the Wheel!", icon: Compass, id: "Spin the Wheel!" },
   { name: "Labs", icon: Pizza, id: "Pizza" },
   { name: "Do For Me", icon: Sparkles, id: "Do For Me" },
@@ -520,6 +518,27 @@ function ChannelLogo({ src, alt, className, isDark, liquidGlass }: { src: string
   };
 
   const scaleClass = scaleMap[alt] || (alt.startsWith("VTV") ? "md:scale-[0.9]" : "");
+
+  if (alt === "Quảng Ngãi 2 (QNgTV2)") {
+    return (
+      <div className={`${className} flex items-center justify-center gap-2 overflow-visible h-full w-full`}>
+        <img 
+          src={src} 
+          alt={alt} 
+          referrerPolicy="no-referrer"
+          onError={() => setError(true)}
+          className={`object-contain transition-all duration-300 max-h-[85%] max-w-[65%] ${
+            liquidGlass === "tinted" 
+              ? "opacity-100" 
+              : !isDark ? "drop-shadow-[0_8px_16px_rgba(0,0,0,0.15)]" : ""
+          } ${scaleClass}`} 
+        />
+        <span className="font-sans font-extrabold text-3xl md:text-4xl text-white select-none italic tracking-tighter drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] [text-shadow:_0_2px_4px_rgba(0,0,0,0.8)] filter inline-block pl-1">
+          2
+        </span>
+      </div>
+    );
+  }
 
   return (
     <img 
@@ -1725,65 +1744,7 @@ function WidgetWrapper({ w, isDark, location, time, onResize, onRemove, onMove, 
             </div>
           )}
 
-          {w.type === "vconnect_spark" && (
-            <div className="flex flex-col h-full overflow-hidden justify-between w-full">
-               <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-purple-500/10 rounded-[18px]">
-                    <Play size={20} className="text-purple-600 fill-current" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[12px] font-semibold text-slate-400">Siêu tốc</span>
-                    <span className="text-sm font-semibold text-slate-800 tracking-tight">Social Vibes</span>
-                  </div>
-               </div>
-               
-               <div className="flex-1 flex flex-col justify-center gap-2 my-2 pointer-events-auto">
-                 <button 
-                   onClick={() => {
-                     localStorage.setItem("vconnect_quick_trigger", "story");
-                     onNavigate("Vibes");
-                   }}
-                   className="w-full flex items-center justify-between p-2.5 bg-purple-50 hover:bg-purple-100/80 rounded-xl text-left border border-purple-100 transition-all active:scale-[0.98]"
-                 >
-                   <div className="flex items-center gap-2">
-                     <Camera size={14} className="text-purple-600" />
-                     <span className="text-xs font-black text-purple-950">Đăng story mới...</span>
-                   </div>
-                   <ArrowRight size={12} className="text-purple-400" />
-                 </button>
-
-                 <button 
-                   onClick={() => {
-                     localStorage.setItem("vconnect_quick_trigger", "feed");
-                     onNavigate("Vibes");
-                   }}
-                   className="w-full flex items-center justify-between p-2.5 bg-indigo-50 hover:bg-indigo-100/80 rounded-xl text-left border border-indigo-100 transition-all active:scale-[0.98]"
-                 >
-                   <div className="flex items-center gap-2">
-                     <MessageSquare size={14} className="text-indigo-600" />
-                     <span className="text-xs font-black text-indigo-950">Đăng bài viết mới...</span>
-                   </div>
-                   <ArrowRight size={12} className="text-indigo-400" />
-                 </button>
-
-                 <button 
-                   onClick={() => {
-                     localStorage.setItem("vconnect_quick_trigger", "vchat");
-                     onNavigate("Vibes");
-                   }}
-                   className="w-full flex items-center justify-between p-2.5 bg-pink-50 hover:bg-pink-100/80 rounded-xl text-left border border-pink-100 transition-all active:scale-[0.98]"
-                 >
-                   <div className="flex items-center gap-2">
-                     <Mail size={14} className="text-pink-600" />
-                     <span className="text-xs font-black text-pink-950">Mờ nhắn tin vChat...</span>
-                   </div>
-                   <ArrowRight size={12} className="text-pink-400" />
-                 </button>
-               </div>
-            </div>
-          )}
-
-          {!["weather", "clock_date", "vtv6_countdown", "stocks", "ports", "entertainment", "notify", "history", "record", "channel", "music_player", "sys_mon", "notes", "crypto", "world_clock", "calendar_alt", "thirdparty", "vconnect_spark"].includes(w.type) && (
+          {!["weather", "clock_date", "vtv6_countdown", "stocks", "ports", "entertainment", "notify", "history", "record", "channel", "music_player", "sys_mon", "notes", "crypto", "world_clock", "calendar_alt", "thirdparty"].includes(w.type) && (
             <div className="flex flex-col h-full items-center justify-center text-center">
                <div className="p-4 bg-blue-500/5 rounded-[28px] mb-3">
                    <Flask size={32} className="text-blue-500/20" />
@@ -3613,7 +3574,6 @@ function TVContent({
   );
 
   useEffect(() => {
-    if (!user && !isDev) return;
     if (showSplash) return; // Wait until sound is unblocked by user interaction
     
     // Always try to reset mute when splash is gone
@@ -3955,35 +3915,8 @@ function TVContent({
               </div>
             )}
 
-            {/* Locked for non-logged users */}
-            {!user && !isDev && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-xl p-6 text-center text-white">
-                <motion.div 
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="p-8 border border-white/15 bg-zinc-900/90 rounded-[28px] max-w-sm shadow-2xl flex flex-col items-center text-center space-y-4"
-                >
-                  <div className="p-3 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full">
-                    <Lock size={28} />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-black tracking-tight text-white uppercase font-bold">Yêu cầu đăng nhập</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Kênh này yêu cầu xác thực tài khoản. Vui lòng đăng nhập vào ứng dụng để tiếp tục thưởng thức.
-                    </p>
-                  </div>
-                  <button 
-                    onClick={onLogin}
-                    className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"
-                  >
-                    Đăng nhập tài khoản
-                  </button>
-                </motion.div>
-              </div>
-            )}
-
             {/* Under Video Floating Glass Controls */}
-            {!isMaintenance && (user || isDev) && (
+            {!isMaintenance && (
               <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end opacity-0 group-hover/player:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
                 <div className="flex items-center justify-between gap-4 pointer-events-auto bg-[#0a0a0c]/80 backdrop-blur-md rounded-2xl border border-white/5 p-3">
                   
@@ -4371,41 +4304,7 @@ function TVContent({
       } ${
         liquidGlass ? "rounded-2xl" : "rounded-lg"
       } ${isDark ? "border-slate-800" : "border-slate-300"}`}>
-        <video 
-          ref={videoRef} 
-          className="w-full h-full object-contain z-10" 
-          autoPlay 
-          playsInline 
-          muted={isMuted}
-          loop={active.name === "VTV6"}
-        />
-        {!user && !isDev ? (
-          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/40 p-6 text-center ${
-            liquidGlass ? "backdrop-blur-xl" : "backdrop-blur-none"
-          }`}>
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className={`p-10 border shadow-2xl flex flex-col items-center space-y-6 bg-white/80 border-black/5 ${
-                liquidGlass ? "rounded-[40px]" : "rounded-2xl"
-              }`}
-            >
-              <div className="p-4 rounded-full bg-purple-50">
-                <Lock className="h-10 w-10 text-purple-600" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold text-slate-900">Đăng nhập để xem</h3>
-                <p className="text-slate-500 text-sm max-w-[280px]">Vui lòng đăng nhập tài khoản VPlay để có thể xem kênh trực tuyến này.</p>
-              </div>
-              <button 
-                onClick={onLogin}
-                className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-3xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-purple-600/20"
-              >
-                Đăng nhập ngay
-              </button>
-            </motion.div>
-          </div>
-        ) : isMultiview ? (
+        {isMultiview ? (
           <div className={`w-full h-full grid gap-2 p-2 ${
             multiviewCount <= 2 ? "grid-cols-2" : 
             multiviewCount <= 4 ? "grid-cols-2" : 
@@ -4541,10 +4440,12 @@ function TVContent({
             ) : (
               <video
                 ref={videoRef}
-                className="w-full h-full"
+                className="w-full h-full object-contain z-10"
                 autoPlay
+                playsInline
                 muted={isMuted}
                 onClick={togglePlay}
+                loop={active.name === "VTV6"}
               />
             )}
             
@@ -7959,168 +7860,6 @@ function SettingsContent({
         </div>
       )}
 
-      {/* Vconnect settings */}
-      <div className={`p-8 rounded-[40px] border flex flex-col transition-all w-full ${isDark ? "border-white/5 bg-white/5" : "border-black/5 bg-white shadow-xl shadow-slate-200/50"} ${liquidGlass ? "backdrop-blur-xl" : ""}`}>
-        <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-500">
-            <ShoppingBag size={24} />
-          </div>
-          <div>
-            <h3 className={`font-semibold text-xl tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Cài đặt Vibes & Hồ sơ</h3>
-            <p className="text-xs text-slate-500 font-medium tracking-wide uppercase mt-0.5">Tùy chỉnh giao diện độc lập và quản lý hồ sơ mạng xã hội</p>
-          </div>
-        </div>
-
-        <div className="space-y-8">
-          {/* Vconnect Theme Switcher */}
-          <div className="space-y-3 text-left">
-            <div className="flex items-center gap-2 px-1">
-              <Sun size={14} className="text-purple-500 animate-spin-slow" />
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Chủ đề giao diện (Chỉ áp dụng cho Vibes)</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 max-w-md">
-              <button 
-                type="button"
-                onClick={() => {
-                  if (setVconnectIsDark) {
-                    setVconnectIsDark(false);
-                    localStorage.setItem("vplay_vibes_is_dark", "false");
-                    onAlert?.("Vibes", "Đã chuyển chủ đề Vibes sang giao diện Sáng!");
-                  }
-                }}
-                className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 cursor-pointer ${!vconnectIsDark ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400 hover:text-white" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}`}
-              >
-                <Sun size={18} />
-                <span className="text-xs font-bold">Chế độ Sáng (Vibes)</span>
-              </button>
-              <button 
-                type="button"
-                onClick={() => {
-                  if (setVconnectIsDark) {
-                    setVconnectIsDark(true);
-                    localStorage.setItem("vplay_vibes_is_dark", "true");
-                    onAlert?.("Vibes", "Đã chuyển chủ đề Vibes sang giao diện Tối!");
-                  }
-                }}
-                className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 cursor-pointer ${vconnectIsDark ? "bg-purple-600 border-purple-500 text-white shadow-lg" : isDark ? "bg-white/5 border-white/10 text-slate-400 hover:text-white" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}`}
-              >
-                <Moon size={18} />
-                <span className="text-xs font-bold">Chế độ Tối (Vibes)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Moved Profile settings card form into Vconnect Settings */}
-          <div className="border border-white/5 bg-black/20 p-6 rounded-[32px] space-y-4 max-w-2xl text-left">
-            <span className="text-[10px] font-black uppercase tracking-widest text-purple-400 block">Chỉnh sửa Hồ sơ Mạng Xã Hội Vibes</span>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Tên hiển thị</label>
-                <input 
-                  type="text" 
-                  value={vProfileName} 
-                  onChange={(e) => {
-                    setVProfileName(e.target.value);
-                    localStorage.setItem("vplay_vibes_p_name", e.target.value);
-                  }}
-                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Địa điểm</label>
-                <input 
-                  type="text" 
-                  value={vProfileLocation} 
-                  onChange={(e) => {
-                    setVProfileLocation(e.target.value);
-                    localStorage.setItem("vplay_vibes_p_location", e.target.value);
-                  }}
-                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Tiểu sử ngắn</label>
-              <input 
-                type="text" 
-                value={vProfileBio} 
-                onChange={(e) => {
-                  setVProfileBio(e.target.value);
-                  localStorage.setItem("vplay_vibes_p_bio", e.target.value);
-                }}
-                className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Ảnh đại diện (URL)</label>
-                <input 
-                  type="text" 
-                  value={vProfileAvatar} 
-                  onChange={(e) => {
-                    setVProfileAvatar(e.target.value);
-                    localStorage.setItem("vplay_vibes_p_avatar", e.target.value);
-                  }}
-                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-white focus:border-purple-500 outline-none font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] uppercase font-black text-slate-400 mb-1">Ảnh bìa (URL)</label>
-                <input 
-                  type="text" 
-                  value={vProfileCover} 
-                  onChange={(e) => {
-                    setVProfileCover(e.target.value);
-                    localStorage.setItem("vplay_vibes_p_cover", e.target.value);
-                  }}
-                  className="w-full text-xs p-3 rounded-2xl bg-black/50 border border-white/5 text-[#cccccc] focus:border-purple-500 outline-none font-mono"
-                />
-              </div>
-            </div>
-
-            {/* Quick Preset Avatars list */}
-            <div>
-              <span className="block text-[9px] uppercase font-bold text-slate-500 mb-1.5">Ảnh Đại Diện Mẫu</span>
-              <div className="flex gap-2.5">
-                {[
-                  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80"
-                ].map((presetUrl, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      setVProfileAvatar(presetUrl);
-                      localStorage.setItem("vplay_vibes_p_avatar", presetUrl);
-                    }}
-                    className="w-8 h-8 rounded-full overflow-hidden border border-white/20 hover:scale-110 active:scale-95 transition-transform"
-                  >
-                    <img src={presetUrl} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  onAlert?.("Vibes", "Cập nhật thông tin tài khoản Vibes thành công!");
-                }}
-                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl cursor-pointer"
-              >
-                Lưu thay đổi hồ sơ
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -11729,8 +11468,7 @@ function WidgetsDashboard({
                         { type: 'clock_date', name: 'Ngày & Giờ', icon: Clock, desc: 'Đồng hồ hệ thống đa phong cách.' },
                         { type: 'vtv6_countdown', name: 'VTV6 Live', icon: Tv, desc: 'Lịch thi đấu Euro/U23 trên VTV6.' },
                         { type: 'stocks', name: 'Thị trường', icon: TrendingUp, desc: 'Cập nhật chỉ số VN-Index, NASDAQ.' },
-                        { type: 'notify', name: 'Trung tâm tin', icon: Bell, desc: 'Thông báo & News flash.' },
-                        { type: 'vconnect_spark', name: 'Siêu tốc Vibes', icon: Play, desc: 'Đăng nhanh Story, viết bài đăng Feed & nhắn tin Direct!' }
+                        { type: 'notify', name: 'Trung tâm tin', icon: Bell, desc: 'Thông báo & News flash.' }
                       ].filter(w => w.name.toLowerCase().includes(gallerySearch.toLowerCase())).map((item) => (
                         <button 
                           key={item.type}
@@ -14511,7 +14249,6 @@ export default function App() {
       "Do For Me": "Search with AI",
       "Phát sóng": "Search channels",
       "Pizza": "Search experiments",
-      "Vibes": "Search Vibes feed and users",
     };
     if (tabMapping[activeTab as string]) return tabMapping[activeTab as string];
     if (showWidgets && isWidgetsFullScreen) return "Search the web";
@@ -14523,7 +14260,7 @@ export default function App() {
   }, [activeTab, featureFlags?.search_placeholder_treatment, featureFlags?.search_placeholder_treatment_id, randomSearchSeed, showWidgets, isWidgetsFullScreen]);
 
   const showSearchBar = useMemo(() => {
-    const allowedTabs = ["Trang chủ", "Phát sóng", "Pizza", ...(!refreshingMode ? ["Do For Me", "Vibes"] : [])];
+    const allowedTabs = ["Trang chủ", "Phát sóng", "Pizza", ...(!refreshingMode ? ["Do For Me"] : [])];
     return allowedTabs.includes(activeTab as string) || (showWidgets && isWidgetsFullScreen);
   }, [activeTab, showWidgets, isWidgetsFullScreen, refreshingMode]);
 
@@ -15037,33 +14774,31 @@ export default function App() {
   };
 
   const handleChannelSelect = (ch: typeof channels[0]) => {
-    if (!user && !isDev) {
-      setShowAuthModal(true);
-      return;
-    }
     // Locking logic
     const category = (ch.category || "").toLowerCase();
     const isVTVCab = category.includes("vtvcab");
     const isHTV = category.includes("htv");
     const isLocal = category.includes("địa phương") || category.includes("local");
 
-    if (isVTVCab && !purchasedWidgets.includes('channel_pack_vtvcab') && !isDev) {
-      addNotification("VStore", "Kênh này thuộc gói VTVCab. Vui lòng mua từ VStore để xem.", "warning");
-      setActiveBoardTab('vstore');
-      setShowWidgets(true);
-      return;
-    }
-    if (isHTV && !purchasedWidgets.includes('channel_pack_htv') && !isDev) {
-      addNotification("VStore", "Kênh này thuộc gói HTV. Vui lòng mua từ VStore để xem.", "warning");
-      setActiveBoardTab('vstore');
-      setShowWidgets(true);
-      return;
-    }
-    if (isLocal && !purchasedWidgets.includes('channel_pack_local') && !isDev) {
-      addNotification("VStore", "Kênh địa phương yêu cầu gói Local Pack. Vui lòng mua từ VStore để xem.", "warning");
-      setActiveBoardTab('vstore');
-      setShowWidgets(true);
-      return;
+    if (user || isDev) {
+      if (isVTVCab && !purchasedWidgets.includes('channel_pack_vtvcab') && !isDev) {
+        addNotification("VStore", "Kênh này thuộc gói VTVCab. Vui lòng mua từ VStore để xem.", "warning");
+        setActiveBoardTab('vstore');
+        setShowWidgets(true);
+        return;
+      }
+      if (isHTV && !purchasedWidgets.includes('channel_pack_htv') && !isDev) {
+        addNotification("VStore", "Kênh này thuộc gói HTV. Vui lòng mua từ VStore để xem.", "warning");
+        setActiveBoardTab('vstore');
+        setShowWidgets(true);
+        return;
+      }
+      if (isLocal && !purchasedWidgets.includes('channel_pack_local') && !isDev) {
+        addNotification("VStore", "Kênh địa phương yêu cầu gói Local Pack. Vui lòng mua từ VStore để xem.", "warning");
+        setActiveBoardTab('vstore');
+        setShowWidgets(true);
+        return;
+      }
     }
 
     if (ch.name === "VTV6") {
@@ -15074,8 +14809,10 @@ export default function App() {
     }
     setActiveChannel(ch);
     setActiveTab("Phát sóng");
-    setVpoints(prev => prev + 10);
-    addNotification("+10 Vpoints", `Bạn vừa nhận được 10 Vpoints khi xem kênh ${ch.name}!`, 'info');
+    if (user) {
+      setVpoints(prev => prev + 10);
+      addNotification("+10 Vpoints", `Bạn vừa nhận được 10 Vpoints khi xem kênh ${ch.name}!`, 'info');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
     logHistory('channel', `Đã xem kênh: ${ch.name}`);
     incrementStat('channelsWatched');
@@ -15150,12 +14887,7 @@ export default function App() {
 
   const tabs = [
     ...((useStartPage || refreshingMode) ? [{ name: "Home (new)", icon: Leaf, id: "Start" }] : []),
-    ...baseTabs.map(t => {
-      if (t.id === "Vibes") {
-        return { ...t, name: user ? "Vibes" : "Vibes Lite" };
-      }
-      return t;
-    })
+    ...baseTabs
   ].concat(customTabs.map(ct => ({
     name: ct.name,
     icon: Layout,
@@ -15164,14 +14896,13 @@ export default function App() {
   } as any))).filter(t => {
     if (refreshingMode) {
       if (t.id === "Trang chủ" || t.name === "Home") return false;
-      if (t.id === "Do For Me" || t.id === "Vibes" || t.id === "Vstore" || t.name === "Do For Me" || t.name === "Vibes" || t.name === "Vstore" || t.name === "Vibes Lite") return false;
+      if (t.id === "Do For Me" || t.id === "Vstore" || t.name === "Do For Me" || t.name === "Vstore") return false;
     }
     if (t.id === "Cài đặt" && featureFlags?.settings_on_widgets) return false;
     if (t.id === "Quản trị") return false;
     if (t.id === "VTV6_Tab") return false;
     if (t.id === "Design Hub" || t.name === "Design Hub") return false;
     if (t.id === "My Feed" || t.name === "My Feed") return false;
-    if (t.id === "Vibes" && !featureFlags?.vids_feature && !featureFlags?.vids_for_uploads) return false;
     if (t.id === "V-pilot" && (featureFlags?.ai_tools)) return false;
     if (t.id === "V-pilot" && !featureFlags?.ai_tools_preview && !featureFlags?.ai_tools) return false;
     if (t.id === "Search" && featureFlags?.ai_tools) return false;
@@ -16349,14 +16080,14 @@ export default function App() {
                            </motion.div>
                          )}
 
-                         {/* Vconnect Promo Banner for XAML Layout */}
-                         {!refreshingMode && (
+                         {/* Removed */}
+                         {false && (
                            <motion.div 
                              initial={{ opacity: 0, y: 15 }}
                              animate={{ opacity: 1, y: 0 }}
                              className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
                              onClick={() => {
-                               setActiveTab("Vibes");
+                               setActiveTab("Trang chủ");
                              }}
                            >
                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
@@ -16370,7 +16101,7 @@ export default function App() {
                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 border border-purple-500/30">Nổi bật</span>
                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-green-300 bg-green-500/15 border border-green-500/30">Mới</span>
                                  </div>
-                                 <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vibes</h3>
+                                 <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vconnect</h3>
                                  <p className="text-slate-400 text-xs mt-0.5 max-w-xl">Trải nghiệm chia sẻ câu chuyện, đăng tin nhắn thoại, theo dõi tài khoản có tick xanh & xem video ngắn Vshorts cực đỉnh!</p>
                                </div>
                              </div>
@@ -16485,40 +16216,6 @@ export default function App() {
                           <div className="absolute -top-20 -left-20 w-80 h-80 bg-purple-500/20 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
                         </motion.div>
 
-                      {/* Vconnect Promo Banner for Standard Layout */}
-                      {!refreshingMode && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="mb-10 relative overflow-hidden rounded-[24px] bg-gradient-to-r from-purple-900/30 via-indigo-950/30 to-[#12121e] p-6 border border-purple-500/20 group cursor-pointer hover:border-purple-500/40 transition-all shadow-lg"
-                          onClick={() => {
-                            setActiveTab("Vibes");
-                          }}
-                        >
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                          <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
-                              <Users size={24} />
-                            </div>
-                            <div>
-                              <div className="flex items-center justify-center md:justify-start gap-2">
-                                <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 border border-purple-500/30">Nổi bật</span>
-                                <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-green-300 bg-green-500/15 border border-green-500/30">Mới</span>
-                              </div>
-                              <h3 className="text-xl font-bold text-white mt-1">Mạng xã hội Vibes</h3>
-                              <p className="text-slate-400 text-xs mt-0.5 max-w-xl">Trải nghiệm chia sẻ câu chuyện, đăng tin nhắn thoại, theo dõi tài khoản có tick xanh & xem video ngắn Vshorts cực đỉnh!</p>
-                            </div>
-                          </div>
-                          <button 
-                            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2 group-hover:translate-x-1"
-                          >
-                            Thử ngay
-                            <ArrowRight size={12} />
-                          </button>
-                        </div>
-                      </motion.div>
-                      )}
 
                       <HomeContent isDark={isDark} onSwitchToDev={() => setShowDevConfirm(true)} featureFlags={featureFlags} liquidGlass={liquidGlass} channels={scambidifiedChannels} refreshingMode={refreshingMode} setIsRefreshingModeFaqModalOpen={setIsRefreshingModeFaqModalOpen} />
                     </>
@@ -16772,21 +16469,7 @@ export default function App() {
                   />
                 </div>
               )}
-              {displayTab === "Vibes" && (
-                <div className={`rounded-none overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
-                  <VibesContent 
-                    isDark={vconnectIsDark} 
-                    user={user} 
-                    liquidGlass={liquidGlass} 
-                    onLogin={() => setShowAuthModal(true)} 
-                    featureFlags={featureFlags} 
-                    lite={!user} 
-                    addNotification={addNotification} 
-                    vpoints={vpoints}
-                    setVpoints={setVpoints}
-                  />
-                </div>
-              )}
+
               {displayTab === "Spin the Wheel!" && (
                 <div className={`rounded-[32px] overflow-hidden flex-1 flex flex-col ${featureFlags.xaml_experience ? (isDark ? "bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl" : "bg-white/40 backdrop-blur-2xl border border-white/40 shadow-xl") : ""}`}>
                   <SpinTheWheelContent 

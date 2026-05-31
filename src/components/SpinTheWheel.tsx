@@ -671,7 +671,7 @@ export function SpinTheWheelContent({
                   <button 
                     onClick={() => {
                       setShowOutOfPointsModal(false);
-                      // Earn points by going to live TV stream or Vibes
+                      // Earn points by going to live TV stream
                       // Trigger normal notification explaining how to earn
                       if (addNotification) {
                         addNotification("Kiếm Vpoints", "Hãy xem bất cứ kênh Live TV nào để được tự động nhận +10 VP!", "info");
