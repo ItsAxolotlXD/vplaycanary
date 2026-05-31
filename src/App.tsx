@@ -583,6 +583,27 @@ function ChannelLogo({ src, alt, className, isDark, liquidGlass }: { src: string
     );
   }
 
+  if (alt === "TTV HD ENC") {
+    return (
+      <div className={`${className} flex flex-col items-center justify-center overflow-visible h-full w-full relative`}>
+        <img 
+          src={src} 
+          alt={alt} 
+          referrerPolicy="no-referrer"
+          onError={() => setError(true)}
+          className={`object-contain transition-all duration-300 max-h-[70%] max-w-[85%] ${
+            liquidGlass === "tinted" 
+              ? "opacity-100" 
+              : !isDark ? "drop-shadow-[0_8px_16px_rgba(0,0,0,0.15)]" : ""
+          } ${scaleClass}`} 
+        />
+        <span className="font-sans font-black text-[13px] text-purple-400 select-none tracking-widest mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          ENC
+        </span>
+      </div>
+    );
+  }
+
   return (
     <img 
       src={src} 
@@ -3592,14 +3613,29 @@ function TVContent({
     }
   };
 
+  const getStationInfo = (name: string): string => {
+    const normalized = name.toUpperCase();
+    if (normalized.includes("VTV6")) return "DVB-T2 K26 UHF";
+    if (normalized.includes("VTV7") || normalized.includes("VTV8")) return "DVB-T2 K26 UHF";
+    if (normalized.startsWith("VTV")) return "DVB-T2 K27 UHF";
+    if (normalized.startsWith("VTC")) return "DVB-T2 K31 UHF";
+    if (normalized.startsWith("HTV")) return "DVB-T2 K33 UHF";
+    if (normalized.startsWith("K+")) return "DVB-T2 K25 UHF";
+    if (normalized.includes("TTV HD ENC") || normalized.includes("TUYÊN QUANG")) return "DVB-T2 K49 UHF";
+    if (normalized.includes("H1") || normalized.includes("H2")) return "DVB-T2 K30 UHF";
+    if (normalized.includes("THANH HOÁ")) return "DVB-T2 K40 UHF";
+    return "DVB-T2 K45 UHF";
+  };
+
   useEffect(() => {
-    if (active.name === "TTV HD (PVC)" && isPlaying && !showSplash) {
+    const isTestcardChannel = (active.name === "VTV6" || active.status === "maintenance" || !!streamError) && active.name !== "TTV HD ENC";
+    if (isTestcardChannel && isPlaying && !showSplash) {
       startBeep();
     } else {
       stopBeep();
     }
     return () => stopBeep();
-  }, [active.name, isPlaying, showSplash]);
+  }, [active.name, active.status, streamError, isPlaying, showSplash]);
 
   useEffect(() => {
     if (gainRef.current && audioCtxRef.current) {
@@ -3608,7 +3644,7 @@ function TVContent({
   }, [volume, isMuted]);
 
   useEffect(() => {
-    if (active.name !== "TTV HD (PVC)") return;
+    if (active.name !== "TTV HD ENC") return;
     const interval = setInterval(() => {
       if (isPlaying) {
         setYtProgress(p => (p >= ytDuration ? 0 : p + 1));
@@ -3985,59 +4021,27 @@ function TVContent({
             
             <div className="flex items-center gap-3 text-xs font-bold font-mono text-slate-500">
               <Compass size={14} className="text-purple-500" />
-              <span>STATION ID: {active.name.toUpperCase()}</span>
+              <span>STATION ID: {active.name.toUpperCase()} ({getStationInfo(active.name)})</span>
             </div>
           </div>
 
           {/* Sleek Theater Player Frame */}
-          <div className="relative group/player rounded-[30px] overflow-hidden bg-black border border-white/5 shadow-2xl shadow-purple-950/20 aspect-video flex-shrink-0">
+          <div className="relative group/player rounded-none overflow-hidden bg-black border border-white/5 shadow-2xl shadow-purple-950/20 aspect-video flex-shrink-0">
             
             {/* Corner ambient corner lighting */}
             <div className="absolute top-0 left-0 w-32 h-32 bg-purple-600/10 blur-2xl pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-32 h-32 bg-red-600/10 blur-2xl pointer-events-none" />
 
-            {active.name === "TTV HD (PVC)" ? (
+            {active.name === "TTV HD ENC" ? (
               <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex flex-col items-center justify-center overflow-hidden" onClick={unblockAudio}>
                 <iframe
                   id="ttv-hd-pvc-iframe-redesign"
                   className="w-full h-full object-cover border-0 pointer-events-none"
                   src={`https://www.youtube.com/embed/SX-4qgh0CqM?enablejsapi=1&autoplay=1&controls=0&mute=${isMuted ? 1 : 0}&loop=1&playlist=SX-4qgh0CqM&origin=${window.location.origin}`}
-                  title="TTV HD (PVC) Player"
+                  title="TTV HD ENC Player"
                   allow="autoplay; encrypted-media"
                   referrerPolicy="no-referrer"
                 />
-                
-                {/* Special Seek Bar for PVC */}
-                <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between gap-4 p-3 bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 pointer-events-auto">
-                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white shrink-0">
-                    <Music size={12} className="text-purple-400 animate-pulse" />
-                    <span>TUA TESTCARD</span>
-                  </div>
-                  
-                  <input
-                    type="range"
-                    min="0"
-                    max={ytDuration}
-                    value={ytProgress}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      setYtProgress(val);
-                      const iframe = document.getElementById("ttv-hd-pvc-iframe-redesign") as HTMLIFrameElement;
-                      if (iframe && iframe.contentWindow) {
-                        iframe.contentWindow.postMessage(JSON.stringify({
-                          event: 'command',
-                          func: 'seekTo',
-                          args: [val, true]
-                        }), '*');
-                      }
-                    }}
-                    className="flex-grow h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-purple-500"
-                  />
-                  
-                  <div className="text-[10px] font-mono text-purple-400 font-bold shrink-0">
-                    {Math.floor(ytProgress / 60)}:{(ytProgress % 60).toString().padStart(2, '0')} / {Math.floor(ytDuration / 60)}:00
-                  </div>
-                </div>
               </div>
             ) : (active.name === "VTV6" || active.status === "maintenance" || streamError) ? (
               <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden">
@@ -4047,28 +4051,6 @@ function TVContent({
                   className="w-full h-full object-cover" 
                   referrerPolicy="no-referrer"
                 />
-                {active.name === "VTV6" ? (
-                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl text-center z-20 shadow-2xl">
-                    <h3 className="text-xl font-bold font-mono text-white uppercase tracking-wider">{active.name}</h3>
-                    <p className="text-[10px] font-mono text-purple-400 font-bold uppercase tracking-widest mt-1">COMING SOON / ĐANG CHỜ PHÁT SÓNG</p>
-                  </div>
-                ) : active.status === "maintenance" ? (
-                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
-                    <h3 className="text-lg font-bold tracking-tight text-amber-500 uppercase">KÊNH ĐANG BẢO TRÌ</h3>
-                    <p className="text-white/70 text-xs">Phòng máy đang thực hiện đồng bộ chất lượng luồng và nâng kỹ thuật điện từ định kỳ.</p>
-                  </div>
-                ) : (
-                  <div className="absolute bg-red-950/90 backdrop-blur-md border border-red-800/30 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
-                    <h3 className="text-lg font-bold tracking-tight text-red-500 uppercase">LỖI LUỒNG PHÁT (CORS)</h3>
-                    <p className="text-white/70 text-xs">{streamError || "Trình duyệt chặn phát luồng này."}</p>
-                    <button 
-                      onClick={() => window.open(active.stream, '_blank')}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all"
-                    >
-                      MỞ LINK TRỰC TIẾP
-                    </button>
-                  </div>
-                )}
               </div>
             ) : (
               <video
@@ -4471,9 +4453,7 @@ function TVContent({
       {/* VIDEO PLAYER */}
       <div className={`bg-black mb-6 flex items-center justify-center border shadow-2xl relative overflow-hidden group ${
         isMultiview ? "aspect-auto min-h-[400px]" : "aspect-video"
-      } ${
-        liquidGlass ? "rounded-2xl" : "rounded-lg"
-      } ${isDark ? "border-slate-800" : "border-slate-300"}`}>
+      } rounded-none ${isDark ? "border-slate-800" : "border-slate-300"}`}>
         {isMultiview ? (
           <div className={`w-full h-full grid gap-2 p-2 ${
             multiviewCount <= 2 ? "grid-cols-2" : 
@@ -4544,48 +4524,16 @@ function TVContent({
           </div>
         ) : (
           <>
-            {active.name === "TTV HD (PVC)" ? (
+            {active.name === "TTV HD ENC" ? (
               <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex flex-col items-center justify-center overflow-hidden" onClick={unblockAudio}>
                 <iframe
                   id="ttv-hd-pvc-iframe"
                   className="w-full h-full object-cover border-0 pointer-events-none"
                   src={`https://www.youtube.com/embed/SX-4qgh0CqM?enablejsapi=1&autoplay=1&controls=0&mute=${isMuted ? 1 : 0}&loop=1&playlist=SX-4qgh0CqM&origin=${window.location.origin}`}
-                  title="TTV HD (PVC) Player"
+                  title="TTV HD ENC Player"
                   allow="autoplay; encrypted-media"
                   referrerPolicy="no-referrer"
                 />
-                
-                {/* Special Seek Bar for PVC */}
-                <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between gap-4 p-3 bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 pointer-events-auto">
-                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white shrink-0">
-                    <Music size={12} className="text-purple-400 animate-pulse" />
-                    <span>TUA TESTCARD</span>
-                  </div>
-                  
-                  <input
-                    type="range"
-                    min="0"
-                    max={ytDuration}
-                    value={ytProgress}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      setYtProgress(val);
-                      const iframe = document.getElementById("ttv-hd-pvc-iframe") as HTMLIFrameElement;
-                      if (iframe && iframe.contentWindow) {
-                        iframe.contentWindow.postMessage(JSON.stringify({
-                          event: 'command',
-                          func: 'seekTo',
-                          args: [val, true]
-                        }), '*');
-                      }
-                    }}
-                    className="flex-grow h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-purple-500"
-                  />
-                  
-                  <div className="text-[10px] font-mono text-purple-400 font-bold shrink-0">
-                    {Math.floor(ytProgress / 60)}:{(ytProgress % 60).toString().padStart(2, '0')} / {Math.floor(ytDuration / 60)}:00
-                  </div>
-                </div>
               </div>
             ) : (active.name === "VTV6" || active.status === "maintenance" || streamError) ? (
               <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden">
@@ -4595,28 +4543,6 @@ function TVContent({
                   className="w-full h-full object-cover" 
                   referrerPolicy="no-referrer"
                 />
-                {active.name === "VTV6" ? (
-                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl text-center z-20 shadow-2xl">
-                    <h3 className="text-xl font-bold font-mono text-white uppercase tracking-wider">{active.name}</h3>
-                    <p className="text-[10px] font-mono text-purple-400 font-bold uppercase tracking-widest mt-1">COMING SOON / ĐANG CHỜ PHÁT SÓNG</p>
-                  </div>
-                ) : active.status === "maintenance" ? (
-                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
-                    <h3 className="text-lg font-bold tracking-tight text-amber-500 uppercase">KÊN ĐANG BẢO TRÌ</h3>
-                    <p className="text-white/70 text-xs">Phòng máy đang thực hiện đồng bộ chất lượng luồng và nâng kỹ thuật điện từ định kỳ.</p>
-                  </div>
-                ) : (
-                  <div className="absolute bg-red-950/90 backdrop-blur-md border border-red-800/30 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
-                    <h3 className="text-lg font-bold tracking-tight text-red-500 uppercase">LỖI LUỒNG PHÁT (CORS)</h3>
-                    <p className="text-white/70 text-xs">{streamError || "Trình duyệt chặn phát luồng này."}</p>
-                    <button 
-                      onClick={() => window.open(active.stream, '_blank')}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all"
-                    >
-                      MỞ LINK TRỰC TIẾP
-                    </button>
-                  </div>
-                )}
               </div>
             ) : (
               <video
@@ -14045,12 +13971,15 @@ export default function App() {
         cobalt_scrollbar: false,
         xaml_experience: true,
         vids_feature: false,
-        redesign_live_page: false
+        redesign_live_page: true
       };
       if (!saved) return defaults;
       const parsed = JSON.parse(saved);
       if (parsed.xaml_home === undefined) {
         parsed.xaml_home = true;
+      }
+      if (parsed.redesign_live_page === undefined) {
+        parsed.redesign_live_page = true;
       }
       return { ...defaults, ...parsed };
     } catch (e) {
@@ -14082,7 +14011,7 @@ export default function App() {
         cobalt_scrollbar: false,
         xaml_experience: false,
         vids_feature: false,
-        redesign_live_page: false
+        redesign_live_page: true
       };
     }
   });
@@ -14653,7 +14582,7 @@ export default function App() {
   const [isPinningEnabled, setIsPinningEnabled] = useState(() => {
     return localStorage.getItem("vplay_pinning") === "true";
   });
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(window.innerWidth >= 768);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [activeChannel, setActiveChannel] = useState(channels[0]);
   const [sortOrder, setSortOrder] = useState<"default" | "az" | "za">("default");
