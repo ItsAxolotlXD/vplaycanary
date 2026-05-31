@@ -109,29 +109,29 @@ const SplashView = ({ text, subtext, featureFlags }: { key?: string, text: strin
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-forced-montserrat font-light leading-relaxed select-none overflow-hidden"
+    className="fixed inset-0 z-[100001] bg-black text-[#00ff00] font-mono p-6 sm:p-12 flex flex-col justify-center items-center select-none overflow-auto"
   >
-    <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-      <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-forced-montserrat font-light leading-relaxed">
-        <div className="space-y-3 w-full">
-          <h2 className="text-3xl md:text-4xl text-white font-forced-montserrat font-light leading-tight tracking-wide">
-            {text || "Just a moment"}
-          </h2>
-          {subtext && (
-            <p className="text-sm md:text-base text-white/95 font-forced-montserrat font-light leading-relaxed w-full font-forced-montserrat font-light">
-              {subtext}
-            </p>
-          )}
+    <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 text-left">
+      <div className="border border-[#00ff00]/30 p-5 bg-black rounded shadow-lg">
+        <h2 className="text-lg font-bold text-yellow-500 mb-2">
+          [ MS-DOS SYSTEM RESPRING PROCESS ]
+        </h2>
+        <p className="text-xs sm:text-sm text-white/95 leading-relaxed font-mono">
+          VPLAY(R) MS-DOS MULTI-TASKING MEDIA SHELL SYSTEM<br/>
+          (C) COPYRIGHT 2026 VPLAY CORP. ALL RIGHTS RESERVED.<br/><br/>
+          STATUS: <span className="text-green-400">{text || "System Reloading..."}</span>
+        </p>
+      </div>
+      
+      {subtext && (
+        <div className="border border-[#00ff00]/25 p-3 text-xs opacity-85">
+          {subtext}
         </div>
-        
-        <div className="flex items-center gap-4 pt-4">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-            alt="loading" 
-            className="w-7 h-7 object-contain shrink-0" 
-            referrerPolicy="no-referrer"
-          />
-        </div>
+      )}
+
+      <div className="mt-4 flex items-center gap-3">
+        <span className="inline-block w-4 h-4 rounded-full bg-[#00ff00] animate-ping" />
+        <span className="text-xs font-mono text-[#00ff00]/85">RESTORING CONTEXT SHELL DRIVERS... PLEASE WAIT...</span>
       </div>
     </div>
   </motion.div>
@@ -148,7 +148,7 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
   useEffect(() => {
     let duration = 5000; 
     if (isSessionChange) duration = 5000;
-    if (isUpdating) duration = 30000; 
+    if (isUpdating) duration = 15000; 
     
     const interval = 100;
     const step = (100 / (duration / interval));
@@ -168,12 +168,22 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
     if (!isWelcome) {
       bypassTimer = setTimeout(() => {
         setShowBypass(true);
-      }, 5000);
+      }, 3000);
     }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        onEnter();
+      } else if (e.key === 'Escape') {
+        onEnter();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
     
     return () => {
       clearInterval(progressTimer);
       clearTimeout(timer);
+      window.removeEventListener('keydown', handleKeyDown);
       if (bypassTimer) clearTimeout(bypassTimer);
     };
   }, [onEnter, isSessionChange, isUpdating, isWelcome]);
@@ -228,88 +238,121 @@ const SplashScreen = ({ isDark, onEnter, isSessionChange = false, isUpdating = f
   const totalFiles = filesToLoad.length - 1;
   const filesLoadedCount = Math.min(Math.floor((progress / 100) * totalFiles), totalFiles);
 
+  const progressBarsCount = Math.floor(progress / 4);
+  const loadingBarStr = "=".repeat(progressBarsCount) + ">" + " ".repeat(Math.max(0, 25 - progressBarsCount));
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.8 }}
-      className="fixed inset-0 z-[100001] bg-black/60 backdrop-blur-sm flex items-center justify-center font-forced-montserrat font-light leading-relaxed select-none overflow-hidden"
+      transition={{ duration: 0.5 }}
+      className="fixed inset-0 z-[100001] bg-black text-[#00ff00] font-mono p-4 sm:p-8 flex items-center justify-center select-none overflow-auto"
     >
-      <div className="w-full bg-[#1e0a5c] text-white py-14 px-8 md:px-24 border-t border-b border-white/10 shadow-2xl">
-        <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 text-left font-forced-montserrat font-light leading-relaxed">
-          <div className="space-y-3 w-full animate-fade-in">
-            <h2 className="text-3xl md:text-4xl text-white font-forced-montserrat font-light leading-tight tracking-wide">
-              Just a moment
-            </h2>
-            <p className="text-sm md:text-base text-white/95 font-forced-montserrat font-light leading-relaxed w-full">
-              Loading {currentFilename}...
+      <div className="w-full max-w-4xl bg-black border border-[#00ff00]/40 rounded-sm p-6 sm:p-10 shadow-2xl relative">
+        <div className="flex flex-col gap-4 text-left font-mono">
+          <div className="border-b border-[#00ff00]/30 pb-4">
+            <p className="text-xs text-yellow-500 font-bold uppercase tracking-widest">VPLAY(R) PERSONAL COMPUTER SYSTEM BIOS V3.21-DOS</p>
+            <p className="text-xs text-[#00ff00]/70">(C) COPYRIGHT 2026 VPLAY CORPORATION. ALL RIGHTS RESERVED.</p>
+          </div>
+
+          <div className="space-y-2 text-xs sm:text-sm">
+            <p className="text-red-500 font-bold">*** CRITICAL SYSTEM CRASH DETECTED ***</p>
+            <p className="text-[#00ff00]/90">CPU: Web Core Emulator Engine @ 3.40 GHz</p>
+            <p className="text-[#00ff00]/90">RAM: 640KB RAM Active / 16MB Extended memory reallocated</p>
+            <p className="text-amber-500 font-semibold mt-2">DUMPING STACK REGISTERS:</p>
+            <p className="text-white/80 font-mono text-[10px] bg-[#0c0c0e] p-3 rounded border border-white/5 whitespace-pre overflow-x-auto">
+              AX=0D10h  BX=3000h  CX=FFFFh  DX=0000h<br/>
+              SP=07FEh  BP=0110h  SI=1280h  DI=0F40h<br/>
+              DS=2040h  ES=2040h  SS=0000h  CS=4100h  IP=82A1h<br/>
+              EXCEPTION: ACCESS_VIOLATION_STREAM_DECODER (0xC0000005)
             </p>
           </div>
-          
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Windows-loading-cargando.gif" 
-                alt="loading" 
-                className="w-7 h-7 object-contain shrink-0" 
-                referrerPolicy="no-referrer"
-              />
-              <span className="text-xl font-forced-montserrat font-light text-white/90">
-                {filesLoadedCount} files loaded ({Math.floor(progress)}%)
-              </span>
+
+          <div className="space-y-3 mt-4 border-t border-[#00ff00]/20 pt-4">
+            <p className="text-xs text-yellow-400 font-bold uppercase tracking-wider">
+              [ AUTOMATIC DOS RESPRING SEQUENCE INITIATED ]
+            </p>
+            <p className="text-xs text-white/90">
+              Reloading kernel parameters & standard visual drivers...
+            </p>
+            <p className="text-xs text-[#00ff00]/80">
+              File: {currentFilename} ({filesLoadedCount}/{totalFiles})
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2 bg-[#0c0c0e] border border-[#00ff00]/20 p-4 rounded mt-2">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[#00ff00]/90">
+              <span>RESPRING PROGRESS</span>
+              <span className="font-bold">{Math.floor(progress)}%</span>
             </div>
+            <div className="text-xs tracking-widest text-[#00ff00] font-bold">
+              [{loadingBarStr}]
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 mt-4 text-[11px] text-white/60">
+            <p>&gt; Press <span className="text-white font-bold">[ENTER]</span> or <span className="text-white font-bold">[ESC]</span> key to force immediate respring / bypass crash.</p>
+          </div>
+
+          <div className="flex flex-wrap gap-4 items-center justify-start pt-4 border-t border-[#00ff00]/20 mt-2">
+            <button
+              type="button"
+              onClick={onEnter}
+              className="border border-[#00ff00] bg-transparent hover:bg-[#00ff00]/10 text-[#00ff00] text-xs px-5 py-2 font-mono rounded-none uppercase tracking-widest transition-all cursor-pointer"
+            >
+              RESPRING [ENTER]
+            </button>
 
             {showBypass && !showPassPrompt && (
-              <div className="pt-4 flex flex-wrap items-center justify-start gap-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isUpdating) {
-                      setShowPassPrompt(true);
-                    } else {
-                      onEnter();
-                    }
-                  }}
-                  className="border border-white text-white font-forced-montserrat font-light text-sm px-6 py-2.5 transition-all select-none bg-transparent hover:bg-white/10 rounded-none active:scale-[0.98] cursor-pointer"
-                >
-                  Bypass Splash
-                </button>
-              </div>
-            )}
-
-            {showPassPrompt && (
-              <form
-                onSubmit={handleBypass}
-                className="flex flex-col items-start gap-4 bg-black/40 backdrop-blur-2xl p-6 border border-white/10 shadow-2xl max-w-md w-full font-forced-montserrat font-light mt-4"
+              <button
+                type="button"
+                onClick={() => {
+                  if (isUpdating) {
+                    setShowPassPrompt(true);
+                  } else {
+                    onEnter();
+                  }
+                }}
+                className="border border-yellow-500/80 bg-transparent hover:bg-yellow-500/10 text-yellow-500 text-xs px-5 py-2 font-mono rounded-none uppercase tracking-widest transition-all cursor-pointer"
               >
-                <span className="text-sm text-white/90 font-forced-montserrat font-light">Enter bypass password:</span>
-                <input
-                  type="password"
-                  value={passInput}
-                  onChange={(e) => setPassInput(e.target.value)}
-                  placeholder="Password"
-                  className="w-full bg-white/10 border border-white/20 text-white px-4 py-2 font-forced-montserrat font-light focus:outline-none focus:border-white/40 animate-fade-in"
-                />
-                {passError && <span className="text-red-400 text-xs font-forced-montserrat font-light">Incorrect password!</span>}
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="border border-white text-white font-forced-montserrat font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/10 cursor-pointer"
-                  >
-                    Submit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowPassPrompt(false)}
-                    className="border border-white/40 text-white/80 font-forced-montserrat font-light text-sm px-6 py-2 transition-all bg-transparent hover:bg-white/5 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                BYPASS SYSTEM CRASH
+              </button>
             )}
           </div>
+
+          {showPassPrompt && (
+            <form
+              onSubmit={handleBypass}
+              className="flex flex-col items-start gap-3 bg-[#0c0c0e] p-4 border border-yellow-500/30 rounded mt-2 max-w-sm w-full"
+            >
+              <span className="text-xs text-yellow-400 font-bold">Enter BIOS bypass password:</span>
+              <input
+                type="password"
+                value={passInput}
+                onChange={(e) => setPassInput(e.target.value)}
+                placeholder="BIOS Password"
+                className="w-full bg-black border border-[#00ff00]/40 text-[#00ff00] px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-[#00ff00]"
+              />
+              {passError && <span className="text-red-500 text-[10px] font-bold">ACCESS DENIED (PASSWORD INCORRECT)</span>}
+              <div className="flex gap-2 mt-1">
+                <button
+                  type="submit"
+                  className="border border-[#00ff00]/60 text-[#00ff00] text-xs px-4 py-1.5 bg-transparent hover:bg-[#00ff00]/10 transition-all cursor-pointer"
+                >
+                  SUBMIT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPassPrompt(false)}
+                  className="border border-white/20 text-white/60 text-xs px-4 py-1.5 bg-transparent hover:bg-white/5 transition-all cursor-pointer"
+                >
+                  CANCEL
+                </button>
+              </div>
+            </form>
+          )}
+
         </div>
       </div>
     </motion.div>
@@ -3486,6 +3529,94 @@ function TVContent({
   const [filterType, setFilterType] = useState<string>("Tất cả");
   const [streamError, setStreamError] = useState<string | null>(null);
 
+  // YouTube progress and beep generator references per user request
+  const [ytProgress, setYtProgress] = useState(0);
+  const [ytDuration, setYtDuration] = useState(600); // 10 mins standard duration
+  const oscRef = useRef<any>(null);
+  const audioCtxRef = useRef<any>(null);
+  const gainRef = useRef<any>(null);
+
+  const isYouTubeStream = (url: string) => {
+    return url && (url.includes("youtube.com") || url.includes("youtu.be") || url.includes("watch?v="));
+  };
+
+  const startBeep = () => {
+    if (oscRef.current) return;
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      audioCtxRef.current = ctx;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(1000, ctx.currentTime);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      gain.gain.setValueAtTime(isMuted ? 0 : volume * 0.3, ctx.currentTime);
+
+      osc.start();
+      oscRef.current = osc;
+      gainRef.current = gain;
+    } catch (e) {
+      console.warn("AudioContext init failed:", e);
+    }
+  };
+
+  const stopBeep = () => {
+    if (oscRef.current) {
+      try {
+        oscRef.current.stop();
+        oscRef.current.disconnect();
+      } catch (e) {}
+      oscRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try {
+        if (audioCtxRef.current.state !== 'closed') {
+          audioCtxRef.current.close();
+        }
+      } catch (e) {}
+      audioCtxRef.current = null;
+    }
+    gainRef.current = null;
+  };
+
+  const unblockAudio = () => {
+    if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+  };
+
+  useEffect(() => {
+    if (active.name === "TTV HD (PVC)" && isPlaying && !showSplash) {
+      startBeep();
+    } else {
+      stopBeep();
+    }
+    return () => stopBeep();
+  }, [active.name, isPlaying, showSplash]);
+
+  useEffect(() => {
+    if (gainRef.current && audioCtxRef.current) {
+      gainRef.current.gain.setValueAtTime(isMuted ? 0 : volume * 0.3, audioCtxRef.current.currentTime);
+    }
+  }, [volume, isMuted]);
+
+  useEffect(() => {
+    if (active.name !== "TTV HD (PVC)") return;
+    const interval = setInterval(() => {
+      if (isPlaying) {
+        setYtProgress(p => (p >= ytDuration ? 0 : p + 1));
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [active.name, isPlaying, ytDuration]);
+
   // categories definition removed to avoid duplication
 
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -3578,6 +3709,16 @@ function TVContent({
     
     // Always try to reset mute when splash is gone
     setIsMuted(false);
+
+    if (active.name === "VTV6" || isYouTubeStream(active.stream)) {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      setIsPlaying(true);
+      setStreamError(null);
+      return;
+    }
 
     if (active.status === "maintenance") {
       if (hlsRef.current) {
@@ -3855,64 +3996,93 @@ function TVContent({
             <div className="absolute top-0 left-0 w-32 h-32 bg-purple-600/10 blur-2xl pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-32 h-32 bg-red-600/10 blur-2xl pointer-events-none" />
 
-            {/* Video element */}
-            <video 
-              ref={videoRef} 
-              className="w-full h-full object-contain" 
-              autoPlay 
-              playsInline 
-              muted={isMuted}
-              onClick={togglePlay}
-              loop={active.name === "VTV6"}
-            />
-
-            {/* Overlays / Stream Error */}
-            {streamError && active.status !== "maintenance" && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/95 backdrop-blur-md p-6 text-center">
-                <div className="bg-red-500/10 p-5 rounded-full border border-red-500/20 mb-4 animate-bounce">
-                  <X className="h-10 w-10 text-red-500" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight text-white mb-1.5">Lỗi bảo mật luồng (CORS / Player Error)</h3>
-                <p className="text-slate-400 text-xs max-w-sm mb-6 leading-relaxed">
-                  {streamError}
-                  <span className="text-[10px] mt-2 block text-amber-400 font-medium">Bảo mật của trình duyệt chặn phát trực tiếp luồng này trên trang web. Bạn có thể mở link gốc để xem mượt mà hơn.</span>
-                </p>
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => window.open(active.stream, '_blank')}
-                    className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-purple-600/20 flex items-center gap-2"
-                  >
-                    <ExternalLink size={14} />
-                    Xem link gốc
-                  </button>
-                  <button 
-                    onClick={() => window.location.reload()}
-                    className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-white/15"
-                  >
-                    Tải lại trang
-                  </button>
+            {active.name === "TTV HD (PVC)" ? (
+              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex flex-col items-center justify-center overflow-hidden" onClick={unblockAudio}>
+                <iframe
+                  id="ttv-hd-pvc-iframe-redesign"
+                  className="w-full h-full object-cover border-0 pointer-events-none"
+                  src={`https://www.youtube.com/embed/SX-4qgh0CqM?enablejsapi=1&autoplay=1&controls=0&mute=${isMuted ? 1 : 0}&loop=1&playlist=SX-4qgh0CqM&origin=${window.location.origin}`}
+                  title="TTV HD (PVC) Player"
+                  allow="autoplay; encrypted-media"
+                  referrerPolicy="no-referrer"
+                />
+                
+                {/* Special Seek Bar for PVC */}
+                <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between gap-4 p-3 bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 pointer-events-auto">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white shrink-0">
+                    <Music size={12} className="text-purple-400 animate-pulse" />
+                    <span>TUA TESTCARD</span>
+                  </div>
+                  
+                  <input
+                    type="range"
+                    min="0"
+                    max={ytDuration}
+                    value={ytProgress}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setYtProgress(val);
+                      const iframe = document.getElementById("ttv-hd-pvc-iframe-redesign") as HTMLIFrameElement;
+                      if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage(JSON.stringify({
+                          event: 'command',
+                          func: 'seekTo',
+                          args: [val, true]
+                        }), '*');
+                      }
+                    }}
+                    className="flex-grow h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-purple-500"
+                  />
+                  
+                  <div className="text-[10px] font-mono text-purple-400 font-bold shrink-0">
+                    {Math.floor(ytProgress / 60)}:{(ytProgress % 60).toString().padStart(2, '0')} / {Math.floor(ytDuration / 60)}:00
+                  </div>
                 </div>
               </div>
-            )}
-
-            {/* Maintenance overlay */}
-            {active.status === "maintenance" && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/95 backdrop-blur-md p-6 text-center">
-                <div className="bg-amber-500/10 p-5 rounded-full border border-amber-500/20 mb-4 animate-pulse">
-                  <Zap className="h-10 w-10 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight text-white mb-1">Kênh đang bảo trì</h3>
-                <p className="text-slate-400 text-xs max-w-xs mb-6 leading-relaxed font-medium">
-                  Trạm phát sóng hiện đang nâng cấp chất lượng luồng và cập nhật hệ thống định kỳ.
-                </p>
-                <button 
-                  onClick={() => window.location.reload()}
-                  className="px-6 py-2.5 bg-white text-zinc-950 font-black text-xs uppercase tracking-wider rounded-xl hover:bg-zinc-200 transition-all flex items-center gap-2"
-                >
-                  <RotateCcw size={14} />
-                  Tải lại trang
-                </button>
+            ) : (active.name === "VTV6" || active.status === "maintenance" || streamError) ? (
+              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden">
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/EBU_Colorbars_HD.svg/960px-EBU_Colorbars_HD.svg.png?_=20220810032923" 
+                  alt="Colorbars" 
+                  className="w-full h-full object-cover" 
+                  referrerPolicy="no-referrer"
+                />
+                {active.name === "VTV6" ? (
+                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl text-center z-20 shadow-2xl">
+                    <h3 className="text-xl font-bold font-mono text-white uppercase tracking-wider">{active.name}</h3>
+                    <p className="text-[10px] font-mono text-purple-400 font-bold uppercase tracking-widest mt-1">COMING SOON / ĐANG CHỜ PHÁT SÓNG</p>
+                  </div>
+                ) : active.status === "maintenance" ? (
+                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
+                    <h3 className="text-lg font-bold tracking-tight text-amber-500 uppercase">KÊNH ĐANG BẢO TRÌ</h3>
+                    <p className="text-white/70 text-xs">Phòng máy đang thực hiện đồng bộ chất lượng luồng và nâng kỹ thuật điện từ định kỳ.</p>
+                  </div>
+                ) : (
+                  <div className="absolute bg-red-950/90 backdrop-blur-md border border-red-800/30 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
+                    <h3 className="text-lg font-bold tracking-tight text-red-500 uppercase">LỖI LUỒNG PHÁT (CORS)</h3>
+                    <p className="text-white/70 text-xs">{streamError || "Trình duyệt chặn phát luồng này."}</p>
+                    <button 
+                      onClick={() => window.open(active.stream, '_blank')}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all"
+                    >
+                      MỞ LINK TRỰC TIẾP
+                    </button>
+                  </div>
+                )}
               </div>
+            ) : (
+              <video
+                ref={videoRef}
+                className="w-full h-full object-contain"
+                autoPlay
+                playsInline
+                muted={isMuted}
+                onClick={() => {
+                  togglePlay();
+                  unblockAudio();
+                }}
+                loop={active.name === "VTV6"}
+              />
             )}
 
             {/* Under Video Floating Glass Controls */}
@@ -4374,68 +4544,79 @@ function TVContent({
           </div>
         ) : (
           <>
-            {active.status === "maintenance" ? (
-              <div className="absolute inset-0 w-full h-full bg-[#0a0a0a] flex flex-col items-center justify-center p-8 overflow-hidden">
-                {/* Background Testcard Pattern */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none select-none overflow-hidden">
-                  <div className="w-full h-full" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #1a1a1a 0, #1a1a1a 1px, transparent 0, transparent 50%)', backgroundSize: '100px 100px' }} />
-                  <div className="absolute top-1/2 left-0 w-full h-[1px] bg-red-500/30" />
-                  <div className="absolute top-0 left-1/2 w-[1px] h-full bg-red-500/30" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/20 rounded-full" />
+            {active.name === "TTV HD (PVC)" ? (
+              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex flex-col items-center justify-center overflow-hidden" onClick={unblockAudio}>
+                <iframe
+                  id="ttv-hd-pvc-iframe"
+                  className="w-full h-full object-cover border-0 pointer-events-none"
+                  src={`https://www.youtube.com/embed/SX-4qgh0CqM?enablejsapi=1&autoplay=1&controls=0&mute=${isMuted ? 1 : 0}&loop=1&playlist=SX-4qgh0CqM&origin=${window.location.origin}`}
+                  title="TTV HD (PVC) Player"
+                  allow="autoplay; encrypted-media"
+                  referrerPolicy="no-referrer"
+                />
+                
+                {/* Special Seek Bar for PVC */}
+                <div className="absolute bottom-4 left-4 right-4 z-20 flex items-center justify-between gap-4 p-3 bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 pointer-events-auto">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-white shrink-0">
+                    <Music size={12} className="text-purple-400 animate-pulse" />
+                    <span>TUA TESTCARD</span>
+                  </div>
+                  
+                  <input
+                    type="range"
+                    min="0"
+                    max={ytDuration}
+                    value={ytProgress}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setYtProgress(val);
+                      const iframe = document.getElementById("ttv-hd-pvc-iframe") as HTMLIFrameElement;
+                      if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage(JSON.stringify({
+                          event: 'command',
+                          func: 'seekTo',
+                          args: [val, true]
+                        }), '*');
+                      }
+                    }}
+                    className="flex-grow h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-purple-500"
+                  />
+                  
+                  <div className="text-[10px] font-mono text-purple-400 font-bold shrink-0">
+                    {Math.floor(ytProgress / 60)}:{(ytProgress % 60).toString().padStart(2, '0')} / {Math.floor(ytDuration / 60)}:00
+                  </div>
                 </div>
-
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="relative z-10 text-center space-y-8"
-                >
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="p-5 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.1)]">
-                      <Zap className="h-12 w-12 text-amber-500 animate-pulse" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-4xl font-black text-white tracking-tighter uppercase">Kênh đang bảo trì</h3>
-                      <p className="text-white/40 font-mono text-sm uppercase tracking-widest">System Status: Maintenance Mode</p>
-                    </div>
+              </div>
+            ) : (active.name === "VTV6" || active.status === "maintenance" || streamError) ? (
+              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden">
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/EBU_Colorbars_HD.svg/960px-EBU_Colorbars_HD.svg.png?_=20220810032923" 
+                  alt="Colorbars" 
+                  className="w-full h-full object-cover" 
+                  referrerPolicy="no-referrer"
+                />
+                {active.name === "VTV6" ? (
+                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl text-center z-20 shadow-2xl">
+                    <h3 className="text-xl font-bold font-mono text-white uppercase tracking-wider">{active.name}</h3>
+                    <p className="text-[10px] font-mono text-purple-400 font-bold uppercase tracking-widest mt-1">COMING SOON / ĐANG CHỜ PHÁT SÓNG</p>
                   </div>
-
-                  <div className="bg-white/5 border border-white/10 backdrop-blur-md p-6 max-w-md rounded-2xl space-y-4">
-                    <p className="text-white/70 text-sm leading-relaxed">
-                      Kênh truyền hình này hiện đang trong quá trình nâng cấp hệ thống định kỳ. Vui lòng quay lại sau ít phút hoặc xem các kênh khác.
-                    </p>
-                    <div className="flex items-center justify-center gap-6 pt-2 border-t border-white/5 text-[10px] font-mono text-white/30 uppercase tracking-widest">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                        <span>Signal: Stable</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                        <span>Update: 85%</span>
-                      </div>
-                    </div>
+                ) : active.status === "maintenance" ? (
+                  <div className="absolute bg-[#0a0a0c]/90 backdrop-blur-md border border-white/10 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
+                    <h3 className="text-lg font-bold tracking-tight text-amber-500 uppercase">KÊN ĐANG BẢO TRÌ</h3>
+                    <p className="text-white/70 text-xs">Phòng máy đang thực hiện đồng bộ chất lượng luồng và nâng kỹ thuật điện từ định kỳ.</p>
                   </div>
-
-                  <div className="flex flex-wrap items-center justify-center gap-4">
+                ) : (
+                  <div className="absolute bg-red-950/90 backdrop-blur-md border border-red-800/30 p-6 max-w-sm rounded-2xl text-center z-20 space-y-3 font-mono shadow-2xl">
+                    <h3 className="text-lg font-bold tracking-tight text-red-500 uppercase">LỖI LUỒNG PHÁT (CORS)</h3>
+                    <p className="text-white/70 text-xs">{streamError || "Trình duyệt chặn phát luồng này."}</p>
                     <button 
-                      onClick={() => window.location.reload()}
-                      className="px-8 py-3 bg-white hover:bg-white/90 text-black rounded-xl text-sm font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                      onClick={() => window.open(active.stream, '_blank')}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all"
                     >
-                      <RotateCcw size={16} />
-                      Tải lại trang
+                      MỞ LINK TRỰC TIẾP
                     </button>
-                    <div className="px-6 py-3 border border-white/20 text-white/60 rounded-xl text-xs font-mono">
-                      CODE: MAINTENANCE_503
-                    </div>
                   </div>
-                </motion.div>
-
-                {/* Corner Accents */}
-                <div className="absolute top-8 left-8 font-mono text-[10px] text-white/20 select-none">
-                  VPLAY // SYSTEM_CORE_v2.4
-                </div>
-                <div className="absolute bottom-8 right-8 font-mono text-[10px] text-white/20 select-none">
-                  {new Date().toISOString()}
-                </div>
+                )}
               </div>
             ) : (
               <video
@@ -4444,48 +4625,12 @@ function TVContent({
                 autoPlay
                 playsInline
                 muted={isMuted}
-                onClick={togglePlay}
+                onClick={() => {
+                  togglePlay();
+                  unblockAudio();
+                }}
                 loop={active.name === "VTV6"}
               />
-            )}
-            
-            {streamError && active.status !== "maintenance" && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl p-6 text-center">
-                <div className="bg-red-500/20 p-4 rounded-full mb-4 ring-2 ring-red-500/50">
-                  <X className="h-10 w-10 text-red-500" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Lỗi bảo mật (CORS)</h3>
-                <p className="text-white/60 text-sm max-w-xs mb-6">
-                  {streamError}
-                  <br />
-                  <span className="text-[10px] mt-2 block text-amber-400 opacity-60">Gợi ý: Luồng phát này chặn xem trực tiếp trên Website. Hãy cài extension "CORS Unblock" hoặc mở link trực tiếp bên dưới.</span>
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                  <button 
-                    onClick={() => window.open(active.stream, '_blank')}
-                    className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-purple-600/20 flex items-center gap-2"
-                  >
-                    <ExternalLink size={16} />
-                    Xem link gốc
-                  </button>
-                  <button 
-                    onClick={() => window.location.reload()}
-                    className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-bold transition-all border border-white/10"
-                  >
-                    Tải lại trang
-                  </button>
-                </div>
-              </div>
-            )}
-            {/* Tap to Unmute Overlay */}
-            {isMuted && isPlaying && !isMaintenance && (
-              <button 
-                onClick={toggleMute}
-                className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-black/80 transition-all animate-bounce"
-              >
-                <VolumeX className="h-4 w-4" />
-                CHẠM ĐỂ BẬT TIẾNG
-              </button>
             )}
             {!isMaintenance && (
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex flex-col justify-between">
@@ -4765,7 +4910,7 @@ function TVContent({
                       <h3 className={`text-2xl md:text-3xl font-black tracking-tighter uppercase ${isDark ? "text-white" : "text-slate-900"}`}>{cat}</h3>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+                  <div className="grid grid-cols-4 gap-6">
                     {cat === "Phát thanh" ? (
                       <div className={`col-span-full p-12 rounded-[40px] border-2 border-dashed flex flex-col items-center justify-center gap-4 transition-all ${
                         isDark ? "border-white/10 bg-white/5 text-slate-400 hover:bg-white/10" : "border-black/5 bg-black/5 text-slate-500 hover:bg-black/[0.02]"
@@ -18122,18 +18267,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {(featureFlags?.music_background && backgroundMusicOption !== "off") && (
-        <div className="hidden">
-          <iframe 
-            width="0" 
-            height="0" 
-            src={`https://www.youtube.com/embed/bDofIQBqjRI?autoplay=1&loop=1&playlist=bDofIQBqjRI&controls=0&showinfo=0&autohide=1&enablejsapi=1`}
-            title="Background Music"
-            allow="autoplay"
-            frameBorder="0"
-          />
-        </div>
-      )}
+      {/* Removed background music of app per user request */}
 
       {/* Modals & Overlays */}
       <AnimatePresence>
