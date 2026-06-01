@@ -14,6 +14,7 @@ import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, updateDoc, a
 import { channels, Channel } from "./channels";
 import { SpinTheWheelContent } from "./components/SpinTheWheel";
 import { VTV6CountdownBanner } from "./components/VTV6CountdownBanner";
+import { generateSchedules, getCurrentProgram } from "./services/epgService";
 
 // Test connection as per critical directive
 // Test connection removed
@@ -3548,6 +3549,7 @@ function TVContent({
   const [currentLevel, setCurrentLevel] = useState(-1);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
   const [filterType, setFilterType] = useState<string>("Tất cả");
+  const [localSearch, setLocalSearch] = useState<string>("");
   const [streamError, setStreamError] = useState<string | null>(null);
 
   // YouTube progress and beep generator references per user request
@@ -3708,7 +3710,7 @@ function TVContent({
 
   const filteredChannels = channels
     .filter(ch => {
-      const matchesSearch = ch.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = ch.name.toLowerCase().includes(searchQuery.toLowerCase()) && ch.name.toLowerCase().includes(localSearch.toLowerCase());
       const matchesType = filterType === "Tất cả" 
         || (filterType === "Hoạt động" && ch.status !== "maintenance")
         || (filterType === "Bảo trì" && ch.status === "maintenance")
@@ -3781,6 +3783,13 @@ function TVContent({
     video.volume = volume;
     setStreamError(null);
     let isEffectMounted = true;
+
+    const onPlaying = () => {
+      if (isEffectMounted) {
+        setStreamError(null);
+      }
+    };
+    video.addEventListener('playing', onPlaying);
 
     if (hlsRef.current) {
       hlsRef.current.destroy();
@@ -3870,6 +3879,7 @@ function TVContent({
         hlsRef.current = null;
       }
       if (video) {
+        video.removeEventListener('playing', onPlaying);
         video.pause();
         video.removeAttribute('src');
         video.load();
@@ -4025,167 +4035,239 @@ function TVContent({
             </div>
           </div>
 
-          {/* Sleek Theater Player Frame */}
-          <div className="relative group/player rounded-none overflow-hidden bg-black border border-white/5 shadow-2xl shadow-purple-950/20 aspect-video flex-shrink-0">
-            
-            {/* Corner ambient corner lighting */}
-            <div className="absolute top-0 left-0 w-32 h-32 bg-purple-600/10 blur-2xl pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-32 h-32 bg-red-600/10 blur-2xl pointer-events-none" />
+          {/* Main Stage: Player & Live Guide Schedule */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full flex-shrink-0">
+            {/* Sleek Theater Player Frame */}
+            <div className="relative group/player rounded-none overflow-hidden bg-black border border-white/5 shadow-2xl shadow-purple-950/20 aspect-video w-full">
+              
+              {/* Corner ambient corner lighting */}
+              <div className="absolute top-0 left-0 w-32 h-32 bg-purple-600/10 blur-2xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-red-600/10 blur-2xl pointer-events-none" />
 
-            {active.name === "TTV HD ENC" ? (
-              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex flex-col items-center justify-center overflow-hidden" onClick={unblockAudio}>
-                <iframe
-                  id="ttv-hd-pvc-iframe-redesign"
-                  className="w-full h-full object-cover border-0 pointer-events-none"
-                  src={`https://www.youtube.com/embed/SX-4qgh0CqM?enablejsapi=1&autoplay=1&controls=0&mute=${isMuted ? 1 : 0}&loop=1&playlist=SX-4qgh0CqM&origin=${window.location.origin}`}
-                  title="TTV HD ENC Player"
-                  allow="autoplay; encrypted-media"
-                  referrerPolicy="no-referrer"
+              {active.name === "TTV HD ENC" ? (
+                <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden" onClick={unblockAudio}>
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/EBU_Colorbars_HD.svg/960px-EBU_Colorbars_HD.svg.png?_=20220810032923" 
+                    alt="Testcard" 
+                    className="w-full h-full object-cover" 
+                    referrerPolicy="no-referrer"
+                  />
+                  <iframe
+                    id="ttv-hd-pvc-iframe-redesign"
+                    className="absolute w-0 h-0 opacity-0 pointer-events-none"
+                    src={`https://www.youtube.com/embed/SX-4qgh0CqM?enablejsapi=1&autoplay=1&controls=0&mute=${isMuted ? 1 : 0}&loop=1&playlist=SX-4qgh0CqM&origin=${window.location.origin}`}
+                    title="TTV HD ENC Player"
+                    allow="autoplay; encrypted-media"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ) : (active.name === "VTV6" || active.status === "maintenance" || streamError) ? (
+                <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/EBU_Colorbars_HD.svg/960px-EBU_Colorbars_HD.svg.png?_=20220810032923" 
+                    alt="Colorbars" 
+                    className="w-full h-full object-cover" 
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ) : (
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  playsInline
+                  muted={isMuted}
+                  onClick={() => {
+                    togglePlay();
+                    unblockAudio();
+                  }}
+                  loop={active.name === "VTV6"}
                 />
-              </div>
-            ) : (active.name === "VTV6" || active.status === "maintenance" || streamError) ? (
-              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden">
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/EBU_Colorbars_HD.svg/960px-EBU_Colorbars_HD.svg.png?_=20220810032923" 
-                  alt="Colorbars" 
-                  className="w-full h-full object-cover" 
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-            ) : (
-              <video
-                ref={videoRef}
-                className="w-full h-full object-contain"
-                autoPlay
-                playsInline
-                muted={isMuted}
-                onClick={() => {
-                  togglePlay();
-                  unblockAudio();
-                }}
-                loop={active.name === "VTV6"}
-              />
-            )}
+              )}
 
-            {/* Under Video Floating Glass Controls */}
-            {!isMaintenance && (
-              <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end opacity-0 group-hover/player:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-                <div className="flex items-center justify-between gap-4 pointer-events-auto bg-[#0a0a0c]/80 backdrop-blur-md rounded-2xl border border-white/5 p-3">
-                  
-                  {/* Play & Vol controls */}
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={togglePlay}
-                      className="w-10 h-10 rounded-xl bg-white text-zinc-950 hover:bg-slate-200 transition-all flex items-center justify-center shrink-0 shadow-lg cursor-pointer"
-                      title={isPlaying ? "Dừng" : "Phát"}
-                    >
-                      {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
-                    </button>
-
-                    <button 
-                      onClick={toggleMute}
-                      className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center shrink-0 border border-white/10 cursor-pointer"
-                      title={isMuted ? "Bật tiếng" : "Tắt tiếng"}
-                    >
-                      {isMuted ? <VolumeX size={18} className="text-red-400 animate-pulse" /> : <Volume2 size={18} className="text-white" />}
-                    </button>
-
-                    {/* Fluid volume slider */}
-                    <div className="w-20 hidden md:flex items-center">
-                      <input 
-                        type="range" min="0" max="1" step="0.05" 
-                        value={volume} onChange={handleVolumeChange}
-                        className="w-full h-1 bg-white/10 rounded-full appearance-none accent-purple-500 cursor-pointer"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Station title & live indicator */}
-                  <div className="flex items-center gap-3 truncate">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-850 p-1 border border-white/5 flex items-center justify-center shrink-0">
-                      <img src={active.logo} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                    </div>
-                    <div className="text-left select-none truncate">
-                      <p className="text-xs font-black uppercase text-white truncate">{active.name}</p>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-[8px] font-bold font-mono tracking-wider text-red-400">LIVE HD</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions (Fullscreen, Recording, Quality) */}
-                  <div className="flex items-center gap-2">
+              {/* Under Video Floating Glass Controls */}
+              {!isMaintenance && (
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-end opacity-0 group-hover/player:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                  <div className="flex items-center justify-between gap-4 pointer-events-auto bg-[#0a0a0c]/80 backdrop-blur-md rounded-2xl border border-white/5 p-3">
                     
-                    {/* Quality Selector */}
-                    {levels.length > 0 && (
-                      <div className="relative">
-                        <button 
-                          onClick={() => setShowQualityMenu(!showQualityMenu)}
-                          className="px-3 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-mono font-black uppercase tracking-wider text-slate-300 cursor-pointer"
-                        >
-                          {currentLevel === -1 ? "AUTO" : `${levels[currentLevel]?.height || "HD"}P`}
-                        </button>
-                        
-                        {showQualityMenu && (
-                          <div className="absolute bottom-12 right-0 bg-zinc-900 border border-white/10 rounded-xl p-1.5 space-y-1 shadow-2xl z-50 min-w-[100px]">
-                            <button 
-                              onClick={() => setQuality(-1)}
-                              className={`w-full px-3 py-1.5 rounded-lg text-left text-[10px] font-bold font-mono transition-all cursor-pointer ${currentLevel === -1 ? "bg-purple-600 text-white" : "text-white/60 hover:bg-white/5"}`}
-                            >
-                              AUTO
-                            </button>
-                            {levels.map((l, i) => (
-                              <button 
-                                key={i}
-                                onClick={() => setQuality(i)}
-                                className={`w-full px-3 py-1.5 rounded-lg text-left text-[10px] font-bold font-mono transition-all cursor-pointer ${currentLevel === i ? "bg-purple-600 text-white" : "text-white/60 hover:bg-white/5"}`}
-                              >
-                                {l.height}P
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                    {/* Play & Vol controls */}
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={togglePlay}
+                        className="w-10 h-10 rounded-xl bg-white text-zinc-950 hover:bg-slate-200 transition-all flex items-center justify-center shrink-0 shadow-lg cursor-pointer"
+                        title={isPlaying ? "Dừng" : "Phát"}
+                      >
+                        {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
+                      </button>
+
+                      <button 
+                        onClick={toggleMute}
+                        className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center shrink-0 border border-white/10 cursor-pointer"
+                        title={isMuted ? "Bật tiếng" : "Tắt tiếng"}
+                      >
+                        {isMuted ? <VolumeX size={18} className="text-red-400 animate-pulse" /> : <Volume2 size={18} className="text-white" />}
+                      </button>
+
+                      {/* Fluid volume slider */}
+                      <div className="w-20 hidden md:flex items-center">
+                        <input 
+                          type="range" min="0" max="1" step="0.05" 
+                          value={volume} onChange={handleVolumeChange}
+                          className="w-full h-1 bg-white/10 rounded-full appearance-none accent-purple-500 cursor-pointer"
+                        />
                       </div>
-                    )}
+                    </div>
 
-                    {/* Recording button */}
-                    <button 
-                      onClick={toggleRecording}
-                      className={`h-10 px-3.5 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer ${
-                        isRecording 
-                          ? "bg-red-600 border-red-500 text-white animate-pulse" 
-                          : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-                      }`}
-                    >
-                      <Circle size={10} fill={isRecording ? "currentColor" : "none"} className={isRecording ? "text-white animate-ping" : "text-red-500"} />
-                      <span>{isRecording ? "STOP REC" : "REC"}</span>
-                    </button>
+                    {/* Station title & live indicator */}
+                    <div className="flex items-center gap-3 truncate">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-850 p-1 border border-white/5 flex items-center justify-center shrink-0">
+                        <img src={active.logo} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="text-left select-none truncate">
+                        <p className="text-xs font-black uppercase text-white truncate">{active.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                          <span className="text-[8px] font-bold font-mono tracking-wider text-red-400">LIVE HD</span>
+                        </div>
+                      </div>
+                    </div>
 
-                    {/* Fullscreen button */}
-                    <button 
-                      onClick={toggleFullscreen}
-                      className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center shrink-0 border border-white/10 cursor-pointer"
-                    >
-                      <Maximize2 size={16} className="text-white" />
-                    </button>
+                    {/* Actions (Fullscreen, Recording, Quality) */}
+                    <div className="flex items-center gap-2">
+                      
+                      {/* Quality Selector */}
+                      {levels.length > 0 && (
+                        <div className="relative">
+                          <button 
+                            onClick={() => setShowQualityMenu(!showQualityMenu)}
+                            className="px-3 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-mono font-black uppercase tracking-wider text-slate-300 cursor-pointer"
+                          >
+                            {currentLevel === -1 ? "AUTO" : `${levels[currentLevel]?.height || "HD"}P`}
+                          </button>
+                          
+                          {showQualityMenu && (
+                            <div className="absolute bottom-12 right-0 bg-zinc-900 border border-white/10 rounded-xl p-1.5 space-y-1 shadow-2xl z-50 min-w-[100px]">
+                              <button 
+                                onClick={() => setQuality(-1)}
+                                className={`w-full px-3 py-1.5 rounded-lg text-left text-[10px] font-bold font-mono transition-all cursor-pointer ${currentLevel === -1 ? "bg-purple-600 text-white" : "text-white/60 hover:bg-white/5"}`}
+                              >
+                                AUTO
+                              </button>
+                              {levels.map((l, i) => (
+                                <button 
+                                  key={i}
+                                  onClick={() => setQuality(i)}
+                                  className={`w-full px-3 py-1.5 rounded-lg text-left text-[10px] font-bold font-mono transition-all cursor-pointer ${currentLevel === i ? "bg-purple-600 text-white" : "text-white/60 hover:bg-white/5"}`}
+                                >
+                                  {l.height}P
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Recording button */}
+                      <button 
+                        onClick={toggleRecording}
+                        className={`h-10 px-3.5 rounded-xl border transition-all text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer ${
+                          isRecording 
+                            ? "bg-red-600 border-red-500 text-white animate-pulse" 
+                            : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                        }`}
+                      >
+                        <Circle size={10} fill={isRecording ? "currentColor" : "none"} className={isRecording ? "text-white animate-ping" : "text-red-500"} />
+                        <span>{isRecording ? "STOP REC" : "REC"}</span>
+                      </button>
+
+                      {/* Fullscreen button */}
+                      <button 
+                        onClick={toggleFullscreen}
+                        className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center shrink-0 border border-white/10 cursor-pointer"
+                      >
+                        <Maximize2 size={16} className="text-white" />
+                      </button>
+
+                    </div>
 
                   </div>
+                </div>
+              )}
 
+              {/* Tap to Unmute Overlay */}
+              {isMuted && isPlaying && !isMaintenance && (
+                <button 
+                  onClick={toggleMute}
+                  className="absolute top-4 right-4 bg-purple-600 border border-purple-500 text-white px-4 py-2 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-2 hover:bg-purple-500 transition-all shadow-lg shadow-purple-600/30 select-none animate-bounce z-10 cursor-pointer"
+                >
+                  <VolumeX size={14} className="animate-pulse" />
+                  TAP TO UNMUTE AUDIO
+                </button>
+              )}
+
+            </div>
+
+            {/* Smart Cyber EPG / TV Program Guide */}
+            <div className="bg-[#0b0b0d]/80 border border-white/5 rounded-none p-4 flex flex-col h-full min-h-[250px] lg:h-auto overflow-hidden relative group/epg select-none">
+              {/* Backglow lamp detail */}
+              <div className="absolute top-0 right-0 w-16 h-16 bg-purple-600/5 blur-xl pointer-events-none" />
+              
+              <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2.5 shrink-0">
+                <div className="flex items-center gap-2">
+                  <Calendar size={13} className="text-purple-400 animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Lịch Phát Sóng</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-[7px] font-bold font-mono tracking-wider text-red-00 uppercase">Epg Live</span>
                 </div>
               </div>
-            )}
 
-            {/* Tap to Unmute Overlay */}
-            {isMuted && isPlaying && !isMaintenance && (
-              <button 
-                onClick={toggleMute}
-                className="absolute top-4 right-4 bg-purple-600 border border-purple-500 text-white px-4 py-2 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-2 hover:bg-purple-500 transition-all shadow-lg shadow-purple-600/30 select-none animate-bounce z-10 cursor-pointer"
-              >
-                <VolumeX size={14} className="animate-pulse" />
-                TAP TO UNMUTE AUDIO
-              </button>
-            )}
+              {/* Programs list */}
+              <div className="flex-grow overflow-y-auto custom-scrollbar pr-0.5 space-y-2 select-none h-0 min-h-0">
+                {(() => {
+                  const progs = generateSchedules(active.name);
+                  const cur = getCurrentProgram(progs);
+                  
+                  return progs.map((prog, idx) => {
+                    const isNow = cur && cur.title === prog.title && cur.start === prog.start;
+                    const startTime = new Date(prog.start).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false });
+                    const endTime = new Date(prog.end).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false });
+                    
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`p-3 rounded-2xl border transition-all text-left relative overflow-hidden ${
+                          isNow 
+                            ? "bg-purple-950/25 border-purple-500/40 text-white shadow-lg shadow-purple-500/5 animate-pulse" 
+                            : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
+                        }`}
+                      >
+                        {isNow && (
+                          <div className="absolute top-0 left-0 bottom-0 w-1 bg-purple-500" />
+                        )}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-[9px] font-mono font-extrabold tracking-wider ${isNow ? "text-[#00ffff]" : "text-slate-500"}`}>
+                            {startTime} - {endTime}
+                          </span>
+                          {isNow && (
+                            <span className="text-[7px] font-black tracking-widest bg-purple-600 text-white px-1.5 py-0.5 rounded-md uppercase">
+                              Đang chiếu
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-xs font-black uppercase mt-1 leading-tight tracking-tight ${isNow ? "text-[#00ffff]" : "text-slate-300"}`}>
+                          {prog.title}
+                        </p>
+                        <p className="text-[9px] font-medium leading-normal text-slate-500 mt-1 line-clamp-2">
+                          {prog.description}
+                        </p>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
 
           </div>
 
@@ -4258,7 +4340,7 @@ function TVContent({
         </div>
 
         {/* Right Side: Redesigned Channel Selection Control Station (30% width) */}
-        <div className="w-full xl:w-[350px] flex flex-col gap-4 bg-zinc-900/30 border border-white/5 rounded-[30px] p-4 backdrop-blur-xl relative z-10 z-10 h-full overflow-hidden select-none shrink-0 shadow-2xl">
+        <div className="w-full xl:w-[350px] flex flex-col gap-4 bg-zinc-900/30 border border-white/5 rounded-[30px] p-4 backdrop-blur-xl relative z-10 h-full overflow-hidden select-none shrink-0 shadow-2xl">
           
           <div className="relative z-10 space-y-3">
             <div className="flex items-center justify-between">
@@ -4275,12 +4357,9 @@ function TVContent({
               <input 
                 type="text"
                 placeholder="Tìm tên đài hoặc thể loại..."
-                value={searchQuery}
+                value={localSearch}
                 className="bg-transparent border-none outline-none text-xs font-bold text-white w-full placeholder-slate-500"
-                onChange={(e) => {
-                  const targetCh = channels.find(c => c.name.toLowerCase().includes(e.target.value.toLowerCase()));
-                  // Bind searching
-                }}
+                onChange={(e) => setLocalSearch(e.target.value)}
               />
             </div>
 
@@ -4302,69 +4381,70 @@ function TVContent({
             </div>
           </div>
 
-          {/* Scrolling channel list items */}
-          <div className="flex-grow overflow-y-auto custom-scrollbar pr-1 space-y-1.5 relative z-10">
+          {/* Scrolling channel list items - Grid View */}
+          <div className="flex-grow overflow-y-auto custom-scrollbar pr-1 relative z-10">
             {filteredChannels.length > 0 ? (
-              filteredChannels.map((ch) => {
-                const isSelected = active.name === ch.name;
-                const isChFavorite = favorites.includes(ch.name);
-                
-                return (
-                  <motion.button
-                    key={`${ch.name}-${ch.stream}`}
-                    onClick={() => setActive(ch)}
-                    whileHover={{ x: 2 }}
-                    className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all border text-left cursor-pointer group select-none relative ${
-                      isSelected
-                        ? "bg-[#0c0c0e]/95 border-purple-500/50 text-white shadow-lg shadow-purple-500/5"
-                        : "bg-white/0 hover:bg-white/5 border-transparent text-slate-300 hover:text-white"
-                    }`}
-                  >
-                    {/* Glowing active bar in slot */}
-                    {isSelected && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-purple-500 rounded-r-md" />
-                    )}
+              <div className="grid grid-cols-2 gap-2 pb-4">
+                {filteredChannels.map((ch) => {
+                  const isSelected = active.name === ch.name;
+                  const isChFavorite = favorites.includes(ch.name);
+                  
+                  return (
+                    <motion.button
+                      key={`${ch.name}-${ch.stream}`}
+                      onClick={() => setActive(ch)}
+                      whileHover={{ scale: 1.02 }}
+                      className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all border text-center cursor-pointer group select-none relative ${
+                        isSelected
+                          ? "bg-purple-950/20 border-purple-500 text-white shadow-lg shadow-purple-500/10"
+                          : "bg-white/5 hover:bg-white/10 border-white/5 text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      {/* Glowing active bar inside cell */}
+                      {isSelected && (
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[3.5px] w-8 bg-purple-500 rounded-b-md shadow-[0_2px_8px_rgba(168,85,247,0.5)]" />
+                      )}
 
-                    {/* Logo */}
-                    <div className={`w-10 h-10 rounded-lg p-1.5 flex items-center justify-center shrink-0 border relative ${
-                      isSelected ? "bg-white border-purple-500/30" : "bg-white/5 border-white/5"
-                    }`}>
-                      <img src={ch.logo} alt={ch.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                    </div>
+                      {/* Logo using ChannelLogo for exact special rules like ENC overlay */}
+                      <div className={`w-11 h-11 rounded-xl p-1.5 flex items-center justify-center relative mb-2 transition-transform duration-300 group-hover:scale-105 border ${
+                        isSelected ? "bg-white border-purple-500/20 shadow-md" : "bg-white/5 border-white/5"
+                      }`}>
+                        <ChannelLogo src={ch.logo} alt={ch.name} className="w-full h-full object-contain" isDark={true} liquidGlass="glassy" />
+                      </div>
 
-                    {/* Detail metadata */}
-                    <div className="flex-grow min-w-0 select-none">
-                      <div className="flex items-center gap-1.5">
-                        <p className={`text-xs font-black uppercase truncate tracking-tight ${isSelected ? "text-purple-400" : "text-white"}`}>
+                      {/* Detail metadata */}
+                      <div className="w-full min-w-0 select-none">
+                        <p className={`text-[11px] font-black uppercase truncate tracking-tight text-center px-1 ${isSelected ? "text-purple-400 font-extrabold" : "text-white"}`}>
                           {ch.name}
                         </p>
-                        {isChFavorite && (
-                          <Heart size={10} fill="currentColor" className="text-red-500 shrink-0" />
-                        )}
+                        
+                        <div className="flex items-center justify-center gap-1 mt-1 font-mono uppercase tracking-widest text-[7px] leading-none font-black text-slate-500">
+                          <span>{ch.category}</span>
+                          {isChFavorite && (
+                            <Heart size={8} fill="currentColor" className="text-red-500 shrink-0" />
+                          )}
+                        </div>
                       </div>
-                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-1">
-                        {ch.category}
-                      </p>
-                    </div>
 
-                    {/* Pulse status indicator / Action button */}
-                    <div className="shrink-0">
+                      {/* Hover action or state sticker */}
                       {isSelected ? (
-                        <div className="flex items-center gap-0.5 bg-purple-500/20 border border-purple-500/30 text-purple-400 px-2 py-1 rounded-md">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse shrink-0" />
-                          <span className="text-[7px] font-black tracking-widest font-mono uppercase">PLAYING</span>
+                        <div className="mt-1.5 flex items-center gap-0.5 bg-purple-500/20 border border-purple-500/30 text-purple-400 px-1.5 py-0.5 rounded-full">
+                          <span className="w-1 h-1 rounded-full bg-purple-400 animate-pulse shrink-0" />
+                          <span className="text-[6px] font-black tracking-widest font-mono uppercase">LIVE</span>
                         </div>
                       ) : ch.status === "maintenance" ? (
-                        <span className="text-[8px] font-mono text-amber-500/60 font-black uppercase tracking-wider">MAINT</span>
+                        <div className="mt-1.5 flex items-center gap-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded-full">
+                          <span className="text-[6px] font-black tracking-widest font-mono uppercase">MAINT</span>
+                        </div>
                       ) : (
-                        <div className="w-6 h-6 rounded-lg bg-white/5 group-hover:bg-purple-600/20 group-hover:text-purple-400 transition-all flex items-center justify-center border border-white/5">
-                          <Play size={10} className="text-slate-400 group-hover:text-purple-400 ml-0.5" />
+                        <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/10 text-white rounded-full p-1 border border-white/5">
+                          <Play size={8} fill="currentColor" className="ml-0.5" />
                         </div>
                       )}
-                    </div>
-                  </motion.button>
-                );
-              })
+                    </motion.button>
+                  );
+                })}
+              </div>
             ) : (
               <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
                 <Search size={26} className="text-slate-600" />
@@ -4525,10 +4605,16 @@ function TVContent({
         ) : (
           <>
             {active.name === "TTV HD ENC" ? (
-              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex flex-col items-center justify-center overflow-hidden" onClick={unblockAudio}>
+              <div className="absolute inset-0 w-full h-full select-none z-10 bg-black flex items-center justify-center overflow-hidden" onClick={unblockAudio}>
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/EBU_Colorbars_HD.svg/960px-EBU_Colorbars_HD.svg.png?_=20220810032923" 
+                  alt="Testcard" 
+                  className="w-full h-full object-cover" 
+                  referrerPolicy="no-referrer"
+                />
                 <iframe
                   id="ttv-hd-pvc-iframe"
-                  className="w-full h-full object-cover border-0 pointer-events-none"
+                  className="absolute w-0 h-0 opacity-0 pointer-events-none"
                   src={`https://www.youtube.com/embed/SX-4qgh0CqM?enablejsapi=1&autoplay=1&controls=0&mute=${isMuted ? 1 : 0}&loop=1&playlist=SX-4qgh0CqM&origin=${window.location.origin}`}
                   title="TTV HD ENC Player"
                   allow="autoplay; encrypted-media"
